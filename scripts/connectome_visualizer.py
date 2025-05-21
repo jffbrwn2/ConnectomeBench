@@ -16,11 +16,7 @@ from PIL import Image
 
 class ConnectomeVisualizer:
     """
-    A class for visualizing FlyWire neurons and EM data.
-    
-    This class provides methods for loading neuron meshes, EM data,
-    and creating interactive visualizations that combine 3D neuron models
-    with EM slice data.
+    A class for visualizing MICrONS and FlyWire neurons and EM data.
     """
     
     # Default paths for data sources
@@ -45,7 +41,7 @@ class ConnectomeVisualizer:
 
     datastacks = ['minnie65_public', 'flywire_fafb_public']
 
-    FLYWIRE_SEG_PATH =  "graphene://https://prod.flywire-daf.com/segmentation/1.0/flywire_public" #"graphene://https://prod.flywire-daf.com/segmentation/1.0/fly_v26"
+    FLYWIRE_SEG_PATH =  "graphene://https://prod.flywire-daf.com/segmentation/1.0/flywire_public" 
     MICRONS_SEG_PATH = "graphene://https://minnie.microns-daf.com/segmentation/table/minnie65_public"
 
     data_parameters = {

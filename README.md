@@ -1,4 +1,4 @@
-# ConnectomeBench: AI-Powered Connectome Proofreading
+# ConnectomeBench: Can LLMs Proofread the Connectome?
 
 ## Installation
 
@@ -10,8 +10,13 @@ cd connectomebench
 
 2. Install dependencies using `uv`:
 ```bash
-uv pip install -r requirements.txt
+uv sync
 ```
+or using `pip`:
+```bash
+pip install -r requirements.txt
+```
+
 
 ## Usage
 
@@ -21,7 +26,7 @@ The toolkit provides several scripts for processing connectome data:
 
 - `scripts/get_data.py`: Gather training data from MICrONS or FlyWire edit histories
 - `scripts/split_merge_resolution.py`: Process and evaluate split/merge events
-- `scripts/segmentation_classification.py`: Classify segmentation data
+- `scripts/segmentation_classification.py`: Classify segmentations
 
 ### Visualization
 
@@ -31,12 +36,14 @@ The `ConnectomeVisualizer` class provides tools for visualizing neurons and EM d
 from scripts.connectome_visualizer import ConnectomeVisualizer
 
 # Initialize visualizer
-visualizer = ConnectomeVisualizer(species="fly")
+visualizer = ConnectomeVisualizer(species="mouse")
 
 # Load and visualize neurons
-visualizer.load_neurons([720575940625431866])
+visualizer.load_neurons([864691134965949727])
 visualizer.save_3d_views(base_filename="3d_neuron_mesh")
 ```
+
+`ConnectomeVisualizer` is built largely on the data organized and provided through the [`CAVEClient`](https://github.com/CAVEconnectome/CAVEclient/) library. To get access to the data, please see the [CAVEClient README](https://github.com/CAVEconnectome/CAVEclient/). Specifically, you will need authentication tokens to access to the datasets (see the link [here](https://caveconnectome.github.io/CAVEclient/tutorials/authentication/)).
 
 ### LLM for analysis
 
@@ -49,17 +56,42 @@ from scripts.util import LLMProcessor
 processor = LLMProcessor(model="gpt-4o")
 
 # Process data
-results = await processor.process_data(data)
+results = await processor.process_single("Write prompt here")
 ```
 
-## Configuration
+## Segmentation Classification
 
-The toolkit supports various configuration options:
+The `scripts/segmentation_classification.py` script provides a way to classify segmentations into different categories. To get the same results as the paper, run the following command:
 
-- Species selection (fly/mouse)
-- Visualization parameters
-- LLM model selection
-- Processing options
+```bash
+python segmentation_classification.py  
+```
+
+To run the script with different parameters, see the script for more details.
+
+## Split error resolution & merge error detection
+
+The `scripts/split_merge_resolution.py` script provides to test the performance of LLMs at resolving split errors and detecting merge errors. As in the paper, evaluate single shot and pairwise performance. To get the same results as the paper for mouse split error correction (single shot) with Claude 3.7 Sonnet, run the following command:
+
+```bash
+python split_merge_resolution.py --input-json scripts/training_data/mouse_256nm.json --task merge_identification --species mouse --zoom-margin 2048 --models claude-3-7-sonnet-20250219 --prompt-modes informative
+```
+
+To get the results for mouse split error correction (comparison) with Claude 3.7 Sonnet, run the following command: 
+
+```bash
+python split_merge_resolution.py --input-json scripts/training_data/mouse_256nm.json --task merge_comparison --species mouse --zoom-margin 2048 --models claude-3-7-sonnet-20250219 --prompt-modes informative
+```
+
+To get the results for mouse merge error detection (single shot) with Claude 3.7 Sonnet, run the following command:  
+```bash
+python split_merge_resolution.py --input-json scripts/training_data/merge_error_only_mouse.json --task split_identification --species mouse --models claude-3-7-sonnet-20250219 --prompt-modes informative
+```
+
+To get the results for mouse merge error detection (comparison) with Claude 3.7 Sonnet, run the following command:  
+```bash
+python split_merge_resolution.py --input-json scripts/training_data/merge_error_only_mouse.json --task split_comparison --species mouse --models claude-3-7-sonnet-20250219 --prompt-modes informative
+```
 
 ## Contributing
 
@@ -75,7 +107,7 @@ If you use this toolkit in your research, please cite:
 
 ```
 @software{connectomebench2025,
-  author = {Jeffrey Brown},
+  author = {Jeff Brown},
   title = {ConnectomeBench: Can LLMs proofread the connectome?},
   year = {2025},
   publisher = {GitHub},

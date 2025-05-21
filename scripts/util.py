@@ -18,8 +18,6 @@ from PIL import Image
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-logger = logging.getLogger(__name__)
-
 parsable = ["gpt-4o", "o1"]
 openai_models = ["gpt-4o", "o1", "gpt-4o-mini", "o1-mini", "gpt-4.1", "o4-mini"]
 deepseek_models = ["deepseek-reasoner", "deepseek-chat"]
@@ -89,27 +87,8 @@ class LLMProcessor:
         Format a message with images for Claude models.
         Content can be a string or a list of content blocks.
         """
-        if isinstance(content, str):
-            # Simple text message
-            return [{"role": "user", "content": content}]
+        return [{"role": "user", "content": content}]
         
-        # Content is already a list of content blocks
-        # Make sure it's in the right format for the model
-        if self.model in anthropic_models:
-            # Format for Claude
-            return [{"role": "user", "content": content}]
-        elif self.model in openai_models:
-            # Format for OpenAI
-            return [{"role": "user", "content": content}]
-        else:
-            # For other models, convert to text-only
-            text_content = ""
-            for item in content:
-                if item.get("type") == "text":
-                    text_content += item.get("text", "")
-                elif item.get("type") == "image":
-                    text_content += "[Image]"
-            return [{"role": "user", "content": text_content}]
 
     @retry(
         stop=stop_after_attempt(3),

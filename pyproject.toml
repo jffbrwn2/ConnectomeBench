@@ -1,7 +1,7 @@
 [project]
 name = "connectomebench"
 version = "0.1.0"
-description = "Add your description here"
+description = "A benchmark to evaluate the proofreading capabilities of multimodal large language models (LLMs)"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
