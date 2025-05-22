@@ -857,6 +857,18 @@ Args:
         if self.neuron_fig is None:
             self.create_3d_neuron_figure(add_em_slice=False)
         
+        minpt = None
+        maxpt = None
+        if bbox is None:
+            for neuron in self.neurons:
+                if minpt is None:
+                    minpt = np.min(neuron.vertices, axis=0)
+                    maxpt = np.max(neuron.vertices, axis=0)
+                else:
+                    minpt = np.minimum(minpt, np.min(neuron.vertices, axis=0))
+                    maxpt = np.maximum(maxpt, np.max(neuron.vertices, axis=0))
+            bbox = Bbox(minpt, maxpt)
+
         center = (bbox.minpt + bbox.maxpt) / 2
 
         self.create_3d_neuron_figure(bbox=bbox, add_em_slice=False)
