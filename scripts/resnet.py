@@ -353,21 +353,16 @@ def train_model(data_dir, labels_file, concatenate_images=True, num_epochs=50, b
     
     # Final evaluation
     print('\nFinal Evaluation on Validation Set:')
-    
-    # Get unique classes present in validation set
-    unique_val_classes = sorted(set(val_targets))
-    val_class_names = [full_dataset.idx_to_label[i] for i in unique_val_classes]
-    
     print(classification_report(val_targets, val_preds, 
-                              labels=unique_val_classes,
-                              target_names=val_class_names))
+                              labels=list(range(full_dataset.num_classes)),
+                              target_names=[full_dataset.idx_to_label[i] for i in range(full_dataset.num_classes)]))
     
     # Confusion matrix
-    cm = confusion_matrix(val_targets, val_preds, labels=unique_val_classes)
+    cm = confusion_matrix(val_targets, val_preds, labels=list(range(full_dataset.num_classes)))
     plt.figure(figsize=(8, 6))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
-                xticklabels=val_class_names,
-                yticklabels=val_class_names)
+                xticklabels=[full_dataset.idx_to_label[i] for i in range(full_dataset.num_classes)],
+                yticklabels=[full_dataset.idx_to_label[i] for i in range(full_dataset.num_classes)])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
     plt.title('Confusion Matrix')
