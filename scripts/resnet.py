@@ -348,7 +348,7 @@ def train_model(data_dir, labels_file, concatenate_images=True, num_epochs=50, b
     plt.title('Training and Validation Accuracy')
     
     plt.tight_layout()
-    plt.savefig('training_curves.png')
+    plt.savefig('scripts/output/training_curves.png')
     plt.show()
     
     # Final evaluation
@@ -366,7 +366,7 @@ def train_model(data_dir, labels_file, concatenate_images=True, num_epochs=50, b
     plt.ylabel('Actual')
     plt.title('Confusion Matrix')
     plt.tight_layout()
-    plt.savefig('confusion_matrix.png')
+    plt.savefig('scripts/output/confusion_matrix.png')
     plt.show()
     
     return model, full_dataset.label_to_idx
