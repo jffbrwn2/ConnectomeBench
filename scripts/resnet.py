@@ -325,7 +325,7 @@ def train_model(data_dir, labels_file, concatenate_images=True, num_epochs=50, b
                 'optimizer_state_dict': optimizer.state_dict(),
                 'val_acc': val_acc,
                 'label_to_idx': full_dataset.label_to_idx
-            }, 'best_connectomics_model.pth')
+            }, 'scripts/output/best_connectomics_model.pth')
             print(f'New best model saved with validation accuracy: {val_acc:.2f}%')
     
     # Plot training curves
@@ -372,15 +372,16 @@ def train_model(data_dir, labels_file, concatenate_images=True, num_epochs=50, b
     return model, full_dataset.label_to_idx
 
 # Inference function
-def predict_mesh(model, mesh_folder, label_to_idx, device, concatenate_images=True):
+def predict_mesh(model, data_dir, proofread_root_id, current_root_id, label_to_idx, device, concatenate_images=True):
     """Predict class for a single mesh"""
     model.eval()
     idx_to_label = {idx: label for label, idx in label_to_idx.items()}
     
     # Load three images
     images = []
+    views = ['front', 'top', 'side']
     for i in range(3):
-        img_path = os.path.join(mesh_folder, f'image_{i}.png')
+        img_path = os.path.join(data_dir, f'{proofread_root_id}_{current_root_id}_{views[i]}.png')
         image = Image.open(img_path).convert('L')
         images.append(np.array(image))
     
@@ -437,9 +438,12 @@ if __name__ == "__main__":
     )
     
     # Example prediction
-    # mesh_folder = "path/to/single/mesh/folder"
+    # data_dir = "scripts/output/mouse_segment_classification_full"
+    # proofread_root_id = "123456"  # Example proofread root id
+    # current_root_id = "789012"    # Example current root id
     # predicted_class, confidence, all_probs = predict_mesh(
-    #     model, mesh_folder, label_to_idx, torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
+    #     model, data_dir, proofread_root_id, current_root_id, label_to_idx, 
+    #     torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
     #     concatenate_images=CONCATENATE_IMAGES
     # )
     # print(f"Predicted class: {predicted_class}, Confidence: {confidence:.4f}")

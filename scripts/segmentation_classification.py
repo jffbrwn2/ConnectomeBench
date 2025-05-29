@@ -14,13 +14,16 @@ import argparse
 
 
 
-def _load_segments_for_classification(neuron_id, root_id, species, data_gen_mode):
-    visualizer = ConnectomeVisualizer(output_dir=f"./output/{species}_segment_classification{data_gen_mode}", species=species)
-    if os.path.exists(f"./output/{species}_segment_classification{data_gen_mode}/{neuron_id}_{root_id}_front.png") and os.path.exists(f"./output/{species}_segment_classification{data_gen_mode}/{neuron_id}_{root_id}_side.png") and os.path.exists(f"./output/{species}_segment_classification{data_gen_mode}/{neuron_id}_{root_id}_top.png"):
+def _load_segments_for_classification(neuron_id, root_id, species, data_gen_mode, seed):
+    visualizer = ConnectomeVisualizer(output_dir=f"scripts/output/{species}_segment_classification{data_gen_mode}_seed{seed}", species=species)
+    if os.path.exists(f"scripts/output/{species}_segment_classification{data_gen_mode}_seed{seed}/{neuron_id}_{root_id}_front.png") and os.path.exists(f"scripts/output/{species}_segment_classification{data_gen_mode}_seed{seed}/{neuron_id}_{root_id}_side.png") and os.path.exists(f"scripts/output/{species}_segment_classification{data_gen_mode}_seed{seed}/{neuron_id}_{root_id}_top.png"):
         print(f"Skipping {neuron_id}_{root_id} because it already exists")
         return None
-    
+
     visualizer.load_neurons([root_id])
+    if len(visualizer.neurons) == 0:
+        print(f"Skipping. Could not load neuron {neuron_id}_{root_id}")
+        return None
     minpt = np.min(visualizer.neurons[0].vertices, axis = 0) 
     maxpt = np.max(visualizer.neurons[0].vertices, axis = 0)
     bbox = Bbox(minpt, maxpt, unit="nm")
@@ -44,6 +47,8 @@ if __name__ == "__main__":
                       help='Number of neurons to process')
     parser.add_argument('--k', type=int, default=5,
                       help='Number of iterations per neuron')
+    parser.add_argument('--seed', type=int, default=42,
+                      help='Seed for random number generator')
 
     args = parser.parse_args()
     
@@ -54,6 +59,7 @@ if __name__ == "__main__":
         models = args.models
         num_neurons = args.num_neurons
         K = args.k
+        seed = args.seed
 
         for data_gen_mode in data_gen_modes:
             for species in all_species:
@@ -61,13 +67,13 @@ if __name__ == "__main__":
                     for model in models:
 
                         if data_gen_mode == "_first_only":
-                            random.seed(84)
+                            random.seed(seed)
                         else:
-                            random.seed(42)
+                            random.seed(seed)
 
-                        os.makedirs(f"./output/{species}_segment_classification{data_gen_mode}", exist_ok=True)
-                        if not os.path.exists(f"./output/{species}_segment_classification{data_gen_mode}/results.csv"):
-                            global_visualizer = ConnectomeVisualizer(output_dir=f"./output/{species}_segment_classification{data_gen_mode}", species=species)
+                        os.makedirs(f"scripts/output/{species}_segment_classification{data_gen_mode}_seed{seed}", exist_ok=True)
+                        if not os.path.exists(f"scripts/output/{species}_segment_classification{data_gen_mode}_seed{seed}/results.csv"):
+                            global_visualizer = ConnectomeVisualizer(output_dir=f"scripts/output/{species}_segment_classification{data_gen_mode}_seed{seed}", species=species)
                             if species == "mouse":
                                 neuron_ids = list(global_visualizer.client.materialize.query_table('proofreading_status_and_strategy')['valid_id'])
                                 
@@ -84,10 +90,10 @@ if __name__ == "__main__":
                                         continue
                                 if data_gen_mode == "_first_only":
                                     first_first_root_id = edit_history.before_root_ids.iloc[0][0]
-                                    data.append((neuron_id, first_first_root_id, species, data_gen_mode))
+                                    data.append((neuron_id, first_first_root_id, species, data_gen_mode, seed))
                                     if len(edit_history.before_root_ids.iloc[0]) > 1:
                                         second_first_root_id = edit_history.before_root_ids.iloc[0][1]
-                                        data.append((neuron_id, second_first_root_id, species, data_gen_mode))
+                                        data.append((neuron_id, second_first_root_id, species, data_gen_mode, seed))
                                 else:
                                     
 
@@ -108,22 +114,22 @@ if __name__ == "__main__":
                                         continue
                                     random_root_ids = random.sample(root_nodes, 3)
                                     for random_root_id in random_root_ids:
-                                        data.append((neuron_id, random_root_id, species, data_gen_mode))
+                                        data.append((neuron_id, random_root_id, species, data_gen_mode, seed))
 
 
                                     first_first_root_id = edit_history.before_root_ids.iloc[0][0]
-                                    data.append((neuron_id, first_first_root_id, species, data_gen_mode))
+                                    data.append((neuron_id, first_first_root_id, species, data_gen_mode, seed))
                                     if len(edit_history.before_root_ids.iloc[0]) > 1:
                                         second_first_root_id = edit_history.before_root_ids.iloc[0][1]
-                                        data.append((neuron_id, second_first_root_id, species, data_gen_mode))
+                                        data.append((neuron_id, second_first_root_id, species, data_gen_mode, seed))
                                     last_root_id = edit_history.after_root_ids.iloc[-1][0]
-                                    data.append((neuron_id, last_root_id, species, data_gen_mode))
+                                    data.append((neuron_id, last_root_id, species, data_gen_mode, seed))
 
                             metadata = []
                             for d in data:
                                 metadata.append({"proofread root id": d[0], "current root id": d[1], "species": d[2]})
                             metadata = pd.DataFrame(metadata)
-                            metadata.to_csv(f"./output/{species}_segment_classification{data_gen_mode}/metadata.csv", index=False)
+                            metadata.to_csv(f"scripts/output/{species}_segment_classification{data_gen_mode}_seed{seed}/metadata.csv", index=False)
 
                             max_workers = 10
                             if max_workers is None:
@@ -134,14 +140,14 @@ if __name__ == "__main__":
                             with multiprocessing.Pool(processes=max_workers, maxtasksperchild=1) as pool:
                                 results_raw = pool.starmap(_load_segments_for_classification, data)
                             results = [r for r in results_raw if r is not None]
-                            if os.path.exists(f"./output/{species}_segment_classification{data_gen_mode}/results.csv"):    
-                                old_results = pd.read_csv(f"./output/{species}_segment_classification{data_gen_mode}/results.csv")
+                            if os.path.exists(f"scripts/output/{species}_segment_classification{data_gen_mode}_seed{seed}/results.csv"):    
+                                old_results = pd.read_csv(f"scripts/output/{species}_segment_classification{data_gen_mode}_seed{seed}/results.csv")
                                 results = old_results + [r for r in results if r not in old_results]
 
                             results = pd.DataFrame(results)
-                            results.to_csv(f"./output/{species}_segment_classification{data_gen_mode}/results.csv", index=False)
+                            results.to_csv(f"scripts/output/{species}_segment_classification{data_gen_mode}_seed{seed}/results.csv", index=False)
                         else:
-                            results = pd.read_csv(f"./output/{species}_segment_classification{data_gen_mode}/results.csv")
+                            results = pd.read_csv(f"scripts/output/{species}_segment_classification{data_gen_mode}_seed{seed}/results.csv")
                         
                         # model = "claude-3-7-sonnet-20250219"
 
@@ -156,7 +162,7 @@ if __name__ == "__main__":
                             species = result['species']
                             minpt = np.array([result['xmin'], result['ymin'], result['zmin']])
                             maxpt = np.array([result['xmax'], result['ymax'], result['zmax']])
-                            segment_images_paths = [f"./output/{species}_segment_classification{data_gen_mode}/{proofread_root_id}_{current_root_id}_front.png", f"./output/{species}_segment_classification{data_gen_mode}/{proofread_root_id}_{current_root_id}_side.png", f"./output/{species}_segment_classification{data_gen_mode}/{proofread_root_id}_{current_root_id}_top.png"]
+                            segment_images_paths = [f"scripts/output/{species}_segment_classification{data_gen_mode}_seed{seed}/{proofread_root_id}_{current_root_id}_front.png", f"scripts/output/{species}_segment_classification{data_gen_mode}_seed{seed}/{proofread_root_id}_{current_root_id}_side.png", f"scripts/output/{species}_segment_classification{data_gen_mode}_seed{seed}/{proofread_root_id}_{current_root_id}_top.png"]
                             segment_classification_prompt = create_segment_classification_prompt(
                                 segment_images_paths,
                                 minpt,
@@ -202,7 +208,7 @@ if __name__ == "__main__":
 
                         final_results = pd.DataFrame(final_results)
                         with_description = "_without_description" if not with_description else ""
-                        final_results.to_csv(f"./output/{species}_segment_classification{data_gen_mode}/{model}_analysis_results{with_description}_K{K}.csv", index=False)
+                        final_results.to_csv(f"scripts/output/{species}_segment_classification{data_gen_mode}_seed{seed}/{model}_analysis_results{with_description}_K{K}.csv", index=False)
 
     except:
         import pdb; pdb.post_mortem()
