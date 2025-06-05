@@ -12,10 +12,11 @@ import os
 from collections import Counter
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+import json
+import random
 # Custom Dataset for Connectomics Data
 class ConnectomicsDataset(Dataset):
-    def __init__(self, data_dir, labels_file, transform=None, concatenate_images=True):
+    def __init__(self, data_dir, labels_file, split_or_merge_correction,transform=None, concatenate_images=True):
         """
         Dataset for connectomics mesh classification
         
@@ -29,37 +30,112 @@ class ConnectomicsDataset(Dataset):
         self.data_dir = data_dir
         self.transform = transform
         self.concatenate_images = concatenate_images
-        
+        self.split_or_merge_correction = split_or_merge_correction
         # Load labels
-        import pandas as pd
-        self.labels_df = pd.read_csv(labels_file)
-        self.proofread_root_ids = self.labels_df['proofread root id'].tolist()
-        self.current_root_ids = self.labels_df['current root id'].tolist()
-        self.labels = self.labels_df['human answer 1'].tolist()
-        
+        if split_or_merge_correction == "split_comparison":
+            with open(labels_file, 'r') as f:
+                annotations = json.load(f)
+
+            self.data = [(x['root_id_requires_split'], x['root_id_does_not_require_split'], x['root_id_requires_split_merge_coords']) for x in annotations]
+            self.labels = [0] * len(self.data)
+            self.labels[:len(self.labels)//2] = 1
+            random.shuffle(self.labels)
+        elif split_or_merge_correction == "split_identification":
+            with open(labels_file, 'r') as f:
+                annotations = json.load(f)
+
+            self.data = [(x['root_id_requires_split'], f"{x['root_id_requires_split']}_{x['root_id_does_not_require_split']}_{x['root_id_requires_split_merge_coords']}") for x in annotations] +[(x['root_id_does_not_require_split'], f"{x['root_id_requires_split']}_{x['root_id_does_not_require_split']}_{x['root_id_requires_split_merge_coords']}") for x in annotations]
+            self.labels = [True] * len(self.data) + [False] * len(self.data)
+        elif split_or_merge_correction == "merge_comparison":
+            with open(labels_file, 'r') as f:
+                annotations = json.load(f)
+
+            self.data = [x['prompt_options'] for x in annotations if len(x['prompt_options']) == 2]
+            self.labels = [x['options_presented_ids'].index(x['expected_choice_ids'][0]) for x in annotations if len(x['prompt_options']) == 2]
+        elif split_or_merge_correction == "merge_identification":
+            with open(labels_file, 'r') as f:
+                annotations = json.load(f)
+
+            self.data = [prompt_option for x in annotations for prompt_option in x['prompt_options']]
+            self.labels = [x["options_presented_ids"].index(prompt_option["id"]) for x in annotations for prompt_option in x['prompt_options']] 
+        else:
+            raise ValueError(f"Invalid split_or_merge_correction: {split_or_merge_correction}")
         # Create label to index mapping
         self.label_to_idx = {label: idx for idx, label in enumerate(sorted(set(self.labels)))}
         self.idx_to_label = {idx: label for label, idx in self.label_to_idx.items()}
         self.num_classes = len(self.label_to_idx)
         
     def __len__(self):
-        return len(self.proofread_root_ids)
+        return len(self.data)
     
     def __getitem__(self, idx):
-        proofread_root_id = self.proofread_root_ids[idx]
-        current_root_id = self.current_root_ids[idx]
-        label = self.labels[idx]
-        label_idx = self.label_to_idx[label]
-        
-        # Load three images for this mesh
-        mesh_folder = os.path.join(self.data_dir)
-        images = []
-        views = ['front', 'top', 'side']
-        for i in range(3):
-            img_path = os.path.join(mesh_folder, f'{proofread_root_id}_{current_root_id}_{views[i]}.png')  # Adjust filename pattern
-            image = Image.open(img_path).convert('L')  # Convert to grayscale
-            images.append(np.array(image))
-        
+        if self.split_or_merge_correction == "split_comparison":
+            root_id_requires_split, root_id_does_not_require_split, merge_coords = self.data[idx]
+
+            label = self.labels[idx]
+            label_idx = self.label_to_idx[label]
+            
+            # Load three images for this mesh
+            mesh_folder = os.path.join(self.data_dir)
+            images = []
+            views = ['front', 'top', 'side']
+            if label == 0:
+                for i in range(3):
+                    img_path = os.path.join(mesh_folder, f'base_{root_id_requires_split}_{root_id_does_not_require_split}_{merge_coords[idx]}/base_{root_id_requires_split}_zoomed_{views[i]}.png')  # Adjust filename pattern
+                    image = Image.open(img_path).convert('L')  # Convert to grayscale
+                    images.append(np.array(image))
+                for i in range(3):
+                    img_path = os.path.join(mesh_folder, f'base_{root_id_requires_split}_{root_id_does_not_require_split}_{merge_coords[idx]}/base_{root_id_does_not_require_split}_zoomed_{views[i]}.png')  # Adjust filename pattern
+                    image = Image.open(img_path).convert('L')  # Convert to grayscale
+                    images.append(np.array(image))
+            else:
+                for i in range(3):
+                    img_path = os.path.join(mesh_folder, f'base_{root_id_requires_split}_{root_id_does_not_require_split}_{merge_coords[idx]}/base_{root_id_does_not_require_split}_zoomed_{views[i]}.png')  # Adjust filename pattern
+                    image = Image.open(img_path).convert('L')  # Convert to grayscale
+                    images.append(np.array(image))
+                for i in range(3):
+                    img_path = os.path.join(mesh_folder, f'base_{root_id_requires_split}_{root_id_does_not_require_split}_{merge_coords[idx]}/base_{root_id_requires_split}_zoomed_{views[i]}.png')  # Adjust filename pattern
+                    image = Image.open(img_path).convert('L')  # Convert to grayscale
+                    images.append(np.array(image))
+        elif self.split_or_merge_correction == "split_identification":
+            root_id, folder_extension = self.data[idx]
+            label = self.labels[idx]
+            label_idx = self.label_to_idx[label]
+            
+            # Load three images for this mesh
+            mesh_folder = os.path.join(self.data_dir)
+            images = []
+            views = ['front', 'top', 'side']
+            for i in range(3):
+                img_path = os.path.join(mesh_folder, f'base_{folder_extension}/base_{root_id}_zoomed_{views[i]}.png')  # Adjust filename pattern
+                image = Image.open(img_path).convert('L')  # Convert to grayscale
+                images.append(np.array(image))
+        elif self.split_or_merge_correction == "merge_comparison":
+            prompt_options = self.data[idx]
+            label = self.labels[idx]
+            label_idx = self.label_to_idx[label]
+            images = []
+            views = ['front', 'top', 'side']
+            for prompt_option in prompt_options:
+                for view in views:
+
+
+                    image = Image.open(prompt_option["paths"]["zoomed"][view]).convert('L')  # Convert to grayscale
+                    images.append(np.array(image))
+
+        elif self.split_or_merge_correction == "merge_identification":
+            prompt_option_paths = self.data[idx]
+            label = self.labels[idx]
+            label_idx = self.label_to_idx[label]
+            images = []
+            views = ['front', 'top', 'side']
+
+            for view in views:
+                image = Image.open(prompt_option_paths["paths"]["zoomed"][view]).convert('L')
+                images.append(np.array(image))
+
+
+            
         if self.concatenate_images:
             # Concatenate horizontally: 1024 x 3072
             combined_image = np.concatenate(images, axis=1)
@@ -81,21 +157,26 @@ class ConnectomicsDataset(Dataset):
 
 # Custom ResNet for different input sizes
 class ConnectomicsResNet(nn.Module):
-    def __init__(self, num_classes=5, concatenate_images=True, pretrained=True):
+    def __init__(self, num_classes=5, concatenate_images=True, pretrained=True, split_or_merge_correction=None):
         super(ConnectomicsResNet, self).__init__()
         
-        if concatenate_images:
-            # For concatenated images (1024 x 3072)
-            self.resnet = models.resnet50(pretrained=pretrained)
-            # Modify first conv layer to handle different input size
+        # if concatenate_images:
+        #     # For concatenated images (1024 x 3072)
+        self.resnet = models.resnet50(pretrained=pretrained)
+        # Modify first conv layer to handle different input size
+        if split_or_merge_correction == "merge_comparison" or split_or_merge_correction == "split_comparison":
+            self.resnet.conv1 = nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        elif split_or_merge_correction == "split_identification" or split_or_merge_correction == "merge_identification":
             self.resnet.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
-            # Add adaptive pooling to handle non-standard input size
-            self.resnet.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        else:
-            # For stacked images (3 x 1024 x 1024)
-            self.resnet = models.resnet50(pretrained=pretrained)
-            # Keep original architecture but modify for 3-channel input
-            self.resnet.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        else: 
+            raise ValueError(f"Invalid split_or_merge_correction: {self.split_or_merge_correction}")
+        # Add adaptive pooling to handle non-standard input size
+        self.resnet.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        # else:
+        #     # For stacked images (3 x 1024 x 1024)
+        #     self.resnet = models.resnet50(pretrained=pretrained)
+        #     # Keep original architecture but modify for 3-channel input
+        #     self.resnet.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         
         # Replace final layer
         num_features = self.resnet.fc.in_features
@@ -235,7 +316,7 @@ def validate_epoch(model, dataloader, criterion, device):
     return epoch_loss, epoch_acc, all_preds, all_targets
 
 # Main training loop
-def train_model(data_dir, labels_file, concatenate_images=True, num_epochs=50, batch_size=16, learning_rate=1e-4):
+def train_model(data_dir, labels_file, split_or_merge_correction, concatenate_images=True, num_epochs=50, batch_size=16, learning_rate=1e-4):
     # Set device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Using device: {device}')
@@ -244,7 +325,7 @@ def train_model(data_dir, labels_file, concatenate_images=True, num_epochs=50, b
     train_transform, val_transform = get_transforms(concatenate_images)
     
     # Create datasets
-    full_dataset = ConnectomicsDataset(data_dir, labels_file, transform=train_transform, 
+    full_dataset = ConnectomicsDataset(data_dir, labels_file, split_or_merge_correction, transform=train_transform, 
                                      concatenate_images=concatenate_images)
 
     # Split dataset (80-20 train-val split)
@@ -264,7 +345,8 @@ def train_model(data_dir, labels_file, concatenate_images=True, num_epochs=50, b
     
     # Create model
     model = ConnectomicsResNet(num_classes=full_dataset.num_classes, 
-                             concatenate_images=concatenate_images).to(device)
+                             concatenate_images=concatenate_images,
+                             split_or_merge_correction=split_or_merge_correction).to(device)
     
     # Loss function with class weights
     class_weights = get_class_weights(full_dataset).to(device)
@@ -418,9 +500,9 @@ def predict_mesh(model, data_dir, proofread_root_id, current_root_id, label_to_i
 # Example usage
 if __name__ == "__main__":
     # Set up your data paths
-    DATA_DIR = "scripts/output/mouse_segment_classification_full"  # Each mesh should have its own folder with 3 images
-    LABELS_FILE = "scripts/output/mouse_segment_classification_full/human_analysis_results.csv"  # CSV with mesh_id,label columns
-    
+    DATA_DIR = "scripts/output/mouse_merge_2048nm"
+    LABELS_FILE = "scripts/output/mouse_merge_2048nm/merge_comparison_results_20250514_152329.json"
+    SPLIT_OR_MERGE_CORRECTION = "merge_comparison"
     # Choose approach: concatenate images or stack as channels
     CONCATENATE_IMAGES = False  # Set to False to use 3-channel stacking approach
     
@@ -428,6 +510,7 @@ if __name__ == "__main__":
     model, label_to_idx = train_model(
         data_dir=DATA_DIR,
         labels_file=LABELS_FILE,
+        split_or_merge_correction=SPLIT_OR_MERGE_CORRECTION,
         concatenate_images=CONCATENATE_IMAGES,
         num_epochs=50,
         batch_size=16,  # Adjust based on your GPU memory
