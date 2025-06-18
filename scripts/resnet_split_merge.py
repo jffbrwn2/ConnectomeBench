@@ -36,15 +36,15 @@ class ConnectomicsDataset(Dataset):
             with open(labels_file, 'r') as f:
                 annotations = json.load(f)
 
-            self.data = [(x['root_id_requires_split'], x['root_id_does_not_require_split'], x['root_id_requires_split_merge_coords']) for x in annotations]
+            self.data = [(x['root_id_requires_split'], x['root_id_does_not_require_split'], x['merge_coords']) for x in annotations]
             self.labels = [0] * len(self.data)
-            self.labels[:len(self.labels)//2] = 1
+            self.labels[:len(self.labels)//2] = [1] * (len(self.labels)//2)
             random.shuffle(self.labels)
         elif split_or_merge_correction == "split_identification":
             with open(labels_file, 'r') as f:
                 annotations = json.load(f)
-
-            self.data = [(x['root_id_requires_split'], f"{x['root_id_requires_split']}_{x['root_id_does_not_require_split']}_{x['root_id_requires_split_merge_coords']}") for x in annotations] +[(x['root_id_does_not_require_split'], f"{x['root_id_requires_split']}_{x['root_id_does_not_require_split']}_{x['root_id_requires_split_merge_coords']}") for x in annotations]
+            
+            self.data = [(x['root_id_requires_split'], f"{"_".join([str(x) for x in sorted([x['root_id_requires_split'],x['root_id_does_not_require_split']])])}_{x['merge_coords']}") for x in annotations] +[(x['root_id_does_not_require_split'], f"{"_".join([str(x) for x in sorted([x['root_id_requires_split'],x['root_id_does_not_require_split']])])}_{x['merge_coords']}") for x in annotations]
             self.labels = [True] * len(self.data) + [False] * len(self.data)
         elif split_or_merge_correction == "merge_comparison":
             with open(labels_file, 'r') as f:
@@ -81,20 +81,20 @@ class ConnectomicsDataset(Dataset):
             views = ['front', 'top', 'side']
             if label == 0:
                 for i in range(3):
-                    img_path = os.path.join(mesh_folder, f'base_{root_id_requires_split}_{root_id_does_not_require_split}_{merge_coords[idx]}/base_{root_id_requires_split}_zoomed_{views[i]}.png')  # Adjust filename pattern
+                    img_path = os.path.join(mesh_folder, f'base_{"_".join([str(x) for x in sorted([root_id_requires_split,root_id_does_not_require_split])])}_{merge_coords}/base_{root_id_requires_split}_zoomed_{views[i]}.png')  # Adjust filename pattern
                     image = Image.open(img_path).convert('L')  # Convert to grayscale
                     images.append(np.array(image))
                 for i in range(3):
-                    img_path = os.path.join(mesh_folder, f'base_{root_id_requires_split}_{root_id_does_not_require_split}_{merge_coords[idx]}/base_{root_id_does_not_require_split}_zoomed_{views[i]}.png')  # Adjust filename pattern
+                    img_path = os.path.join(mesh_folder, f'base_{"_".join([str(x) for x in sorted([root_id_requires_split,root_id_does_not_require_split])])}_{merge_coords}/base_{root_id_does_not_require_split}_zoomed_{views[i]}.png')  # Adjust filename pattern
                     image = Image.open(img_path).convert('L')  # Convert to grayscale
                     images.append(np.array(image))
             else:
                 for i in range(3):
-                    img_path = os.path.join(mesh_folder, f'base_{root_id_requires_split}_{root_id_does_not_require_split}_{merge_coords[idx]}/base_{root_id_does_not_require_split}_zoomed_{views[i]}.png')  # Adjust filename pattern
+                    img_path = os.path.join(mesh_folder, f'base_{"_".join([str(x) for x in sorted([root_id_requires_split,root_id_does_not_require_split])])}_{merge_coords}/base_{root_id_does_not_require_split}_zoomed_{views[i]}.png')  # Adjust filename pattern
                     image = Image.open(img_path).convert('L')  # Convert to grayscale
                     images.append(np.array(image))
                 for i in range(3):
-                    img_path = os.path.join(mesh_folder, f'base_{root_id_requires_split}_{root_id_does_not_require_split}_{merge_coords[idx]}/base_{root_id_requires_split}_zoomed_{views[i]}.png')  # Adjust filename pattern
+                    img_path = os.path.join(mesh_folder, f'base_{"_".join([str(x) for x in sorted([root_id_requires_split,root_id_does_not_require_split])])}_{merge_coords}/base_{root_id_requires_split}_zoomed_{views[i]}.png')  # Adjust filename pattern
                     image = Image.open(img_path).convert('L')  # Convert to grayscale
                     images.append(np.array(image))
         elif self.split_or_merge_correction == "split_identification":
@@ -500,9 +500,9 @@ def predict_mesh(model, data_dir, proofread_root_id, current_root_id, label_to_i
 # Example usage
 if __name__ == "__main__":
     # Set up your data paths
-    DATA_DIR = "scripts/output/mouse_merge_2048nm"
-    LABELS_FILE = "scripts/output/mouse_merge_2048nm/merge_comparison_results_20250514_152329.json"
-    SPLIT_OR_MERGE_CORRECTION = "merge_comparison"
+    DATA_DIR = "scripts/output/mouse_split"
+    LABELS_FILE = "scripts/output/mouse_split/split_comparison_results_20250617_114754.json"
+    SPLIT_OR_MERGE_CORRECTION = "split_comparison"
     # Choose approach: concatenate images or stack as channels
     CONCATENATE_IMAGES = False  # Set to False to use 3-channel stacking approach
     
