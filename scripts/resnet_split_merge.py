@@ -448,7 +448,7 @@ def train_single_fold(train_dataset, val_dataset, full_dataset, fold_idx, data_d
     plt.savefig(os.path.join(output_dir, f'confusion_matrix_fold_{fold_idx + 1}.png'))
     plt.close()
     
-    return model, val_acc, val_preds, val_targets, train_losses, val_losses
+    return model, best_val_acc, val_preds, val_targets, train_losses, val_losses
 
 # Main training loop with cross validation
 def train_model_cv(data_dir, labels_file, split_or_merge_correction, concatenate_images=True, 
@@ -510,12 +510,15 @@ def train_model_cv(data_dir, labels_file, split_or_merge_correction, concatenate
     fold_accuracies = [result['val_acc'] for result in fold_results]
     mean_acc = np.mean(fold_accuracies)
     std_acc = np.std(fold_accuracies)
+    best_fold_idx = np.argmax(fold_accuracies)
+    best_fold_accuracy = fold_accuracies[best_fold_idx]
     
     print(f'\n{"="*60}')
     print(f'CROSS VALIDATION RESULTS')
     print(f'{"="*60}')
     print(f'Mean validation accuracy: {mean_acc:.2f}% ± {std_acc:.2f}%')
     print(f'Individual fold accuracies: {[f"{acc:.2f}%" for acc in fold_accuracies]}')
+    print(f'Best fold: {best_fold_idx + 1} with accuracy: {best_fold_accuracy:.2f}%')
     
     # Overall classification report
     print(f'\nOverall Classification Report:')
@@ -558,13 +561,45 @@ def train_model_cv(data_dir, labels_file, split_or_merge_correction, concatenate
         'std_accuracy': std_acc,
         'all_val_preds': all_val_preds,
         'all_val_targets': all_val_targets,
-        'label_to_idx': full_dataset.label_to_idx
+        'label_to_idx': full_dataset.label_to_idx,
+        'best_fold_idx': best_fold_idx,
+        'best_fold_accuracy': best_fold_accuracy
     }
     
     torch.save(cv_results, os.path.join(output_dir, 'cross_validation_results.pth'))
     
+    # Save a summary file with best fold accuracies
+    summary_data = {
+        'fold_accuracies': fold_accuracies,
+        'mean_accuracy': mean_acc,
+        'std_accuracy': std_acc,
+        'best_fold_idx': best_fold_idx,
+        'best_fold_accuracy': best_fold_accuracy,
+        'fold_details': []
+    }
+    
+    for i, result in enumerate(fold_results):
+        summary_data['fold_details'].append({
+            'fold': i + 1,
+            'best_validation_accuracy': result['val_acc'],
+            'model_path': f'best_model_fold_{i + 1}.pth'
+        })
+    
+    # Save summary as JSON for easy reading
+    with open(os.path.join(output_dir, 'cross_validation_summary.json'), 'w') as f:
+        json.dump(summary_data, f, indent=2)
+    
+    # Also save as a simple text file for quick reference
+    with open(os.path.join(output_dir, 'fold_accuracies.txt'), 'w') as f:
+        f.write("Cross Validation Results Summary\n")
+        f.write("=" * 40 + "\n")
+        f.write(f"Mean accuracy: {mean_acc:.2f}% ± {std_acc:.2f}%\n")
+        f.write(f"Best fold: {best_fold_idx + 1} with accuracy: {best_fold_accuracy:.2f}%\n\n")
+        f.write("Individual fold accuracies:\n")
+        for i, acc in enumerate(fold_accuracies):
+            f.write(f"Fold {i + 1}: {acc:.2f}%\n")
+    
     # Return the best model from the best performing fold
-    best_fold_idx = np.argmax(fold_accuracies)
     best_model_path = os.path.join(output_dir, f'best_model_fold_{best_fold_idx + 1}.pth')
     best_checkpoint = torch.load(best_model_path)
     
@@ -573,7 +608,7 @@ def train_model_cv(data_dir, labels_file, split_or_merge_correction, concatenate
                                   split_or_merge_correction=split_or_merge_correction).to(device)
     best_model.load_state_dict(best_checkpoint['model_state_dict'])
     
-    print(f'\nBest model from fold {best_fold_idx + 1} with accuracy {fold_accuracies[best_fold_idx]:.2f}%')
+    print(f'\nBest model from fold {best_fold_idx + 1} with accuracy {best_fold_accuracy:.2f}%')
     
     return best_model, full_dataset.label_to_idx, cv_results
 
