@@ -127,25 +127,45 @@ class ConnectomicsDataset(Dataset):
             self.data = []
             self.labels = []
 
-            # Randomly permute annotations to avoid bias
-            task_annotations = task_annotations.copy()
-            random.shuffle(task_annotations)
-            
-            # Track operation_ids we've already seen to prevent data leakage
-            seen_operation_ids = set()
-            
+            # Group annotations by operation_id
+            operation_groups = {}
             for ann in task_annotations:
-                operation_id = ann.get('operation_id', 'unknown')
-                
-                # Only add if we haven't seen this operation_id before
-                if operation_id not in seen_operation_ids:
-                    # Check if this neuron is the correct choice
+                op_id = ann.get('operation_id', 'unknown')
+                if op_id not in operation_groups:
+                    operation_groups[op_id] = []
+                operation_groups[op_id].append(ann)
+            
+            # Filter to only include operation_ids with exactly 2 annotations (positive + negative)
+            valid_operations = {op_id: group for op_id, group in operation_groups.items() if len(group) == 2}
+            
+            # Separate positive and negative examples
+            positive_examples = []
+            negative_examples = []
+            
+            for op_id, group in valid_operations.items():
+                for ann in group:
                     is_correct = ann.get("is_correct_merge", False)
-                    self.data.append(ann)  # Store the full annotation for image paths
-                    self.labels.append(is_correct)
-                    
-                    # Mark this operation_id as seen
-                    seen_operation_ids.add(operation_id)
+                    if is_correct:
+                        positive_examples.append(ann)
+                    else:
+                        negative_examples.append(ann)
+            
+            # Randomly shuffle both lists
+            random.shuffle(positive_examples)
+            random.shuffle(negative_examples)
+            
+            # Take the minimum of the two to ensure balanced pairs
+            min_count = min(len(positive_examples), len(negative_examples))
+            
+            # Add balanced pairs
+            for i in range(min_count):
+                # Add positive example
+                self.data.append(positive_examples[i])
+                self.labels.append(True)
+                
+                # Add negative example
+                self.data.append(negative_examples[i])
+                self.labels.append(False)
 
 
         else:
