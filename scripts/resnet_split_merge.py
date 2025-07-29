@@ -23,7 +23,7 @@ class ConnectomicsDataset(Dataset):
         
         Args:
             data_dir: Directory containing mesh folders
-            labels_file: Path to CSV file with proofread root id,current root id,species,xmin,ymin,zmin,xmax,ymax,zmax,unit,human answer 1,confidence 1 columns
+            labels_file: Path to JSON file with unified result structure
             transform: Image transformations
             concatenate_images: If True, concatenate 3 images horizontally (1024x3072)
                                If False, stack as channels (3, 1024, 1024)
@@ -32,35 +32,112 @@ class ConnectomicsDataset(Dataset):
         self.transform = transform
         self.concatenate_images = concatenate_images
         self.split_or_merge_correction = split_or_merge_correction
-        # Load labels
+        
+        # Load labels from unified JSON structure
+        with open(labels_file, 'r') as f:
+            annotations = json.load(f)
+
+        # Filter annotations by task
+        task_annotations = [x for x in annotations if x.get('task') == split_or_merge_correction]
+        
         if split_or_merge_correction == "split_comparison":
-            with open(labels_file, 'r') as f:
-                annotations = json.load(f)
 
-            self.data = [(x['root_id_requires_split'], x['root_id_does_not_require_split'], x['merge_coords']) for x in annotations]
-            self.labels = [0] * len(self.data)
-            self.labels[:len(self.labels)//2] = [1] * (len(self.labels)//2)
-            random.shuffle(self.labels)
-        elif split_or_merge_correction == "split_identification":
-            with open(labels_file, 'r') as f:
-                annotations = json.load(f)
+            # For split comparison, we need pairs of neurons
+            self.data = []
+            self.labels = []
             
-            self.data = [(x['root_id_requires_split'], f"{"_".join([str(x) for x in sorted([x['root_id_requires_split'],x['root_id_does_not_require_split']])])}_{x['merge_coords']}") for x in annotations] +[(x['root_id_does_not_require_split'], f"{"_".join([str(x) for x in sorted([x['root_id_requires_split'],x['root_id_does_not_require_split']])])}_{x['merge_coords']}") for x in annotations]
-            self.labels = [True] * len(self.data) + [False] * len(self.data)
+            # Group by operation_id to find pairs
+      
+            for ann in task_annotations:
+                # Find the positive and negative examples
+                positive_examples = ann.get('root_id_requires_split')
+                negative_examples = ann.get('root_id_does_not_require_split')
+                
+                if (len(positive_examples) > 0 and len(negative_examples) > 0) and (positive_examples != negative_examples):
+                    pos = positive_examples
+                    neg = negative_examples
+                    
+                    # Randomly choose one ordering to avoid data leakage
+                    if random.random() < 0.5:
+                        # Positive example first
+                        self.data.append((
+                            pos,
+                            neg, 
+                            ann.get('merge_coords'),
+                            ann.get('prompt_options')
+                        ))
+                        self.labels.append(0)  # Positive example first
+                    else:
+                        # Negative example first
+                        self.data.append((
+                            neg,
+                            pos, 
+                            ann.get('merge_coords'),
+                            ann.get('prompt_options')
+                        ))
+                        self.labels.append(1)  # Negative example first
+            
+        elif split_or_merge_correction == "split_identification":
+
+            
+            # For split identification, each annotation is a single neuron
+            self.data = []
+            self.labels = []
+
+            for ann in task_annotations:
+                neuron_id = ann.get('id')
+                merge_coords = ann.get('merge_coords')
+                is_split = ann.get('is_split', False)
+                
+                if len(neuron_id) > 0 and len(merge_coords) > 0:
+                    # Create folder extension for image path
+                    folder_extension = f"{merge_coords}"
+                    self.data.append((neuron_id, merge_coords, ann.get('prompt_options')))
+                    self.labels.append(is_split)
+
         elif split_or_merge_correction == "merge_comparison":
-            with open(labels_file, 'r') as f:
-                annotations = json.load(f)
+            # For merge comparison, we need the prompt options
+            # I have to update this code for the new format of the json file
+            self.data = []
+            self.labels = []
+            
+            # Group by operation_id
+            operation_groups = {}
+            for ann in task_annotations:
+               
+                prompt_options = ann.get('prompt_options', [])
+                expected_choice_ids = ann.get('correct_answer', [])
+                if len(prompt_options) < 2:
+                    continue
 
-            self.data = [x['prompt_options'] for x in annotations if len(x['prompt_options']) == 2]
-            self.labels = [x['options_presented_ids'].index(x['expected_choice_ids'][0]) for x in annotations if len(x['prompt_options']) == 2]
+                self.data.append(prompt_options)
+                # Find the index of the correct choice
+                if isinstance(expected_choice_ids, list) and expected_choice_ids:
+                    correct_id = expected_choice_ids[0]
+                    option_ids = [opt.get('id') for opt in prompt_options]
+                    try:
+                        label = option_ids.index(correct_id)
+                    except ValueError:
+                        raise ValueError(f"Correct ID {correct_id} not found in prompt options")
+                self.labels.append(label)
+
+                        
         elif split_or_merge_correction == "merge_identification":
-            with open(labels_file, 'r') as f:
-                annotations = json.load(f)
+            # For merge identification, each annotation is a single option
+            self.data = []
+            self.labels = []
 
-            self.data = [prompt_option for x in annotations for prompt_option in x['prompt_options']]
-            self.labels = [x["options_presented_ids"].index(prompt_option["id"]) for x in annotations for prompt_option in x['prompt_options']] 
+            for ann in task_annotations:
+
+                # Check if this neuron is the correct choice
+                is_correct =  ann.get("is_correct_merge", False)
+                self.data.append(ann)  # Store the full annotation for image paths
+                self.labels.append(is_correct)
+
+
         else:
             raise ValueError(f"Invalid split_or_merge_correction: {split_or_merge_correction}")
+            
         # Create label to index mapping
         self.label_to_idx = {label: idx for idx, label in enumerate(sorted(set(self.labels)))}
         self.idx_to_label = {idx: label for label, idx in self.label_to_idx.items()}
@@ -71,35 +148,63 @@ class ConnectomicsDataset(Dataset):
     
     def __getitem__(self, idx):
         if self.split_or_merge_correction == "split_comparison":
-            root_id_requires_split, root_id_does_not_require_split, merge_coords = self.data[idx]
+
+            root_id_requires_split, root_id_does_not_require_split, merge_coords, prompt_options = self.data[idx]
 
             label = self.labels[idx]
             label_idx = self.label_to_idx[label]
-            
-            # Load three images for this mesh
-            mesh_folder = os.path.join(self.data_dir)
             images = []
             views = ['front', 'top', 'side']
+
             if label == 0:
-                for i in range(3):
-                    img_path = os.path.join(mesh_folder, f'base_{"_".join([str(x) for x in sorted([root_id_requires_split,root_id_does_not_require_split])])}_{merge_coords}/base_{root_id_requires_split}_zoomed_{views[i]}.png')  # Adjust filename pattern
-                    image = Image.open(img_path).convert('L')  # Convert to grayscale
-                    images.append(np.array(image))
-                for i in range(3):
-                    img_path = os.path.join(mesh_folder, f'base_{"_".join([str(x) for x in sorted([root_id_requires_split,root_id_does_not_require_split])])}_{merge_coords}/base_{root_id_does_not_require_split}_zoomed_{views[i]}.png')  # Adjust filename pattern
-                    image = Image.open(img_path).convert('L')  # Convert to grayscale
-                    images.append(np.array(image))
+                for prompt_option in prompt_options:
+                    for view in views:
+                        image = Image.open(prompt_option["paths"]["zoomed"][view]).convert('L')  # Convert to grayscale
+                        images.append(np.array(image))
             else:
-                for i in range(3):
-                    img_path = os.path.join(mesh_folder, f'base_{"_".join([str(x) for x in sorted([root_id_requires_split,root_id_does_not_require_split])])}_{merge_coords}/base_{root_id_does_not_require_split}_zoomed_{views[i]}.png')  # Adjust filename pattern
-                    image = Image.open(img_path).convert('L')  # Convert to grayscale
-                    images.append(np.array(image))
-                for i in range(3):
-                    img_path = os.path.join(mesh_folder, f'base_{"_".join([str(x) for x in sorted([root_id_requires_split,root_id_does_not_require_split])])}_{merge_coords}/base_{root_id_requires_split}_zoomed_{views[i]}.png')  # Adjust filename pattern
-                    image = Image.open(img_path).convert('L')  # Convert to grayscale
-                    images.append(np.array(image))
+                for prompt_option in prompt_options[::-1]:
+                    for view in views:
+                        image = Image.open(prompt_option["paths"]["zoomed"][view]).convert('L')  # Convert to grayscale
+                        images.append(np.array(image))
+
+
+
+            # for prompt_option in prompt_options:
+                
+            #     for view in views:
+            #         image = Image.open(prompt_option["paths"]["zoomed"][view]).convert('L')  # Convert to grayscale
+            #         images.append(np.array(image))
+
+            # root_id_requires_split, root_id_does_not_require_split, merge_coords = self.data[idx]
+
+            # label = self.labels[idx]
+            # label_idx = self.label_to_idx[label]
+            
+            # # Load three images for this mesh
+            # mesh_folder = os.path.join(self.data_dir)
+            # images = []
+            # views = ['front', 'top', 'side']
+            # if label == 0:
+            #     for i in range(3):
+            #         img_path = os.path.join(mesh_folder, f'base_{root_id_requires_split}_{root_id_does_not_require_split}_{merge_coords}/base_{root_id_requires_split}_zoomed_{views[i]}.png')
+            #         image = Image.open(img_path).convert('L')  # Convert to grayscale
+            #         images.append(np.array(image))
+            #     for i in range(3):
+            #         img_path = os.path.join(mesh_folder, f'base_{root_id_requires_split}_{root_id_does_not_require_split}_{merge_coords}/base_{root_id_does_not_require_split}_zoomed_{views[i]}.png')
+            #         image = Image.open(img_path).convert('L')  # Convert to grayscale
+            #         images.append(np.array(image))
+            # else:
+            #     for i in range(3):
+            #         img_path = os.path.join(mesh_folder, f'base_{root_id_requires_split}_{root_id_does_not_require_split}_{merge_coords}/base_{root_id_does_not_require_split}_zoomed_{views[i]}.png')
+            #         image = Image.open(img_path).convert('L')  # Convert to grayscale
+            #         images.append(np.array(image))
+            #     for i in range(3):
+            #         img_path = os.path.join(mesh_folder, f'base_{root_id_requires_split}_{root_id_does_not_require_split}_{merge_coords}/base_{root_id_requires_split}_zoomed_{views[i]}.png')
+            #         image = Image.open(img_path).convert('L')  # Convert to grayscale
+            #         images.append(np.array(image))
+                    
         elif self.split_or_merge_correction == "split_identification":
-            root_id, folder_extension = self.data[idx]
+            root_id, merge_coords, prompt_options = self.data[idx]
             label = self.labels[idx]
             label_idx = self.label_to_idx[label]
             
@@ -107,10 +212,14 @@ class ConnectomicsDataset(Dataset):
             mesh_folder = os.path.join(self.data_dir)
             images = []
             views = ['front', 'top', 'side']
-            for i in range(3):
-                img_path = os.path.join(mesh_folder, f'base_{folder_extension}/base_{root_id}_zoomed_{views[i]}.png')  # Adjust filename pattern
-                image = Image.open(img_path).convert('L')  # Convert to grayscale
-                images.append(np.array(image))
+            for prompt_option in prompt_options:
+                if prompt_option.get('id') == root_id:
+                    for view in views:
+                        image = Image.open(prompt_option["paths"]["zoomed"][view]).convert('L')  # Convert to grayscale
+                        images.append(np.array(image))
+                    break
+
+                
         elif self.split_or_merge_correction == "merge_comparison":
             prompt_options = self.data[idx]
             label = self.labels[idx]
@@ -119,24 +228,36 @@ class ConnectomicsDataset(Dataset):
             views = ['front', 'top', 'side']
             for prompt_option in prompt_options:
                 for view in views:
-
-
                     image = Image.open(prompt_option["paths"]["zoomed"][view]).convert('L')  # Convert to grayscale
                     images.append(np.array(image))
 
         elif self.split_or_merge_correction == "merge_identification":
-            prompt_option_paths = self.data[idx]
+            annotation = self.data[idx]  # Full annotation from unified structure
             label = self.labels[idx]
             label_idx = self.label_to_idx[label]
             images = []
             views = ['front', 'top', 'side']
 
-            for view in views:
-                image = Image.open(prompt_option_paths["paths"]["zoomed"][view]).convert('L')
-                images.append(np.array(image))
-
-
+            # Find the option data for this neuron
+            neuron_id = annotation.get('id')
+            prompt_options = annotation.get('prompt_options', [])
             
+            # Find the matching option
+            option_data = None
+            for opt in prompt_options:
+                if opt.get('id') == neuron_id:
+                    option_data = opt
+                    break
+            
+            if option_data:
+                for view in views:
+                    image = Image.open(option_data["paths"]["zoomed"][view]).convert('L')
+                    images.append(np.array(image))
+            else:
+                # Fallback: create empty grayscale images if option not found
+                for view in views:
+                    images.append(np.zeros((1024, 1024), dtype=np.uint8))
+
         if self.concatenate_images:
             # Concatenate horizontally: 1024 x 3072
             combined_image = np.concatenate(images, axis=1)
@@ -475,6 +596,7 @@ def train_model_cv(data_dir, labels_file, split_or_merge_correction, concatenate
     
     print(f'Starting {n_folds}-fold cross validation...')
     
+
     for fold_idx, (train_indices, val_indices) in enumerate(skf.split(range(len(full_dataset)), labels)):
         print(f'\n{"="*60}')
         print(f'Fold {fold_idx + 1}/{n_folds}')
@@ -797,9 +919,12 @@ def predict_mesh(model, data_dir, proofread_root_id, current_root_id, label_to_i
 # Example usage
 if __name__ == "__main__":
     # Set up your data paths
-    DATA_DIR = "scripts/output/mouse_split"
-    LABELS_FILE = "scripts/output/mouse_split/split_comparison_results_20250617_114754.json"
-    SPLIT_OR_MERGE_CORRECTION = "split_comparison"
+    DATA_DIR = "output/mouse_split"
+    # LABELS_FILE = "output/mouse_merge_2048nm/merge_identification_results_20250728_115852.json"
+    LABELS_FILE = "output/mouse_merge_2048nm/merge_comparison_results_20250728_113748.json"
+    # LABELS_FILE = "output/mouse_split/split_identification_results_20250728_123430.json"
+    # LABELS_FILE = "output/mouse_split/split_comparison_results_20250728_121758.json"
+    SPLIT_OR_MERGE_CORRECTION = "merge_comparison"
     # Choose approach: concatenate images or stack as channels
     CONCATENATE_IMAGES = False  # Set to False to use 3-channel stacking approach
     
@@ -814,7 +939,7 @@ if __name__ == "__main__":
         batch_size=16,  # Adjust based on your GPU memory
         learning_rate=1e-4,
         n_folds=5,
-        output_dir='scripts/output'
+        output_dir='output'
     )
     
     # Print cross validation summary

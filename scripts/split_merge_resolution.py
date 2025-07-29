@@ -536,7 +536,10 @@ def _process_single_split_event(item, output_dir, task, force_regenerate, use_zo
             'views': views,
             'before_root_ids': item['before_root_ids'],
             'after_root_ids': item['after_root_ids'],
-            'proofread_root_id': final_neuron_id
+            'proofread_root_id': final_neuron_id,
+            'merge_coords': merge_coords,
+            'interface_point': item.get('interface_point', None),
+            'timestamp': timestamp_after_split
         }
     except Exception as e:
         print(f"Error processing merge event for operation {operation_id}: {e}")
@@ -760,7 +763,12 @@ def _process_single_merge_event(item, output_dir, force_regenerate, use_zoomed_i
             'views': views,
             'use_zoomed_images': use_zoomed_images,
             'image_paths': image_paths,
-            'option_index_to_id': option_index_to_id
+            'option_index_to_id': option_index_to_id,
+            'before_root_ids': item.get('before_root_ids', []),
+            'after_root_ids': item.get('after_root_ids', []),
+            'merge_coords': merge_coords,
+            'interface_point': item.get('interface_point', None),
+            'timestamp': timestamp_before_merge
         }
     except Exception as e:
         print(f"Error processing merge event for operation {operation_id}: {e}")
@@ -873,41 +881,64 @@ async def process_merge_data(json_path: str, output_dir: str, force_regenerate=F
     for i, event_result in enumerate(processed_events):
         if task == 'merge_comparison':
             for k in range(K):
-                final_result = event_result.copy()
                 response = llm_analysis[i*K + k]
                 answer_analysis = evaluate_response(response)
                 index = indices[i*K + k]
-                final_result["index"] = index
 
+                # Determine model chosen ID
+                model_chosen_id = "none"
+                error = None
                 if answer_analysis["answer"] != "none":
                     if int(answer_analysis["answer"]) in event_result['option_index_to_id']:
-                        final_result['model_chosen_id'] = str(event_result['option_index_to_id'][int(answer_analysis["answer"])] )
+                        model_chosen_id = str(event_result['option_index_to_id'][int(answer_analysis["answer"])])
                     else:
-                        final_result['model_chosen_id'] = "none"
-                        final_result['error'] = "Model returned index out of bounds"
+                        model_chosen_id = "none"
+                        error = "Model returned index out of bounds"
                 else:
-                    final_result['model_chosen_id'] = "none"
-                final_result['model_raw_answer'] = response
-                final_result['model_analysis'] = answer_analysis["analysis"]
-                final_result['model'] = model
-                final_result['zoom_margin'] = zoom_margin
-                final_results.append(final_result)
+                    model_chosen_id = "none"
+
+                # Create unified result structure
+                unified_result = create_unified_result_structure(
+                    task=task,
+                    event_result=event_result,
+                    response=response,
+                    answer_analysis=answer_analysis,
+                    index=index,
+                    model=model,
+                    zoom_margin=zoom_margin,
+                    prompt_mode=prompt_mode
+                )
+                
+                # Add task-specific fields
+                unified_result.update({
+                    'model_chosen_id': model_chosen_id,
+                    'error': error
+                })
+                
+                final_results.append(unified_result)
+                
         elif task == 'merge_identification':
             for j, option_data in enumerate(event_result['prompt_options']):
                 for k in range(K):
-                    final_result = event_result.copy()
-                    response = llm_analysis[total_options_processed*K + k]  # Use running counter for indexing
+                    response = llm_analysis[total_options_processed*K + k]
                     answer_analysis = evaluate_response(response)
-                    index = indices[total_options_processed*K + k]  # Use running counter for indices
-                    final_result["index"] = index
-                    final_result['model_answer'] = answer_analysis["answer"]
-                    final_result['model_analysis'] = answer_analysis["analysis"]
-                    final_result['model'] = model
-                    final_result['zoom_margin'] = zoom_margin
-                    final_result['id'] = option_data['id']
-                    final_results.append(final_result)
+                    index = indices[total_options_processed*K + k]
+
+                    # Create unified result structure
+                    unified_result = create_unified_result_structure(
+                        task=task,
+                        event_result=event_result,
+                        option_data=option_data,
+                        response=response,
+                        answer_analysis=answer_analysis,
+                        index=index,
+                        model=model,
+                        zoom_margin=zoom_margin,
+                        prompt_mode=prompt_mode
+                    )
+                    
+                    final_results.append(unified_result)
                 total_options_processed += 1  # Increment counter after processing all K responses for this option
-        
 
     print(f"LLM evaluation complete. Generated {len(final_results)} result rows.")
     final_results = pd.DataFrame(final_results)
@@ -1066,21 +1097,20 @@ async def process_split_data(json_path: str, output_dir: str, force_regenerate=F
                     answer_analysis = evaluate_response(response)
                     index = indices[total_options_processed * K + k]
 
-                    is_split = int(option_data['id']) in event_result['before_root_ids']
-
-                    option_result = {
-                        'operation_id': event_result['operation_id'],
-                        'base_neuron_id': event_result['base_neuron_id'],
-                        'is_split': is_split,
-                        'model_prediction': answer_analysis['answer'],
-                        'model_analysis': answer_analysis['analysis'],
-                        'views': event_result['views'],
-                        'use_zoomed_images': event_result['use_zoomed_images'],
-                        'model': model,
-                        'zoom_margin': zoom_margin,
-                        'index': index
-                    }
-                    final_results.append(option_result)
+                    # Create unified result structure
+                    unified_result = create_unified_result_structure(
+                        task=task,
+                        event_result=event_result,
+                        option_data=option_data,
+                        response=response,
+                        answer_analysis=answer_analysis,
+                        index=index,
+                        model=model,
+                        zoom_margin=zoom_margin,
+                        prompt_mode=prompt_mode
+                    )
+                    
+                    final_results.append(unified_result)
                 total_options_processed += 1
 
     elif task == "split_comparison":
@@ -1089,23 +1119,34 @@ async def process_split_data(json_path: str, output_dir: str, force_regenerate=F
                 response = llm_analysis[i * 2*K + k]
                 answer_analysis = evaluate_response(response)
                 index = indices[i * 2*K + k]
+                correct_answer = correct_answers[i * 2*K + k]
 
-                option_result = {
+                # Create event result structure for the unified format
+                event_result = {
+                    'operation_id': f'split_comparison_{i}_{k}',
                     'root_id_requires_split': positive_example['id'],
                     'root_id_does_not_require_split': negative_example['id'],
                     'merge_coords': positive_example['merge_coords'],
-                    'model_prediction': answer_analysis['answer'],
-                    'model_analysis': answer_analysis['analysis'],
-                    'model_raw_answer': response,
-                    'correct_answer': correct_answers[i * 2*K + k],
-                    'prompt_mode': prompt_mode,
                     'views': views,
                     'use_zoomed_images': use_zoomed_images,
-                    'model': model,
-                    'zoom_margin': zoom_margin,
-                    'index': index
+                    'image_paths': {},
+                    'prompt_options': [positive_example, negative_example]
                 }
-                final_results.append(option_result)
+
+                # Create unified result structure
+                unified_result = create_unified_result_structure(
+                    task=task,
+                    event_result=event_result,
+                    response=response,
+                    answer_analysis=answer_analysis,
+                    index=index,
+                    model=model,
+                    zoom_margin=zoom_margin,
+                    prompt_mode=prompt_mode,
+                    correct_answer=correct_answer
+                )
+                
+                final_results.append(unified_result)
 
     print(f"LLM evaluation complete. Generated {len(final_results)} result rows.")
     final_results = pd.DataFrame(final_results)
@@ -1116,7 +1157,113 @@ async def process_split_data(json_path: str, output_dir: str, force_regenerate=F
         final_results.to_csv(f"{output_dir}/{model}_{task}_{prompt_mode}_analysis_results.csv", index=False)
     return final_results
 
-
+def create_unified_result_structure(
+    task: str,
+    event_result: Dict[str, Any],
+    option_data: Optional[Dict[str, Any]] = None,
+    response: Optional[str] = None,
+    answer_analysis: Optional[Dict[str, Any]] = None,
+    index: Optional[int] = None,
+    model: str = "unknown",
+    zoom_margin: int = 5000,
+    prompt_mode: str = "informative",
+    correct_answer: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Create a unified result structure for all tasks with consistent keys.
+    
+    Args:
+        task: The task type ('merge_comparison', 'merge_identification', 'split_comparison', 'split_identification')
+        event_result: The processed event result containing operation details
+        option_data: Optional option data for identification tasks
+        response: Optional raw LLM response
+        answer_analysis: Optional parsed answer analysis
+        index: Optional index for multiple runs
+        model: Model name used
+        zoom_margin: Zoom margin used
+        prompt_mode: Prompt mode used
+        correct_answer: Optional correct answer for comparison tasks
+        
+    Returns:
+        Dictionary with unified structure for all tasks
+    """
+    # Base structure with common fields
+    unified_result = {
+        # Task and operation info
+        'task': task,
+        'operation_id': event_result.get('operation_id', 'unknown'),
+        'timestamp': event_result.get('timestamp', None),
+        
+        # Coordinates and location
+        'merge_coords': event_result.get('merge_coords', None),
+        'interface_point': event_result.get('interface_point', None),
+        
+        # Neuron IDs - always present but may be None for some tasks
+        'base_neuron_id': event_result.get('base_neuron_id', None),
+        'before_root_ids': event_result.get('before_root_ids', []),
+        'after_root_ids': event_result.get('after_root_ids', []),
+        'proofread_root_id': event_result.get('proofread_root_id', None),
+        
+        # Model and evaluation info
+        'model': model,
+        'model_raw_answer': response,
+        'model_analysis': answer_analysis.get('analysis', None) if answer_analysis else None,
+        'model_prediction': answer_analysis.get('answer', None) if answer_analysis else None,
+        'index': index,
+        
+        # Image and view settings
+        'views': event_result.get('views', []),
+        'use_zoomed_images': event_result.get('use_zoomed_images', True),
+        'zoom_margin': zoom_margin,
+        'prompt_mode': prompt_mode,
+        
+        # Task-specific fields (will be filled based on task)
+        'correct_answer': correct_answer,
+        'is_split': None,
+        'model_chosen_id': None,
+        'model_answer': None,
+        'error': None,
+        
+        # Image paths (if available)
+        'image_paths': event_result.get('image_paths', {}),
+        'prompt_options': event_result.get('prompt_options', [])
+    }
+    
+    # Task-specific field mapping
+    if task == 'merge_comparison':
+        unified_result.update({
+            'correct_answer': event_result.get('expected_choice_ids', []),
+            'model_chosen_id': event_result.get('model_chosen_id', None),
+            'error': event_result.get('error', None),
+            'options_presented_ids': event_result.get('options_presented_ids', []),
+            'num_options_presented': event_result.get('num_options_presented', 0),
+            'correct_merged_pair': event_result.get('correct_merged_pair', [])
+        })
+        
+    elif task == 'merge_identification':
+        if option_data:
+            unified_result.update({
+                'id': option_data.get('id', None),
+                'model_answer': answer_analysis.get('answer', None) if answer_analysis else None,
+                'is_correct_merge': option_data.get('id') in event_result.get('expected_choice_ids', [])
+            })
+            
+    elif task == 'split_identification':
+        if option_data:
+            unified_result.update({
+                'id': option_data.get('id', None),
+                'is_split': int(option_data.get('id', 0)) in event_result.get('before_root_ids', []),
+                'model_answer': answer_analysis.get('answer', None) if answer_analysis else None
+            })
+            
+    elif task == 'split_comparison':
+        unified_result.update({
+            'root_id_requires_split': event_result.get('root_id_requires_split', None),
+            'root_id_does_not_require_split': event_result.get('root_id_does_not_require_split', None),
+            'correct_answer': correct_answer
+        })
+    
+    return unified_result
 
 def main():
     # Set up argument parser
@@ -1128,7 +1275,7 @@ def main():
     parser.add_argument("--max-workers", type=int, default=None, help="Maximum number of parallel workers (threads). Defaults to CPU count or 4.")
     parser.add_argument("--views", nargs='+', choices=['front', 'side', 'top'], default=['front', 'side', 'top'], help="Specify which views to include (e.g., --views front side). Defaults to all.")
     parser.add_argument("--task", type=str, choices=['merge_comparison', 'merge_identification', 'split_identification', 'split_comparison'], default='merge_comparison', help="Specify the evaluation task to perform.")
-    parser.add_argument("--species", type=str, choices=['fly', 'mouse'], default='mouse', help="Specify the species to use for the output directory.")
+    parser.add_argument("--species", type=str, choices=['mouse', 'fly'], default='mouse', help="Specify the species to use for the output directory.")
     parser.add_argument("--zoom-margin", type=int, default=1024, help="Specify the zoom margin to use for the output directory.")
     parser.add_argument("--models", nargs='+', default=["claude-3-7-sonnet-20250219"], help="Specify one or more models to use for evaluation.")
     parser.add_argument("--prompt-modes", nargs='+', choices=['informative', 'null'], default=['informative'], help="Specify one or more prompt modes to use for evaluation.")
@@ -1157,7 +1304,7 @@ def main():
             elif task == 'split_identification' or task == 'split_comparison':
                 current_output_dir = f"output/{species}_split"
             
-            llm_processor = LLMProcessor(model=model, max_tokens=4096)
+            llm_processor = LLMProcessor(model=model, max_tokens=4096, max_concurrent=10)
 
             # Validate input path
             if not os.path.exists(json_path):
