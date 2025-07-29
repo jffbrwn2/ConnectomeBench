@@ -127,12 +127,25 @@ class ConnectomicsDataset(Dataset):
             self.data = []
             self.labels = []
 
+            # Randomly permute annotations to avoid bias
+            task_annotations = task_annotations.copy()
+            random.shuffle(task_annotations)
+            
+            # Track operation_ids we've already seen to prevent data leakage
+            seen_operation_ids = set()
+            
             for ann in task_annotations:
-
-                # Check if this neuron is the correct choice
-                is_correct =  ann.get("is_correct_merge", False)
-                self.data.append(ann)  # Store the full annotation for image paths
-                self.labels.append(is_correct)
+                operation_id = ann.get('operation_id', 'unknown')
+                
+                # Only add if we haven't seen this operation_id before
+                if operation_id not in seen_operation_ids:
+                    # Check if this neuron is the correct choice
+                    is_correct = ann.get("is_correct_merge", False)
+                    self.data.append(ann)  # Store the full annotation for image paths
+                    self.labels.append(is_correct)
+                    
+                    # Mark this operation_id as seen
+                    seen_operation_ids.add(operation_id)
 
 
         else:
