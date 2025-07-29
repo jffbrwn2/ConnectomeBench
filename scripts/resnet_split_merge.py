@@ -228,7 +228,7 @@ class ConnectomicsDataset(Dataset):
             views = ['front', 'top', 'side']
             for prompt_option in prompt_options:
                 for view in views:
-                    image = Image.open(prompt_option["paths"]["zoomed"][view]).convert('L')  # Convert to grayscale
+                    image = Image.open(prompt_option["paths"]["zoomed"][view]).convert('RGB')  # Keep RGB colors
                     images.append(np.array(image))
 
         elif self.split_or_merge_correction == "merge_identification":
@@ -251,29 +251,61 @@ class ConnectomicsDataset(Dataset):
             
             if option_data:
                 for view in views:
-                    image = Image.open(option_data["paths"]["zoomed"][view]).convert('L')
+                    image = Image.open(option_data["paths"]["zoomed"][view]).convert('RGB')
                     images.append(np.array(image))
             else:
-                # Fallback: create empty grayscale images if option not found
+                # Fallback: create empty RGB images if option not found
                 for view in views:
-                    images.append(np.zeros((1024, 1024), dtype=np.uint8))
+                    images.append(np.zeros((1024, 1024, 3), dtype=np.uint8))
 
-        if self.concatenate_images:
-            # Concatenate horizontally: 1024 x 3072
+        # Force concatenation mode for merge tasks with RGB images
+        use_concatenation = self.concatenate_images or self.split_or_merge_correction in ["merge_comparison", "merge_identification"]
+        
+        if use_concatenation:
+            # Concatenate horizontally: 1024 x (N*1024)
             combined_image = np.concatenate(images, axis=1)
             combined_image = Image.fromarray(combined_image).convert('RGB')
         else:
-            # Stack as channels: 3 x 1024 x 1024
+            # Stack as channels: N x 1024 x 1024 (for split tasks)
             combined_image = np.stack(images, axis=0)
             combined_image = torch.from_numpy(combined_image).float()
             # Normalize to [0, 1]
             combined_image = combined_image / 255.0
         
-        if self.transform and self.concatenate_images:
-            combined_image = self.transform(combined_image)
-        elif not self.concatenate_images and self.transform:
-            # Apply transforms to each channel separately if needed
-            pass
+        if use_concatenation:
+            # For concatenated images (PIL Images), we need transforms that include ToTensor
+            if self.transform:
+                # Check if transform includes ToTensor by trying to find it in the transforms list
+                has_to_tensor = False
+                if hasattr(self.transform, 'transforms'):
+                    for t in self.transform.transforms:
+                        if 'ToTensor' in str(type(t)):
+                            has_to_tensor = True
+                            break
+                
+                if has_to_tensor:
+                    combined_image = self.transform(combined_image)
+                else:
+                    # Transform doesn't include ToTensor, manually convert first
+                    import torchvision.transforms as transforms
+                    to_tensor = transforms.ToTensor()
+                    combined_image = to_tensor(combined_image)
+            else:
+                # No transform, manually convert PIL to tensor
+                import torchvision.transforms as transforms
+                to_tensor = transforms.ToTensor()
+                combined_image = to_tensor(combined_image)
+        else:
+            # For stacked images, already a tensor
+            if self.transform:
+                # Apply transforms to each channel separately if needed
+                pass
+        
+        # Final safety check - ensure we always return a tensor
+        if not isinstance(combined_image, torch.Tensor):
+            import torchvision.transforms as transforms
+            to_tensor = transforms.ToTensor()
+            combined_image = to_tensor(combined_image)
             
         return combined_image, label_idx
 
@@ -286,9 +318,17 @@ class ConnectomicsResNet(nn.Module):
         #     # For concatenated images (1024 x 3072)
         self.resnet = models.resnet50(pretrained=pretrained)
         # Modify first conv layer to handle different input size
-        if split_or_merge_correction == "merge_comparison" or split_or_merge_correction == "split_comparison":
+        if split_or_merge_correction == "merge_comparison":
+            # Merge comparison: RGB images concatenated horizontally = 3 channels
+            self.resnet.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        elif split_or_merge_correction == "split_comparison":
+            # Split comparison: 2 neurons x 3 views, grayscale stacked = 6 channels
             self.resnet.conv1 = nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
-        elif split_or_merge_correction == "split_identification" or split_or_merge_correction == "merge_identification":
+        elif split_or_merge_correction == "merge_identification":
+            # Merge identification: RGB images concatenated horizontally = 3 channels
+            self.resnet.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        elif split_or_merge_correction == "split_identification":
+            # Split identification: 3 views, grayscale stacked = 3 channels
             self.resnet.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         else: 
             raise ValueError(f"Invalid split_or_merge_correction: {self.split_or_merge_correction}")
