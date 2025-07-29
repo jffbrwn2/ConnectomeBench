@@ -138,34 +138,45 @@ class ConnectomicsDataset(Dataset):
             # Filter to only include operation_ids with exactly 2 annotations (positive + negative)
             valid_operations = {op_id: group for op_id, group in operation_groups.items() if len(group) == 2}
             
-            # Separate positive and negative examples
-            positive_examples = []
-            negative_examples = []
+            # Convert to list and shuffle for random selection
+            valid_op_ids = list(valid_operations.keys())
+            random.shuffle(valid_op_ids)
             
-            for op_id, group in valid_operations.items():
+            # Separate operation_ids by whether we want to take positive or negative
+            positive_ops = []
+            negative_ops = []
+            
+            # Alternate between positive and negative to maintain balance
+            for i, op_id in enumerate(valid_op_ids):
+                if i % 2 == 0:
+                    positive_ops.append(op_id)
+                else:
+                    negative_ops.append(op_id)
+            
+            # Take the minimum to ensure perfect balance
+            min_count = min(len(positive_ops), len(negative_ops))
+            positive_ops = positive_ops[:min_count]
+            negative_ops = negative_ops[:min_count]
+            
+            # Add positive examples (one per operation_id)
+            for op_id in positive_ops:
+                group = valid_operations[op_id]
+                # Find the positive example in this group
                 for ann in group:
-                    is_correct = ann.get("is_correct_merge", False)
-                    if is_correct:
-                        positive_examples.append(ann)
-                    else:
-                        negative_examples.append(ann)
+                    if ann.get("is_correct_merge", False):
+                        self.data.append(ann)
+                        self.labels.append(True)
+                        break
             
-            # Randomly shuffle both lists
-            random.shuffle(positive_examples)
-            random.shuffle(negative_examples)
-            
-            # Take the minimum of the two to ensure balanced pairs
-            min_count = min(len(positive_examples), len(negative_examples))
-            
-            # Add balanced pairs
-            for i in range(min_count):
-                # Add positive example
-                self.data.append(positive_examples[i])
-                self.labels.append(True)
-                
-                # Add negative example
-                self.data.append(negative_examples[i])
-                self.labels.append(False)
+            # Add negative examples (one per operation_id)
+            for op_id in negative_ops:
+                group = valid_operations[op_id]
+                # Find the negative example in this group
+                for ann in group:
+                    if not ann.get("is_correct_merge", False):
+                        self.data.append(ann)
+                        self.labels.append(False)
+                        break
 
 
         else:
@@ -993,11 +1004,11 @@ def predict_mesh(model, data_dir, proofread_root_id, current_root_id, label_to_i
 if __name__ == "__main__":
     # Set up your data paths
     DATA_DIR = "output/mouse_split"
-    # LABELS_FILE = "output/mouse_merge_2048nm/merge_identification_results_20250728_115852.json"
-    LABELS_FILE = "output/mouse_merge_2048nm/merge_comparison_results_20250728_113748.json"
+    LABELS_FILE = "output/mouse_merge_2048nm/merge_identification_results_20250728_115852.json"
+    # LABELS_FILE = "output/mouse_merge_2048nm/merge_comparison_results_20250728_113748.json"
     # LABELS_FILE = "output/mouse_split/split_identification_results_20250728_123430.json"
     # LABELS_FILE = "output/mouse_split/split_comparison_results_20250728_121758.json"
-    SPLIT_OR_MERGE_CORRECTION = "merge_comparison"
+    SPLIT_OR_MERGE_CORRECTION = "merge_identification"
     # Choose approach: concatenate images or stack as channels
     CONCATENATE_IMAGES = False  # Set to False to use 3-channel stacking approach
     
