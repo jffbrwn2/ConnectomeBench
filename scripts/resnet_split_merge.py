@@ -49,6 +49,9 @@ class ConnectomicsDataset(Dataset):
             # Group by operation_id to find pairs
       
             for ann in task_annotations:
+                operation_id = ann.get('operation_id', 'unknown')
+                if operation_id.split("_")[-1] == "1":
+                    continue
                 # Find the positive and negative examples
                 positive_examples = ann.get('root_id_requires_split')
                 negative_examples = ann.get('root_id_does_not_require_split')
@@ -179,6 +182,7 @@ class ConnectomicsDataset(Dataset):
                         break
 
 
+
         else:
             raise ValueError(f"Invalid split_or_merge_correction: {split_or_merge_correction}")
             
@@ -292,15 +296,17 @@ class ConnectomicsDataset(Dataset):
                 if opt.get('id') == neuron_id:
                     option_data = opt
                     break
-            
+             
             if option_data:
                 for view in views:
                     image = Image.open(option_data["paths"]["zoomed"][view]).convert('RGB')
                     images.append(np.array(image))
             else:
+
                 # Fallback: create empty RGB images if option not found
                 for view in views:
                     images.append(np.zeros((1024, 1024, 3), dtype=np.uint8))
+
 
         # Force concatenation mode for merge tasks with RGB images
         use_concatenation = self.concatenate_images or self.split_or_merge_correction in ["merge_comparison", "merge_identification"]
@@ -1020,7 +1026,7 @@ if __name__ == "__main__":
         split_or_merge_correction=SPLIT_OR_MERGE_CORRECTION,
         concatenate_images=CONCATENATE_IMAGES,
         num_epochs=50,
-        batch_size=16,  # Adjust based on your GPU memory
+        batch_size=4,  # Adjust based on your GPU memory
         learning_rate=1e-4,
         n_folds=5,
         output_dir='output'

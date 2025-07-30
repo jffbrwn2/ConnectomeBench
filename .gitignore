@@ -41,3 +41,11 @@ scripts/training_data/
 # OS specific
 .DS_Store
 Thumbs.db
+
+scripts/split_merge_resolution.ipynb
+scripts/visualize_merge_errors_html.py
+scripts/visualize_merge_errors.py
+scripts/merge_identification_errors.html
+scripts/analyze_merge_identification.py
+scripts/analyze_merge_performance.py
+scripts/compare_merge_results.py

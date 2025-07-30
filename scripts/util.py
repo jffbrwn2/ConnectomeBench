@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 parsable = ["gpt-4o", "o1"]
 openai_models = ["gpt-4o", "o1", "gpt-4o-mini", "o1-mini", "gpt-4.1", "o4-mini"]
 deepseek_models = ["deepseek-reasoner", "deepseek-chat"]
-anthropic_models = ["claude-3-5-sonnet-20240620", "claude-3-5-sonnet-20241022", "claude-3-7-sonnet-20250219"]
+anthropic_models = ["claude-3-5-sonnet-20240620", "claude-3-5-sonnet-20241022", "claude-3-7-sonnet-20250219", "claude-4-sonnet-20250514"]
 gemini_models = ["gemini-2.0-flash-thinking-01-21", "gemini-2.0-pro-exp-02-05"]
 parsing_model = "gpt-4o-mini"
 

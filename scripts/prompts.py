@@ -3,6 +3,38 @@ from util import LLMProcessor, openai_models
 import os
 import numpy as np
 
+# Define heuristics for merge identification
+MERGE_HEURISTICS = {
+    "heuristic1": "If the orange segment is taking up the complete (all you can see is orange) field of view and it's not spherical, the merge operation is not correct. Auto reject this option.",#"If the orange segment is more than 5 times as large (in volume) as the blue segment and not spherical, the merge operation is not correct. Auto reject this option.",
+    "heuristic2": "If the orange segment is very small compared to the blue segment, the merge operation is not correct. Auto reject this option.",
+    "heuristic3": "If the orange segment is a sphere and the blue segment is not visible or is overlapping with the orange segment, the merge operation is correct.",
+    "heuristic4": "If he orange segment is a similar size to the blue segment at the interface point at the center of the image, then the merge operation is correct. Also, the orange segment can and often is a tube of similar volume: it doesn't need to be a small thin extension. ",
+    "heuristic5": "If there is a big gap between the orange and blue segment at the center of the image, that's OK since it's likely that there are missing imaging planes. If the orange segment is going in the same direction as the blue segment was, it's an appriopriate merge.",
+    "heuristic6": "If the orange and blue segments are parallel and lined up next to each other, then it's likely they are distinct process of two different neurons. This is not a proper merge.",
+    "heuristic7": "Remember that you're reasoning in 3 dimensions. a segment might look short in one view, but long in another because of the perspective (looking at it dead on vs. from the side). ",
+    "heuristic8": "If the orange and blue segments are overlapping globular shells, then auto accept this merge operation."
+}
+
+def parse_prompt_mode(prompt_mode: str) -> Tuple[str, List[str]]:
+    """
+    Parse prompt mode string to extract base mode and heuristics.
+    
+    Examples:
+        "informative" -> ("informative", [])
+        "informative+heuristic1+heuristic3" -> ("informative", ["heuristic1", "heuristic3"])
+        "null+heuristic2" -> ("null", ["heuristic2"])
+    
+    Args:
+        prompt_mode: String containing base mode and optional heuristics separated by '+'
+        
+    Returns:
+        Tuple of (base_mode, list_of_heuristics)
+    """
+    parts = prompt_mode.split('+')
+    base_mode = parts[0]
+    heuristics = [part for part in parts[1:] if part.startswith('heuristic')]
+    return base_mode, heuristics
+
 def create_merge_identification_prompt(
     option_data: Dict[str, Any], # Each dict contains 'id' and 'paths' (nested dict with default/zoomed -> front/side/top)
     use_zoomed_images: bool = True,
@@ -48,6 +80,7 @@ def create_merge_identification_prompt(
     })
     for view in views: # Use the provided views list
         img_path = image_paths.get(image_set_key, {}).get(view)
+
         if img_path and os.path.exists(img_path):
             try:
                 base64_data, media_type = llm_processor._encode_image_to_base64(img_path)
@@ -102,11 +135,22 @@ def create_merge_identification_prompt(
 The previous images show a proposed merge operation at the center of the 3D volume. The original segment is blue and a potential merge candidate segment is orange. {image_description} below show this pair from the {view_description} perspectives.
 The image is a cropped 3D volume ({2*zoom_margin} nm x {2*zoom_margin} nm x {2*zoom_margin} nm around the center of the volume), so you should pay attention to discontinuities in the center of the image.
 Images are presented in groups of {len(views)} ({view_description})"""
-    if prompt_mode == 'informative':
-        prompt += f"""The segments merged together should look like a continuous single axon, where the orange segment is progressing in the same direction as the blue segment was progressing.
-They should just join together at the center; they shouldn't be overlapping."""
+    # Parse prompt mode to extract base mode and heuristics
+    base_mode, heuristics = parse_prompt_mode(prompt_mode)
 
-    prompt+= """If there is a split error and the proposed merge operation fixes it (the segments merged together look like a continuous single axon), then return 1.
+    if base_mode == 'informative':
+#         prompt += f"""The segments merged together should look like a continuous single axon, where the orange segment is progressing in the same direction as the blue segment was progressing.
+# They should just join together at the center; they shouldn't be overlapping."""
+        prompt += f"""At the interface point at the center of the image, the orange segment needs to be progressing in the same direction as the blue segment was progressing."""
+    
+    # Add heuristics if specified
+    if heuristics:
+        prompt += "\n\nAdditional guidance:\n"
+        for heuristic in heuristics:
+            if heuristic in MERGE_HEURISTICS:
+                prompt += f"- {MERGE_HEURISTICS[heuristic]}\n"
+
+    prompt+= """If there is a split error and the proposed merge operation fixes it, then return 1.
 If there is no split error OR the merge operation is incorrect, then return -1.
 
 Surround your analysis with <analysis> and </analysis> tags.

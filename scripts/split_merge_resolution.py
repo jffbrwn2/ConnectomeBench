@@ -15,7 +15,7 @@ import asyncio
 from cloudvolume import Bbox
 from prompts import create_merge_identification_prompt, create_split_identification_prompt, create_merge_comparison_prompt, create_split_comparison_prompt
 logging.basicConfig(level=logging.INFO)
-K = 1
+K = 10
 
 
 def evaluate_response(response: str) -> Dict[str, Optional[str]]: # Return type changed to Dict
@@ -1265,10 +1265,296 @@ def create_unified_result_structure(
     
     return unified_result
 
+async def process_existing_results(
+    results_file_path: str,
+    output_dir: str,
+    model: str,
+    prompt_mode: str = 'informative',
+    llm_processor: LLMProcessor = None
+) -> pd.DataFrame:
+    """
+    Load existing results file and re-evaluate with a new LLM.
+    
+    Args:
+        results_file_path: Path to existing results JSON file
+        output_dir: Directory to save new results
+        model: Model name to use for re-evaluation
+        prompt_mode: Prompt mode to use
+        llm_processor: LLM processor instance
+        
+    Returns:
+        DataFrame with new evaluation results
+    """
+    print(f"Loading existing results from: {results_file_path}")
+    
+    try:
+        with open(results_file_path, 'r') as f:
+            existing_results = json.load(f)
+    except FileNotFoundError:
+        print(f"Error: Results file not found at {results_file_path}")
+        return pd.DataFrame()
+    except json.JSONDecodeError:
+        print(f"Error: Could not decode JSON from {results_file_path}")
+        return pd.DataFrame()
+    
+    if not existing_results:
+        print("No results found in the file.")
+        return pd.DataFrame()
+    
+    # Determine task type from existing results
+    first_result = existing_results[0]
+    task = first_result.get('task', 'unknown')
+    
+    print(f"Detected task type: {task}")
+    print(f"Found {len(existing_results)} existing results to re-evaluate")
+    
+    # Group results by operation_id to reconstruct prompt options
+    results_by_operation = {}
+    for result in existing_results[:100]:
+        op_id = result.get('operation_id', 'unknown')
+        if op_id not in results_by_operation:
+            results_by_operation[op_id] = []
+        results_by_operation[op_id].append(result)
+    
+    prompts = []
+    indices = []
+    operation_mapping = []  # Track which prompt belongs to which operation
+    
+    # Reconstruct prompts based on task type
+    if task == 'merge_comparison':
+        for op_id, op_results in results_by_operation.items():
+            # For comparison tasks, we need to reconstruct the prompt options
+            first_result = op_results[0]
+            
+            # Extract necessary information
+            prompt_options = first_result.get('prompt_options', [])
+            use_zoomed_images = first_result.get('use_zoomed_images', True)
+            views = first_result.get('views', ['front', 'side', 'top'])
+            zoom_margin = first_result.get('zoom_margin', 5000)
+            
+            if prompt_options:
+                prompt = create_merge_comparison_prompt(
+                    prompt_options,
+                    use_zoomed_images=use_zoomed_images,
+                    views=views,
+                    llm_processor=llm_processor,
+                    zoom_margin=zoom_margin,
+                    prompt_mode=prompt_mode
+                )
+                prompts.extend([prompt] * K)
+                indices.extend([j for j in range(K)])
+                operation_mapping.extend([op_id] * K)
+    
+    elif task == 'merge_identification':
+        for op_id, op_results in results_by_operation.items():
+            # Group by individual options
+            options_by_id = {}
+            for result in op_results:
+                option_id = result.get('id')
+                if option_id and option_id not in options_by_id:
+                    options_by_id[option_id] = result
+
+            for option_id, result in options_by_id.items():
+                # Reconstruct option data
+                
+                option_data = {
+                    'id': option_id,
+                    'paths': [prompt_option.get('paths', {}) for prompt_option in result.get('prompt_options', {}) if prompt_option.get('id') == option_id][0]
+                }
+     
+                use_zoomed_images = result.get('use_zoomed_images', True)
+                views = result.get('views', ['front', 'side', 'top'])
+
+                prompt = create_merge_identification_prompt(
+                    option_data,
+                    use_zoomed_images=use_zoomed_images,
+                    views=views,
+                    llm_processor=llm_processor,
+                    prompt_mode=prompt_mode
+                )
+
+                prompts.extend([prompt] * K)
+                indices.extend([j for j in range(K)])
+                operation_mapping.extend([f"{op_id}_{option_id}"] * K)
+    
+    elif task == 'split_identification':
+        for op_id, op_results in results_by_operation.items():
+            # Group by individual options
+            options_by_id = {}
+            for result in op_results:
+                option_id = result.get('id')
+                if option_id and option_id not in options_by_id:
+                    options_by_id[option_id] = result
+            
+            for option_id, result in options_by_id.items():
+                # Reconstruct option data
+                option_data = {
+                    'id': option_id,
+                    'paths': result.get('image_paths', {}),
+                    'merge_coords': result.get('merge_coords', []),
+                    'zoom_margin': result.get('zoom_margin', 5000)
+                }
+                
+                use_zoomed_images = result.get('use_zoomed_images', True)
+                views = result.get('views', ['front', 'side', 'top'])
+                zoom_margin = result.get('zoom_margin', 5000)
+                
+                prompt = create_split_identification_prompt(
+                    option_data,
+                    use_zoomed_images=use_zoomed_images,
+                    views=views,
+                    llm_processor=llm_processor,
+                    zoom_margin=zoom_margin,
+                    prompt_mode=prompt_mode
+                )
+           
+                prompts.extend([prompt] * K)
+                indices.extend([j for j in range(K)])
+                operation_mapping.extend([f"{op_id}_{option_id}"] * K)
+    
+    elif task == 'split_comparison':
+        # For split comparison, need to reconstruct positive/negative pairs
+        for op_id, op_results in results_by_operation.items():
+            first_result = op_results[0]
+            
+            # Extract pair information
+            positive_id = first_result.get('root_id_requires_split')
+            negative_id = first_result.get('root_id_does_not_require_split')
+            use_zoomed_images = first_result.get('use_zoomed_images', True)
+            views = first_result.get('views', ['front', 'side', 'top'])
+            zoom_margin = first_result.get('zoom_margin', 5000)
+            
+            # Reconstruct option data for positive and negative examples
+            positive_example = {
+                'id': positive_id,
+                'paths': first_result.get('image_paths', {}),
+                'merge_coords': first_result.get('merge_coords', [])
+            }
+            negative_example = {
+                'id': negative_id,
+                'paths': first_result.get('image_paths', {}),
+                'merge_coords': first_result.get('merge_coords', [])
+            }
+            
+            # Create both orderings
+            prompt1 = create_split_comparison_prompt(
+                positive_example, negative_example,
+                use_zoomed_images, views, llm_processor,
+                zoom_margin, prompt_mode
+            )
+            prompt2 = create_split_comparison_prompt(
+                negative_example, positive_example,
+                use_zoomed_images, views, llm_processor,
+                zoom_margin, prompt_mode
+            )
+            
+            prompts.extend([prompt1] * K + [prompt2] * K)
+            indices.extend([j for j in range(K)] + [j for j in range(K)])
+            operation_mapping.extend([f"{op_id}_pos_first"] * K + [f"{op_id}_neg_first"] * K)
+    
+    if not prompts:
+        print("No prompts could be reconstructed from existing results.")
+        return pd.DataFrame()
+    
+    print(f"Re-evaluating {len(prompts)} prompts with model: {model}")
+    
+    # Process with new LLM
+    llm_analysis = await llm_processor.process_batch(prompts)
+    
+    # Create new results with updated model responses
+    final_results = []
+
+    for i, (prompt_result, original_mapping) in enumerate(zip(llm_analysis, operation_mapping)):
+        # Find the original result to copy metadata from
+        original_result = None
+        if '_' in original_mapping:
+            parts = original_mapping.split('_')
+            op_id = '_'.join(parts[:-1]) if len(parts) > 2 else parts[0]
+            root_id = parts[-1]
+        else:
+            op_id = original_mapping
+ 
+        for result in existing_results:
+            if (str(result.get('operation_id')) == str(op_id)) and (str(result.get('id'))==str(root_id)):
+                original_result = result
+                break
+
+        if not original_result:
+            continue
+            
+        # Parse new response
+        answer_analysis = evaluate_response(prompt_result)
+        
+        # Create new result based on original but with new model response
+        new_result = original_result.copy()
+        new_result.update({
+            'model': model,
+            'model_raw_answer': prompt_result,
+            'model_analysis': answer_analysis.get('analysis', None),
+            'model_prediction': answer_analysis.get('answer', None),
+            'prompt_mode': prompt_mode,
+            'index': indices[i] if i < len(indices) else 0
+        })
+        
+        # Update task-specific fields based on new response
+        if task == 'merge_comparison':
+            model_chosen_id = "none"
+            error = None
+            if answer_analysis["answer"] != "none":
+                try:
+                    choice_idx = int(answer_analysis["answer"])
+                    # Need to reconstruct option_index_to_id mapping
+                    prompt_options = original_result.get('prompt_options', [])
+                    option_index_to_id = {j+1: opt['id'] for j, opt in enumerate(prompt_options)}
+                    if choice_idx in option_index_to_id:
+                        model_chosen_id = str(option_index_to_id[choice_idx])
+                    else:
+                        model_chosen_id = "none"
+                        error = "Model returned index out of bounds"
+                except (ValueError, TypeError):
+                    model_chosen_id = "none"
+                    error = "Could not parse model answer"
+            
+            new_result.update({
+                'model_chosen_id': model_chosen_id,
+                'error': error
+            })
+            
+        elif task in ['merge_identification', 'split_identification']:
+            new_result['model_answer'] = answer_analysis.get('answer', None)
+        
+        final_results.append(new_result)
+    
+    print(f"Re-evaluation complete. Generated {len(final_results)} result rows.")
+    
+    # Save new results
+    os.makedirs(output_dir, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    results_df = pd.DataFrame(final_results)
+    
+    # Save to CSV
+    if K > 1:
+        csv_filename = f"{output_dir}/{model}_{task}_{prompt_mode}_analysis_results_K{K}.csv"
+    else:
+        csv_filename = f"{output_dir}/{model}_{task}_{prompt_mode}_analysis_results.csv"
+    
+    results_df.to_csv(csv_filename, index=False)
+    
+    # Save to JSON
+    json_filename = os.path.join(output_dir, f"{task}_results_{timestamp}.json")
+    results_df.to_json(json_filename, orient='records', indent=2)
+    
+    print(f"Saved re-evaluation results to {csv_filename}")
+    print(f"Saved detailed results to {json_filename}")
+    
+    return results_df
+
+
 def main():
     # Set up argument parser
     parser = argparse.ArgumentParser(description="Process merge data from FlyWire EM data JSON and evaluate using an LLM.")
-    parser.add_argument("--input-json", required=True, help="Path to the input em_data_*.json file generated by gather_training_data.py")
+    parser.add_argument("--input-json", required=False, help="Path to the input em_data_*.json file generated by gather_training_data.py (not required when using --results-file)")
     parser.add_argument("--force-regenerate", action="store_true", help="Force regeneration of images even if they seem to exist.")
     parser.add_argument("--num-samples", type=int, default=None, help="Process only the first N merge events found in the JSON file.")
     parser.add_argument("--use-zoomed-images", action=argparse.BooleanOptionalAction, default=True, help="Use zoomed images in the prompt instead of default.")
@@ -1278,10 +1564,19 @@ def main():
     parser.add_argument("--species", type=str, choices=['mouse', 'fly'], default='mouse', help="Specify the species to use for the output directory.")
     parser.add_argument("--zoom-margin", type=int, default=1024, help="Specify the zoom margin to use for the output directory.")
     parser.add_argument("--models", nargs='+', default=["claude-3-7-sonnet-20250219"], help="Specify one or more models to use for evaluation.")
-    parser.add_argument("--prompt-modes", nargs='+', choices=['informative', 'null'], default=['informative'], help="Specify one or more prompt modes to use for evaluation.")
+    parser.add_argument("--prompt-modes", nargs='+', default=['informative'], help="Specify one or more prompt modes to use for evaluation. Can include heuristics like 'informative+heuristic1+heuristic3' or 'null+heuristic2'.")
+    parser.add_argument("--results-file", type=str, help="Path to existing results JSON file to re-evaluate with new LLM (skips image generation).")
     args = parser.parse_args()
 
     json_path = args.input_json
+    results_file = args.results_file
+    
+    # Validate that either input-json or results-file is provided
+    if not json_path and not results_file:
+        parser.error("Either --input-json or --results-file must be provided")
+    
+    if results_file and json_path:
+        print("Warning: Both --input-json and --results-file provided. --results-file will take precedence.")
     
     force_regenerate = args.force_regenerate
     num_samples = args.num_samples
@@ -1299,6 +1594,46 @@ def main():
         for prompt_mode in prompt_modes:
             print(f"\nProcessing with model: {model} and prompt mode: {prompt_mode}")
             
+            # Check if we should use existing results file workflow
+            if results_file:
+                if not os.path.exists(results_file):
+                    print(f"Error: Results file not found at {results_file}")
+                    continue
+                    
+                print(f"Using existing results file: {results_file}")
+                print("Skipping image generation and re-evaluating with new LLM")
+                
+                # Determine output directory based on results file location or use default
+                if os.path.dirname(results_file):
+                    current_output_dir = os.path.dirname(results_file)
+                else:
+                    if task == 'merge_identification' or task == 'merge_comparison':
+                        current_output_dir = f"output/{species}_merge_{zoom_margin}nm"
+                    elif task == 'split_identification' or task == 'split_comparison':
+                        current_output_dir = f"output/{species}_split"
+                    else:
+                        current_output_dir = "output"
+                
+                llm_processor = LLMProcessor(model=model, max_tokens=4096, max_concurrent=25)
+                
+                # Process existing results
+                results_df = asyncio.run(process_existing_results(
+                    results_file,
+                    current_output_dir,
+                    model,
+                    prompt_mode,
+                    llm_processor
+                ))
+                
+                if results_df.empty:
+                    print("No results generated from existing file.")
+                    continue
+                else:
+                    print(f"Successfully re-evaluated existing results with {model}")
+                
+                continue  # Skip the regular processing workflow
+            
+            # Regular processing workflow (when no results file is provided)
             if task == 'merge_identification' or task == 'merge_comparison':
                 current_output_dir = f"output/{species}_merge_{zoom_margin}nm"
             elif task == 'split_identification' or task == 'split_comparison':
