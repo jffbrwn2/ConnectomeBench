@@ -17,7 +17,7 @@ import json
 import random
 # Custom Dataset for Connectomics Data
 class ConnectomicsDataset(Dataset):
-    def __init__(self, data_dir, labels_file, split_or_merge_correction,transform=None, concatenate_images=True):
+    def __init__(self, data_dir, labels_file, split_or_merge_correction, transform=None, concatenate_images=True):
         """
         Dataset for connectomics mesh classification
         
@@ -432,6 +432,7 @@ def get_transforms(concatenate_images=True):
     
     return train_transform, val_transform
 
+
 # Handle class imbalance
 def get_weighted_sampler(dataset):
     """Create weighted sampler for imbalanced dataset"""
@@ -469,6 +470,7 @@ def get_class_weights(dataset):
     )
     
     return torch.FloatTensor(class_weights)
+
 
 # Training function
 def train_epoch(model, dataloader, criterion, optimizer, device):
@@ -663,8 +665,8 @@ def train_single_fold(train_dataset, val_dataset, full_dataset, fold_idx, data_d
 
 # Main training loop with cross validation
 def train_model_cv(data_dir, labels_file, split_or_merge_correction, concatenate_images=True, 
-                  num_epochs=50, batch_size=16, learning_rate=1e-4, n_folds=5, output_dir='scripts/output'):
-    """Train model using k-fold cross validation"""
+                  num_epochs=50, batch_size=16, learning_rate=1e-4, n_folds=5, output_dir='scripts/output', test_split=0.2):
+    """Train model using k-fold cross validation on training data, then evaluate on held-out test set"""
     # Set device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Using device: {device}')
@@ -676,7 +678,25 @@ def train_model_cv(data_dir, labels_file, split_or_merge_correction, concatenate
     # Get labels for stratified splitting
     labels = [full_dataset.labels[i] for i in range(len(full_dataset))]
     
-    # Initialize cross validation
+    # First split: train/test split (stratified)
+    from sklearn.model_selection import train_test_split
+    train_indices, test_indices = train_test_split(
+        range(len(full_dataset)), 
+        test_size=test_split, 
+        random_state=42, 
+        stratify=labels
+    )
+    
+    print(f'Dataset split: {len(train_indices)} training samples, {len(test_indices)} test samples')
+    
+    # Create training and test datasets
+    train_dataset = torch.utils.data.Subset(full_dataset, train_indices)
+    test_dataset = torch.utils.data.Subset(full_dataset, test_indices)
+    
+    # Get labels for training data only (for cross validation)
+    train_labels = [full_dataset.labels[i] for i in train_indices]
+    
+    # Initialize cross validation on training data only
     skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=42)
     
     # Store results for each fold
@@ -684,21 +704,21 @@ def train_model_cv(data_dir, labels_file, split_or_merge_correction, concatenate
     all_val_preds = []
     all_val_targets = []
     
-    print(f'Starting {n_folds}-fold cross validation...')
+    print(f'Starting {n_folds}-fold cross validation on training data...')
     
 
-    for fold_idx, (train_indices, val_indices) in enumerate(skf.split(range(len(full_dataset)), labels)):
+    for fold_idx, (fold_train_indices, fold_val_indices) in enumerate(skf.split(range(len(train_dataset)), train_labels)):
         print(f'\n{"="*60}')
         print(f'Fold {fold_idx + 1}/{n_folds}')
         print(f'{"="*60}')
         
         # Create train and validation datasets for this fold
-        train_dataset = torch.utils.data.Subset(full_dataset, train_indices)
-        val_dataset = torch.utils.data.Subset(full_dataset, val_indices)
+        fold_train_dataset = torch.utils.data.Subset(train_dataset, fold_train_indices)
+        fold_val_dataset = torch.utils.data.Subset(train_dataset, fold_val_indices)
         
         # Train model for this fold
         model, val_acc, val_preds, val_targets, train_losses, val_losses = train_single_fold(
-            train_dataset, val_dataset, full_dataset, fold_idx, data_dir, labels_file,
+            fold_train_dataset, fold_val_dataset, full_dataset, fold_idx, data_dir, labels_file,
             split_or_merge_correction, concatenate_images, num_epochs, batch_size, 
             learning_rate, output_dir
         )
@@ -811,7 +831,78 @@ def train_model_cv(data_dir, labels_file, split_or_merge_correction, concatenate
         for i, acc in enumerate(fold_accuracies):
             f.write(f"Fold {i + 1}: {acc:.2f}%\n")
     
-    # Return the best model from the best performing fold
+    # Evaluate all fold models on the test set
+    print(f'\n{"="*60}')
+    print(f'EVALUATING ALL FOLD MODELS ON TEST SET')
+    print(f'{"="*60}')
+    
+    # Get test transforms
+    _, test_transform = get_transforms(concatenate_images)
+    test_dataset.dataset.transform = test_transform
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+    
+    test_results = []
+    for fold_idx in range(n_folds):
+        print(f'\nEvaluating fold {fold_idx + 1} model on test set...')
+        
+        # Load fold model
+        fold_model_path = os.path.join(output_dir, f'best_model_fold_{fold_idx + 1}.pth')
+        fold_checkpoint = torch.load(fold_model_path)
+        
+        fold_model = ConnectomicsResNet(num_classes=full_dataset.num_classes, 
+                                      concatenate_images=concatenate_images,
+                                      split_or_merge_correction=split_or_merge_correction).to(device)
+        fold_model.load_state_dict(fold_checkpoint['model_state_dict'])
+        
+        # Evaluate on test set
+        criterion = nn.CrossEntropyLoss()
+        test_loss, test_acc, test_preds, test_targets = validate_epoch(fold_model, test_loader, criterion, device)
+        
+        test_results.append({
+            'fold_idx': fold_idx,
+            'test_loss': test_loss,
+            'test_accuracy': test_acc,
+            'test_preds': test_preds,
+            'test_targets': test_targets
+        })
+        
+        print(f'Fold {fold_idx + 1} test accuracy: {test_acc:.2f}%')
+    
+    # Test set statistics
+    test_accuracies = [result['test_accuracy'] for result in test_results]
+    mean_test_acc = np.mean(test_accuracies)
+    std_test_acc = np.std(test_accuracies)
+    best_test_fold = np.argmax(test_accuracies)
+    
+    print(f'\n{"="*60}')
+    print(f'TEST SET RESULTS SUMMARY')
+    print(f'{"="*60}')
+    print(f'Mean test accuracy: {mean_test_acc:.2f}% ± {std_test_acc:.2f}%')
+    print(f'Individual test accuracies: {[f"{acc:.2f}%" for acc in test_accuracies]}')
+    print(f'Best test performance: Fold {best_test_fold + 1} with {test_accuracies[best_test_fold]:.2f}%')
+    
+    # Overall test classification report using best performing model
+    best_test_result = test_results[best_test_fold]
+    print(f'\nTest Set Classification Report (Best Model - Fold {best_test_fold + 1}):')
+    print(classification_report(best_test_result['test_targets'], best_test_result['test_preds'], 
+                              labels=list(range(full_dataset.num_classes)),
+                              target_names=[str(full_dataset.idx_to_label[i]) for i in range(full_dataset.num_classes)]))
+    
+    # Test confusion matrix
+    cm = confusion_matrix(best_test_result['test_targets'], best_test_result['test_preds'], 
+                         labels=list(range(full_dataset.num_classes)))
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+                xticklabels=[str(full_dataset.idx_to_label[i]) for i in range(full_dataset.num_classes)],
+                yticklabels=[str(full_dataset.idx_to_label[i]) for i in range(full_dataset.num_classes)])
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.title(f'Test Set Confusion Matrix (Best Model - Fold {best_test_fold + 1})')
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, 'test_set_confusion_matrix.png'))
+    plt.show()
+    
+    # Return the best model from the best performing fold (based on validation)
     best_model_path = os.path.join(output_dir, f'best_model_fold_{best_fold_idx + 1}.pth')
     best_checkpoint = torch.load(best_model_path)
     
@@ -820,7 +911,14 @@ def train_model_cv(data_dir, labels_file, split_or_merge_correction, concatenate
                                   split_or_merge_correction=split_or_merge_correction).to(device)
     best_model.load_state_dict(best_checkpoint['model_state_dict'])
     
-    print(f'\nBest model from fold {best_fold_idx + 1} with accuracy {best_fold_accuracy:.2f}%')
+    print(f'\nReturning best model from fold {best_fold_idx + 1} (validation accuracy: {best_fold_accuracy:.2f}%)')
+    
+    # Add test results to cv_results
+    cv_results['test_results'] = test_results
+    cv_results['mean_test_accuracy'] = mean_test_acc
+    cv_results['std_test_accuracy'] = std_test_acc
+    cv_results['best_test_fold'] = best_test_fold
+    cv_results['best_test_accuracy'] = test_accuracies[best_test_fold]
     
     return best_model, full_dataset.label_to_idx, cv_results
 
@@ -1032,10 +1130,30 @@ if __name__ == "__main__":
         output_dir='output'
     )
     
-    # Print cross validation summary
-    print(f"\nCross Validation Summary:")
-    print(f"Mean accuracy: {cv_results['mean_accuracy']:.2f}% ± {cv_results['std_accuracy']:.2f}%")
+    # Print comprehensive results summary
+    print(f"\n{'='*60}")
+    print("COMPREHENSIVE RESULTS SUMMARY")
+    print(f"{'='*60}")
+    
+    print(f"\nCross Validation Results (on training data):")
+    print(f"Mean validation accuracy: {cv_results['mean_accuracy']:.2f}% ± {cv_results['std_accuracy']:.2f}%")
     print(f"Individual fold accuracies: {[f'{acc:.2f}%' for acc in [result['val_acc'] for result in cv_results['fold_results']]]}")
+    
+    print(f"\nTest Set Results (held-out data):")
+    print(f"Mean test accuracy: {cv_results['mean_test_accuracy']:.2f}% ± {cv_results['std_test_accuracy']:.2f}%")
+    print(f"Individual test accuracies: {[f'{acc:.2f}%' for acc in [result['test_accuracy'] for result in cv_results['test_results']]]}")
+    print(f"Best test performance: Fold {cv_results['best_test_fold'] + 1} with {cv_results['best_test_accuracy']:.2f}%")
+    
+    # Compare validation vs test performance
+    val_test_diff = cv_results['mean_accuracy'] - cv_results['mean_test_accuracy']
+    print(f"\nValidation vs Test Performance:")
+    print(f"Difference (val - test): {val_test_diff:.2f}%")
+    if abs(val_test_diff) < 3.0:
+        print("✓ Good generalization (difference < 3%)")
+    elif val_test_diff > 3.0:
+        print("⚠ Possible overfitting (validation >> test)")
+    else:
+        print("⚠ Unusual pattern (test >> validation)")
     
     # Example prediction
     # data_dir = "scripts/output/mouse_segment_classification_full"
