@@ -436,7 +436,7 @@ def get_transforms(concatenate_images=True):
 # Handle class imbalance
 def get_weighted_sampler(dataset):
     """Create weighted sampler for imbalanced dataset"""
-    # Handle both full datasets and subsets
+    # Handle both full datasets and subsets (no nesting expected)
     if hasattr(dataset, 'indices'):  # This is a Subset
         # Get labels for the subset indices
         labels = [dataset.dataset.labels[dataset.indices[i]] for i in range(len(dataset))]
@@ -713,8 +713,12 @@ def train_model_cv(data_dir, labels_file, split_or_merge_correction, concatenate
         print(f'{"="*60}')
         
         # Create train and validation datasets for this fold
-        fold_train_dataset = torch.utils.data.Subset(train_dataset, fold_train_indices)
-        fold_val_dataset = torch.utils.data.Subset(train_dataset, fold_val_indices)
+        # Map fold indices back to original dataset indices to avoid nesting
+        actual_fold_train_indices = [train_indices[i] for i in fold_train_indices]
+        actual_fold_val_indices = [train_indices[i] for i in fold_val_indices]
+        
+        fold_train_dataset = torch.utils.data.Subset(full_dataset, actual_fold_train_indices)
+        fold_val_dataset = torch.utils.data.Subset(full_dataset, actual_fold_val_indices)
         
         # Train model for this fold
         model, val_acc, val_preds, val_targets, train_losses, val_losses = train_single_fold(
