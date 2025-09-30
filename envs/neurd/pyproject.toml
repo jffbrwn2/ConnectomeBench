@@ -1,0 +1,17 @@
+[project]
+name = "neurd-env"
+version = "0.0.0"
+requires-python = ">=3.8,<3.9"
+dependencies = [
+    "neurd",
+    "pyembree>=0.1.12",
+    "pynwb>=2.5.0",
+    "pymeshlab==2022.2",
+    "dotmotif>=0.13.0,<0.15",
+    "code_structure_tools>=1.0.2",
+    "caveclient==5.11.0",
+    "cloud-volume==8.27.0",
+]
+
+[tool.uv.sources]
+neurd = { path = "../../external/NEURD" }
