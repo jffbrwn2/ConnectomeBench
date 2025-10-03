@@ -1,0 +1,6 @@
+[submodule "external/NEURD"]
+	path = external/NEURD
+	url = https://github.com/reimerlab/NEURD.git
+[submodule "external/mesh_tools"]
+	path = external/mesh_tools
+	url = https://github.com/bacelii/mesh_tools.git
