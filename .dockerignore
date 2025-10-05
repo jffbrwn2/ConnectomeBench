@@ -1,0 +1,15 @@
+.git
+__pycache__
+*.pyc
+.env
+.env.*
+*.log
+.pixi/
+.uv/
+external/NEURD/temp/
+external/NEURD/.pixi/
+external/NEURD/.uv/
+external/mesh_tools/.pixi/
+external/mesh_tools/.uv/
+external/mesh_tools/temp/
+docker/neurd/.venv/

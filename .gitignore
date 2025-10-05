@@ -49,3 +49,6 @@ scripts/merge_identification_errors.html
 scripts/analyze_merge_identification.py
 scripts/analyze_merge_performance.py
 scripts/compare_merge_results.py
+*.pbz2
+mesh_watertight.off
+temp/
