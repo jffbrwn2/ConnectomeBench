@@ -37,9 +37,9 @@ This document describes how we will reproduce NEURD’s published pipeline insid
    `https://global.daf-apis.com/sticky_auth/api/v1/tos/2/accept` in a browser to accept the
    MICrONS Terms of Service once.
 
-## Comparison Spec (Frozen)
+## Proposed Comparison Spec
 
-This section fixes the evaluation choices to ensure a fair, reproducible comparison.
+This section proposes the evaluation choices to ensure a fair, reproducible comparison. We will lock these after a 25–50 event pilot sanity-check.
 
 - Dataset: MICrONS (`minnie65_public` datastack; pin a timestamp when available).
 - Primary task: Split identification. Segment typing is out-of-scope for the first pass; merge tasks are N/A.
@@ -47,7 +47,7 @@ This section fixes the evaluation choices to ensure a fair, reproducible compari
 - Compute: Run in `celiib/neurd:v2` with `--gpus all` when available. Record hardware specs.
 - Decision mapping (NEURD → benchmark):
   - Event-level decision is positive if any NEURD suggested split lies within a fixed radius R of the event coordinates.
-  - Radius R: 3000 nm (3 µm). Justification: robust to decimation and voxel quantization while selective at soma/branch scales.
+  - Radius R (proposed): 3000 nm (3 µm). Justification: robust to decimation and voxel quantization while selective at soma/branch scales.
   - Abstentions: if NEURD produces no nearby suggestion, count as incorrect in primary accuracy; also report abstain rate.
 - Metrics: Accuracy (primary), precision/recall/F1 (secondary), 95% bootstrap CIs, and per-event runtime; report abstain rate.
 - Pilot size: 25–50 events to validate R visually, then freeze for full runs.
@@ -93,8 +93,7 @@ We will implement a ConnectomeBench-side adapter (e.g., `scripts/neurd_adapter.p
    - `neuron.calculate_multi_soma_split_suggestions()` / `.multi_soma_split_execution()` to obtain split candidates.
    - `neuron_pipeline_utils.cell_type_ax_dendr_stage` followed by `auto_proof_stage` to gather proofread/split output.
 3. **Output Normalization:** translate stage products into the ConnectomeBench JSON layout:
-   - Segment type → use NEURD’s intrinsic cell-type inference to match our segment classification labels.
-   - Split identification → align NEURD’s `filtering_info`, `red_blue_suggestions`, and split locations with the `merge_coords`-driven event records used by `split_merge_resolution.py`.
+   - Split identification → align NEURD’s split locations with the event records used by `split_merge_resolution.py` (see mapping below).
    - Merge tasks → N/A in primary tables; optional exploratory appendix may be added later with clear caveats.
    - Include runtime + provenance metadata so we can profile throughput vs. LLM approaches.
 4. **Serialization:** write a JSON/CSV in `scripts/output/neurd_baseline/` that the benchmark scripts can ingest for metric computation alongside LLM runs.
@@ -115,7 +114,36 @@ We will implement a ConnectomeBench-side adapter (e.g., `scripts/neurd_adapter.p
 4. Feed the serialized NEURD baseline into the current evaluation scripts — for example, point `scripts/resnet_split_merge.py` or analysis notebooks at the new JSON file.
 5. Record all command invocations, commit hashes, and environment variables for reproducibility, matching the project’s PR expectations.
 
-## 6. Next Steps
+## 6. Adapter Mapping to LLM Decisions (Apples-to-Apples)
+
+This adapter converts NEURD’s neuron-centric proofreading outputs into the same event-level decisions produced by the LLM pipeline.
+
+- Inputs per event (same JSON used by LLMs):
+  - `event_id` (unique), `segment_id` (before-split neuron), `timestamp` (epoch seconds), `interface_point_nm: [x,y,z]` (ground truth). Optional: `synapse_csv` path for the native track.
+- Per-neuron cache (avoid repeated work):
+  - Keyed by `(segment_id, timestamp)`.
+  - Value contains `suggestions_nm` (list of [x,y,z] in nm), runtime and provenance.
+- NEURD steps (once per unique cache key):
+  - Load mesh for `segment_id` at `timestamp` (and synapses if native track).
+  - Run: decomposition → multi-soma split suggestions → split execution → cell-type/axon stage → auto_proof.
+  - Extract suggestions from:
+    - `pipeline_products["multi_soma_split_suggestions"]["red_blue_split_results"]`
+    - `pipeline_products["auto_proof"]["split_locations_before_filter"]`
+  - Union and lightly dedupe (e.g., round coordinates to nearest 500 nm).
+- Decision rule (split identification):
+  - `min_distance_nm = min(||suggestion - interface_point_nm||)`; verdict positive if `min_distance_nm <= R` (R=3000 nm proposed), else negative.
+  - Abstentions/failures (errors or zero suggestions) are treated as negative for primary accuracy and reported via an `abstain` flag.
+- Output fields per event:
+  - `event_id`, `segment_id`, `timestamp`, `interface_point_nm`, `nearest_suggestion_nm`, `distance_nm`, `radius_nm`, `neurd_detected` (bool), `n_suggestions`, `runtime_s`, `source="neurd"`.
+  - Provenance: NEURD commit, process/proof versions, decimation ratio, container image, GPU model.
+- Optional split comparison (if used):
+  - For option pairs A/B, compute `min_distance_nm` per option’s neuron context and choose the smaller; if both > R, record `model_answer="none"`. Report distances for audit. Keep as secondary; identification remains primary.
+- Tracks for fairness:
+  - NEURD native (with synapses) as primary. Optional “info-parity” ablation (without synapses) reported separately.
+
+Metrics are computed identically to the LLM pipeline: accuracy (primary), precision/recall/F1, 95% bootstrap CIs, abstain rate, and per-event runtime.
+
+## 7. Next Steps
 
 - Implement `scripts/neurd_adapter.py` with CLI arguments for input JSON, output path, and stage toggles.
 - Validate against the bundled fixture (`segment_id=864691135510518224`) to confirm parity with the integration test.

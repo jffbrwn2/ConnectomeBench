@@ -25,6 +25,16 @@ pip install -r requirements.txt
 The toolkit provides several scripts for processing connectome data:
 
 - `scripts/get_data.py`: Gather training data from MICrONS or FlyWire edit histories
+- Example usage (collect 50 MICrONS split edits and cache EM windows):
+  ```bash
+  uv run python scripts/get_data.py \
+    --species mouse \
+    --split-only \
+    --num-neurons 50 \
+    --extract-em-volumes \
+    --output-dir training_data
+  ```
+  Run `uv run python scripts/get_data.py --help` for the full CLI.
 - `scripts/split_merge_resolution.py`: Process and evaluate split/merge events
 - `scripts/segmentation_classification.py`: Classify segmentations
 

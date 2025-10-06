@@ -1,16 +1,19 @@
-import pandas as pd
-import numpy as np
-import os
+import argparse
+import asyncio
 import json
-from datetime import datetime, timedelta
-from typing import List, Dict, Tuple, Any, Optional
-import time
-import asyncio
-from tqdm import tqdm
-import asyncio
-from connectome_visualizer import ConnectomeVisualizer
+import logging
+import os
 import random
+import time
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
 import caveclient
+import numpy as np
+import pandas as pd
+
+from connectome_visualizer import ConnectomeVisualizer
 
 class TrainingDataGatherer:
     """
@@ -20,7 +23,14 @@ class TrainingDataGatherer:
     and finds the locations of these edits using the neuron interface method.
     """
     
-    def __init__(self, output_dir: str = "./training_data", species: str = "fly", vertices_threshold: int = 1000, valid_segment_vertices_threshold: int = 1000):
+    def __init__(
+        self,
+        output_dir: str = "./training_data",
+        species: str = "fly",
+        vertices_threshold: int = 1000,
+        valid_segment_vertices_threshold: int = 1000,
+        logger: Optional[logging.Logger] = None,
+    ):
         """
         Initialize the TrainingDataGatherer.
         
@@ -37,6 +47,7 @@ class TrainingDataGatherer:
          
         # Initialize data containers
         self.training_data = []
+        self.logger = logger or logging.getLogger(self.__class__.__name__)
         
     def subtract_time_from_timestamp(self, timestamp_str: str, minutes: int = 1) -> str:
         """
@@ -60,8 +71,8 @@ class TrainingDataGatherer:
             
             # Convert back to string in the same format
             return new_dt.isoformat()
-        except Exception as e:
-            print(f"Error subtracting time from timestamp: {e}")
+        except Exception:
+            self.logger.exception("Error subtracting time from timestamp")
             return timestamp_str
     async def process_neuron_edit(self, neuron_id: int, edit_info: Dict[str, Any], split_only: bool = False, merge_only: bool = False, edit_history: pd.DataFrame = None) -> Dict[str, Any]:
         """
@@ -77,13 +88,15 @@ class TrainingDataGatherer:
         elif isinstance(timestamp, datetime):
             timestamp = int(timestamp.timestamp())
         else:
-            print(f"Warning: timestamp is not an int or datetime: {edit_info.get('timestamp')}")
+            self.logger.warning(
+                "Skipping edit for neuron %s: unsupported timestamp %s", neuron_id, edit_info.get("timestamp")
+            )
             return None
         
         try:
             prev_timestamp = timestamp - 1
-        except Exception as e:
-            print(f"Error calculating previous timestamp: {e}")
+        except Exception:
+            self.logger.exception("Error calculating previous timestamp")
             prev_timestamp = timestamp  # Fallback to current timestamp if error
 
         all_before_root_ids = edit_history['before_root_ids']
@@ -94,10 +107,10 @@ class TrainingDataGatherer:
 
         is_merge = edit_info.get('is_merge', False)
         if is_merge and split_only:
-            print("Skipping merge operation because split_only is True")
+            self.logger.debug("Skipping merge operation because split_only is True")
             return None
         if not is_merge and merge_only:
-            print("Skipping split operation because merge_only is True")
+            self.logger.debug("Skipping split operation because merge_only is True")
             return None
 
         operation_id = edit_info.get('operation_id')
@@ -149,14 +162,20 @@ class TrainingDataGatherer:
 
                 # Check if at least one segment meets the threshold
                 if not all(count >= self.vertices_threshold for count in vertex_counts.values()):
-                    print(f"Skipping merge operation {operation_id}: No segment meets vertex threshold {self.vertices_threshold}")
+                    self.logger.debug(
+                        "Skipping merge operation %s: no segment meets vertex threshold %s",
+                        operation_id,
+                        self.vertices_threshold,
+                    )
                     return None
 
                 # Sort before_root_ids by vertex count (descending) using the obtained counts
                 before_root_ids.sort(key=lambda rid: vertex_counts.get(rid, 0), reverse=True)
 
             except Exception as e:
-                print(f"Error loading neurons or getting vertex counts for merge {operation_id}: {e}. Skipping.")
+                self.logger.warning(
+                    "Error loading neurons for merge %s: %s", operation_id, e, exc_info=True
+                )
                 return None # Skip this edit if loading/counting fails
             # --- End Load/Filter/Sort Logic ---
 
@@ -187,15 +206,20 @@ class TrainingDataGatherer:
                     edit_info['interface_point'] = interface['interface_point'].tolist() if isinstance(interface['interface_point'], np.ndarray) else interface['interface_point']
                     edit_info['min_distance'] = interface['min_distance']
                 else:
-                        print(f"Could not find interface for merge {operation_id}: One or both largest neurons failed to load earlier.")
+                    self.logger.debug(
+                        "Could not find interface for merge %s: one or both largest neurons failed to load earlier",
+                        operation_id,
+                    )
 
             except Exception as e:
-                print(f"Error finding interface for merge operation {operation_id}: {e}")
+                self.logger.warning(
+                    "Error finding interface for merge operation %s: %s", operation_id, e, exc_info=True
+                )
 
 
 
         elif not is_merge and not merge_only: # Split operation
-            print("Found split operation")
+            self.logger.debug("Found split operation")
             # Get root IDs involved in the split
             before_root_ids = edit_info.get('before_root_ids', [])
             after_root_ids = edit_info.get('after_root_ids', [])
@@ -235,7 +259,9 @@ class TrainingDataGatherer:
                 after_root_ids.sort(key=lambda rid: vertex_counts.get(rid, 0), reverse=True)
 
             except Exception as e:
-                print(f"Error loading neurons or getting vertex counts for split {operation_id}: {e}. Skipping.")
+                self.logger.warning(
+                    "Error loading neurons for split %s: %s", operation_id, e, exc_info=True
+                )
                 return None # Skip this edit if loading/counting fails
             # --- End Load/Filter/Sort Logic ---
 
@@ -265,10 +291,15 @@ class TrainingDataGatherer:
                     )
                     edit_info['interface_point'] = interface['interface_point'].tolist() if isinstance(interface['interface_point'], np.ndarray) else interface['interface_point']
                 else:
-                    print(f"Could not find interface for split {operation_id}: One or both largest neurons failed to load earlier.")
+                    self.logger.debug(
+                        "Could not find interface for split %s: one or both largest neurons failed to load earlier",
+                        operation_id,
+                    )
 
             except Exception as e:
-                print(f"Error finding interface for split operation {operation_id}: {e}")
+                self.logger.warning(
+                    "Error finding interface for split operation %s: %s", operation_id, e, exc_info=True
+                )
 
         return edit_info
 
@@ -284,14 +315,14 @@ class TrainingDataGatherer:
         Returns:
             List of dictionaries containing edit information
         """
-        print(f"Processing edit history for neuron {neuron_id}...")
+        self.logger.info("Processing edit history for neuron %s", neuron_id)
         
         # Get the edit history
         # visualizer = FlyWireVisualizer(output_dir=self.output_dir, species=self.visualizer.species)
         # edit_history = self.visualizer.get_edit_history(neuron_id)
         
         if edit_history is None or len(edit_history) == 0:
-            print(f"No edit history found for neuron {neuron_id}")
+            self.logger.debug("No edit history found for neuron %s", neuron_id)
             return []
         
 
@@ -303,14 +334,17 @@ class TrainingDataGatherer:
             else:
                 # Handle cases where values are not DataFrames or dict is structured differently
                 # This part might need adjustment based on the actual structure of the dict
-                print(f"Warning: edit_history is a dict but values are not all DataFrames. Converting dict keys/structure to DataFrame.")
+                self.logger.warning(
+                    "edit_history for neuron %s is a dict with non-DataFrame values; attempting conversion",
+                    neuron_id,
+                )
                 edit_history = pd.DataFrame(edit_history) 
         elif not isinstance(edit_history, pd.DataFrame):
             # If it's not a dict and not a DataFrame, try converting it
             try:
                 edit_history = pd.DataFrame(edit_history)
             except ValueError as e:
-                 print(f"Error converting edit_history to DataFrame: {e}")
+                 self.logger.error("Error converting edit_history to DataFrame for neuron %s: %s", neuron_id, e)
                  return []
         # Initialize list to store edit information
         edits = []
@@ -331,7 +365,16 @@ class TrainingDataGatherer:
         
         return edits
     
-    async def process_neuron_list(self, neuron_ids: List[int], split_only: bool = False, merge_only: bool = False, K: int = 50, save_interval: int = 10) -> List[Dict[str, Any]]:
+    async def process_neuron_list(
+        self,
+        neuron_ids: List[int],
+        split_only: bool = False,
+        merge_only: bool = False,
+        K: int = 50,
+        save_interval: int = 10,
+        save: bool = True,
+        filename: Optional[str] = None,
+    ) -> Tuple[List[Dict[str, Any]], Optional[str]]:
         """
         Process a list of neuron IDs.
         
@@ -342,17 +385,29 @@ class TrainingDataGatherer:
         Returns:
             List of dictionaries containing edit information
         """
-        print("Getting edit history")
+        self.logger.info("Fetching edit history for %s neurons", len(neuron_ids))
         edit_history = self.visualizer.get_edit_history(neuron_ids)
-        print("Processing edit history")
-        edits = await asyncio.gather(*[self.process_neuron_edit_history(neuron_id, edit_history[neuron_id], split_only=split_only, merge_only=merge_only, K=K) for neuron_id in neuron_ids])
+        self.logger.info("Processing edit history")
+        edits_nested = await asyncio.gather(*[
+            self.process_neuron_edit_history(
+                neuron_id,
+                edit_history[neuron_id],
+                split_only=split_only,
+                merge_only=merge_only,
+                K=K,
+            )
+            for neuron_id in neuron_ids
+        ])
         
-            
-        # Save the training data at intervals
-        self.save_training_data(edits)
-        print(f"Saved training data after processing {len(neuron_ids)} neurons")
-        
-        return edits
+        training_file: Optional[str] = None
+        if save:
+            training_file = self.save_training_data(edits_nested, filename=filename)
+            self.logger.info("Saved training data after processing %s neurons", len(neuron_ids))
+
+        flattened: List[Dict[str, Any]] = [
+            item for sublist in edits_nested for item in (sublist or []) if item is not None
+        ]
+        return flattened, training_file
     
     def save_training_data(self, edits: List[Dict[str, Any]], filename: Optional[str] = None) -> str:
         """
@@ -377,12 +432,22 @@ class TrainingDataGatherer:
         # Create the full path
         filepath = os.path.join(self.output_dir, filename)
         
+        # Flatten nested lists (one list per neuron) before saving
+        flattened: List[Dict[str, Any]] = []
+        for entry in edits:
+            if isinstance(entry, list):
+                flattened.extend(item for item in entry if item is not None)
+            elif isinstance(entry, dict):
+                flattened.append(entry)
+            else:
+                self.logger.debug("Skipping unexpected entry of type %s while saving", type(entry))
+
         # Save the data
         with open(filepath, 'w') as f:
-            json.dump(edits, f, indent=2)
-        
-        print(f"Saved training data to {filepath}")
-        
+            json.dump(flattened, f, indent=2)
+
+        self.logger.info("Saved %s training edits to %s", len(flattened), filepath)
+
         return filepath
     
     def load_training_data(self, filepath: str) -> List[Dict[str, Any]]:
@@ -398,7 +463,7 @@ class TrainingDataGatherer:
         with open(filepath, 'r') as f:
             edits = json.load(f)
         
-        print(f"Loaded training data from {filepath}")
+        self.logger.info("Loaded training data from %s", filepath)
         
         return edits
     
@@ -465,7 +530,9 @@ class TrainingDataGatherer:
                     'valid_segment_vertices_threshold': self.valid_segment_vertices_threshold
                 }
             except Exception as e:
-                print(f"Error loading EM data for edit {edit.get('operation_id')}: {e}")
+                self.logger.warning(
+                    "Error loading EM data for edit %s: %s", edit.get("operation_id"), e, exc_info=True
+                )
                 return None
             return edit_with_em
         
@@ -511,54 +578,158 @@ class TrainingDataGatherer:
         with open(filepath, 'w') as f:
             json.dump(em_data, f, indent=2)
         
-        print(f"Saved EM data to {filepath}")
+        self.logger.info("Saved EM data to %s", filepath)
         
         return filepath
 
 
-# Example usage
-if __name__ == "__main__":
+def _load_neuron_ids_from_file(path: Path) -> List[int]:
+    """Load neuron IDs from a JSON list or newline-delimited text file."""
+
+    text = path.read_text().strip()
+    if not text:
+        raise ValueError(f"Neuron ID file {path} is empty")
+
     try:
-        species = "mouse"
-        num_neurons = 200
-        if species == "fly":
-            client = caveclient.CAVEclient("flywire_fafb_public")
-            neuron_ids = list(client.materialize.query_table('proofread_neurons')['pt_root_id'])[:num_neurons]
-        elif species == "mouse":
-            client = caveclient.CAVEclient("minnie65_public")
-            neuron_ids = list(client.materialize.query_table('proofreading_status_and_strategy')['valid_id'])
-            # random.seed(42)
-            random.seed(84)
-            neuron_ids = random.sample(neuron_ids, num_neurons)
-        elif species == "human":
-            url = "https://global.brain-wire-test.org/"
-            client = caveclient.CAVEclient(datastack_name='h01_c3_flat', server_address=url)
-            neuron_ids = list(client.materialize.query_table('proofreading_status_test')['pt_root_id'])[:num_neurons]
-        elif species == "fish":
-            url = "https://global.brain-wire-test.org/"
+        data = json.loads(text)
+        if isinstance(data, list):
+            return [int(x) for x in data]
+    except json.JSONDecodeError:
+        pass
+
+    ids: List[int] = []
+    for line in text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        ids.append(int(line))
+    return ids
 
 
-        gatherer = TrainingDataGatherer(output_dir="./training_data", species=species)
+def _fetch_neuron_ids(species: str, num_neurons: int, seed: int) -> List[int]:
+    """Fetch candidate neuron IDs for the requested species."""
 
-        
-        # neuron_ids = [
-        #     864691135441799752
-        # ]
-        
-        # # Process the neurons
-        edits = asyncio.run(gatherer.process_neuron_list(neuron_ids, split_only=True, K = 1000))
-        
-        # edits = asyncio.run(gatherer.process_neuron_list(neuron_ids, split_only=False, merge_only=True, K = 200))
+    if species == "mouse":
+        client = caveclient.CAVEclient("minnie65_public")
+        ids = list(client.materialize.query_table('proofreading_status_and_strategy')['valid_id'])
+    elif species == "fly":
+        client = caveclient.CAVEclient("flywire_fafb_public")
+        ids = list(client.materialize.query_table('proofread_neurons')['pt_root_id'])
+    elif species == "human":
+        client = caveclient.CAVEclient(datastack_name='h01_c3_flat', server_address="https://global.brain-wire-test.org/")
+        ids = list(client.materialize.query_table('proofreading_status_test')['pt_root_id'])
+    elif species == "fish":
+        client = caveclient.CAVEclient(datastack_name='zebrafish_flat', server_address="https://global.brain-wire-test.org/")
+        ids = list(client.materialize.query_table('proofreading_status_test')['pt_root_id'])
+    else:
+        raise ValueError(f"Unsupported species: {species}")
 
-        edits_flat = [x for y in edits for x in y]
-        breakpoint()
-        
-        edits_flat = [x for x in edits_flat if x['interface_point'] is not None]
+    if not ids:
+        raise RuntimeError(f"No neuron IDs available for species '{species}'")
 
-        # Generate EM data for the edits
-        em_data = asyncio.run(gatherer.generate_em_data_for_edits(edits_flat))
-        
-        # Save the EM data
-        gatherer.save_em_data(em_data) 
-    except:
-        import pdb; pdb.post_mortem()
+    if num_neurons <= 0 or num_neurons >= len(ids):
+        return ids
+
+    random.seed(seed)
+    return random.sample(ids, num_neurons)
+
+
+def _configure_logging(verbose: bool) -> None:
+    level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+    )
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Gather split/merge training data from CAVE edit histories."
+    )
+    parser.add_argument("--species", choices=["mouse", "fly", "human", "fish"], default="mouse")
+    parser.add_argument("--output-dir", type=Path, default=Path("training_data"))
+    parser.add_argument("--output-filename", type=str, help="Optional override for the training data JSON filename.")
+    parser.add_argument("--em-output-filename", type=str, help="Optional override when saving EM data JSON.")
+    parser.add_argument("--num-neurons", type=int, default=50, help="Number of neurons to sample when neuron IDs are not provided.")
+    parser.add_argument("--neuron-ids-file", type=Path, help="Path to a newline-delimited or JSON list of neuron IDs to process.")
+    parser.add_argument("--split-only", action="store_true", help="Collect only split operations.")
+    parser.add_argument("--merge-only", action="store_true", help="Collect only merge operations.")
+    parser.add_argument("--edits-per-neuron", type=int, default=50, help="Maximum edit events sampled per neuron.")
+    parser.add_argument("--vertices-threshold", type=int, default=1000, help="Minimum vertex count for segments considered in edits.")
+    parser.add_argument("--valid-segment-threshold", type=int, default=1000, help="Minimum vertices when filtering EM segmentation.")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed for neuron sampling.")
+    parser.add_argument("--extract-em-volumes", action="store_true", help="Extract EM volumes around edit interface points.")
+    parser.add_argument("--window-size-nm", type=int, default=512, help="XY window size in nanometres for EM extraction.")
+    parser.add_argument("--window-z", type=int, default=3, help="Z slices for EM extraction.")
+    parser.add_argument("--no-save", action="store_true", help="Do not emit the training data JSON (useful for dry runs).")
+    parser.add_argument("--verbose", action="store_true", help="Enable debug logging.")
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    if args.split_only and args.merge_only:
+        raise SystemExit("--split-only and --merge-only cannot both be set")
+
+    _configure_logging(args.verbose)
+    logger = logging.getLogger("get_data")
+
+    if args.neuron_ids_file:
+        neuron_ids = _load_neuron_ids_from_file(args.neuron_ids_file)
+        logger.info("Loaded %s neuron IDs from %s", len(neuron_ids), args.neuron_ids_file)
+    else:
+        neuron_ids = _fetch_neuron_ids(args.species, args.num_neurons, args.seed)
+        logger.info("Sampled %s neuron IDs for species %s", len(neuron_ids), args.species)
+
+    gatherer = TrainingDataGatherer(
+        output_dir=str(args.output_dir),
+        species=args.species,
+        vertices_threshold=args.vertices_threshold,
+        valid_segment_vertices_threshold=args.valid_segment_threshold,
+        logger=logging.getLogger("TrainingDataGatherer"),
+    )
+
+    training_filename = args.output_filename
+    if training_filename is not None and not training_filename.endswith(".json"):
+        training_filename = f"{training_filename}.json"
+
+    edits_flat, training_path = asyncio.run(
+        gatherer.process_neuron_list(
+            neuron_ids,
+            split_only=args.split_only,
+            merge_only=args.merge_only,
+            K=args.edits_per_neuron,
+            save=not args.no_save,
+            filename=training_filename,
+        )
+    )
+
+    if args.no_save:
+        logger.info("Processed %s edits (no training data written)", len(edits_flat))
+    else:
+        logger.info(
+            "Wrote %s edits to %s",
+            len(edits_flat),
+            training_path,
+        )
+
+    if args.extract_em_volumes:
+        if not edits_flat:
+            logger.warning("No edits available for EM generation; skipping")
+        else:
+            em_data = asyncio.run(
+                gatherer.generate_em_data_for_edits(
+                    edits_flat,
+                    window_size_nm=args.window_size_nm,
+                    window_z=args.window_z,
+                )
+            )
+            em_filename = args.em_output_filename
+            if em_filename is not None and not em_filename.endswith(".json"):
+                em_filename = f"{em_filename}.json"
+            em_path = gatherer.save_em_data(em_data, filename=em_filename)
+            logger.info("Saved EM volumes with %s entries to %s", len(em_data), em_path)
+
+
+if __name__ == "__main__":
+    main()
