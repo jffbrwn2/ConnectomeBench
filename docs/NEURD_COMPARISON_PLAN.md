@@ -30,7 +30,12 @@ This document describes how we will reproduce NEURD’s published pipeline insid
    ```bash
    uv run python scripts/caveclient_token.py --request   # prints the login URL
    uv run python scripts/caveclient_token.py --save "<token>"
+   uv run python scripts/caveclient_token.py --show-path  # reveals where the token was stored
+   export CAVE_TOKEN=$(jq -r '.token' ~/.cloudvolume/secrets/global.daf-apis.com-cave-secret.json)
    ```
+   If you encounter a `403 missing_tos` error when using `CAVEclient`, visit
+   `https://global.daf-apis.com/sticky_auth/api/v1/tos/2/accept` in a browser to accept the
+   MICrONS Terms of Service once.
 
 ## Comparison Spec (Frozen)
 

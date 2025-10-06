@@ -80,7 +80,11 @@ def display_token_path(client: CAVEclient, datastack: str) -> None:
         token_path = Path(client.auth.token_path)
 
     if token_path is None:
-        print("Token path is unknown for this CAVEclient version.")
+        print(
+            "Token path is unknown for this caveclient version. "
+            "Typically tokens are stored under "
+            "~/.cloudvolume/secrets/<host>-cave-secret.json."
+        )
         return
 
     exists = token_path.exists()
