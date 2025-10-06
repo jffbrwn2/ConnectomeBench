@@ -26,7 +26,11 @@ This document describes how we will reproduce NEURD’s published pipeline insid
    python -m unittest discover -s external/NEURD/tests/unit -v
    python external/NEURD/tests/integration/test_autoproof_pipeline.py
    ```
-5. Export required credentials (e.g., `CAVE_TOKEN`) in the shell if you run pipelines beyond the fixtures.
+5. Export required credentials (e.g., `CAVE_TOKEN`) in the shell if you run pipelines beyond the fixtures. A helper script is available:
+   ```bash
+   uv run python scripts/caveclient_token.py --request   # prints the login URL
+   uv run python scripts/caveclient_token.py --save "<token>"
+   ```
 
 ## Comparison Spec (Frozen)
 

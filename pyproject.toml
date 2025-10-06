@@ -26,15 +26,3 @@ dependencies = [
     "torch>=2.7.0",
     "torchvision>=0.22.0",
 ]
-
-[project.optional-dependencies]
-neurd = [
-    "neurd",
-    "mesh-processing-tools",
-    "pynwb>=2.5.0",
-    "pymeshlab>=2022.2",
-]
-
-[tool.uv.sources]
-neurd = { path = "external/NEURD" }
-"mesh-processing-tools" = { path = "external/mesh_tools" }
