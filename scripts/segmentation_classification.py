@@ -8,7 +8,7 @@ import numpy as np
 import networkx as nx
 import multiprocessing
 import asyncio
-from prompts import create_segment_classification_prompt
+from src.prompts import create_segment_classification_prompt
 import argparse
 
 

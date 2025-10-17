@@ -8,9 +8,10 @@ import time
 import asyncio
 from tqdm import tqdm
 import asyncio
-from connectome_visualizer import ConnectomeVisualizer
+from src.connectome_visualizer import ConnectomeVisualizer
 import random
 import caveclient
+import argparse
 
 class TrainingDataGatherer:
     """
@@ -20,20 +21,22 @@ class TrainingDataGatherer:
     and finds the locations of these edits using the neuron interface method.
     """
     
-    def __init__(self, output_dir: str = "./training_data", species: str = "fly", vertices_threshold: int = 1000, valid_segment_vertices_threshold: int = 1000):
+    def __init__(self, output_dir: str = "./data", species: str = "fly", vertices_threshold: int = 1000, valid_segment_vertices_threshold: int = 1000, verbose: bool = False):
         """
         Initialize the TrainingDataGatherer.
-        
+
         Args:
             output_dir: Directory to save output files
             vertices_threshold: Minimum number of vertices for a segment to be considered significant
+            verbose: Whether to print verbose status messages from ConnectomeVisualizer
         """
         self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)
         self.vertices_threshold = vertices_threshold
         self.valid_segment_vertices_threshold = valid_segment_vertices_threshold
+        self.verbose = verbose
         # Initialize the FlyWireVisualizer
-        self.visualizer = ConnectomeVisualizer(output_dir=output_dir, species=species)
+        self.visualizer = ConnectomeVisualizer(output_dir=output_dir, species=species, verbose=verbose)
          
         # Initialize data containers
         self.training_data = []
@@ -102,9 +105,9 @@ class TrainingDataGatherer:
 
         operation_id = edit_info.get('operation_id')
         if is_merge:
-            visualizer = ConnectomeVisualizer(output_dir=self.output_dir, species=self.visualizer.species, timestamp=prev_timestamp) 
+            visualizer = ConnectomeVisualizer(output_dir=self.output_dir, species=self.visualizer.species, timestamp=prev_timestamp, verbose=False)
         else:
-            visualizer = ConnectomeVisualizer(output_dir=self.output_dir, species=self.visualizer.species, timestamp=timestamp) 
+            visualizer = ConnectomeVisualizer(output_dir=self.output_dir, species=self.visualizer.species, timestamp=timestamp, verbose=False)
         visualizer.timestamp = timestamp
         visualizer._connect_to_data_sources()
         
@@ -123,11 +126,6 @@ class TrainingDataGatherer:
             vertex_counts = None
             loaded_neurons_map = {}
             try:
-
-                # skeletons = visualizer.get_neuron_skelettons(before_root_ids)
-                # if not all(len(skeleton['vertices']) >= self.skeleton_vertices_threshold for skeleton in skeletons):
-                #     print(f"Skipping merge operation {operation_id}: No skeleton meets vertex threshold {self.skeleton_vertices_threshold}")
-                #     return None
                 # Load all neurons involved before the merge
                 visualizer.load_neurons(before_root_ids)
 
@@ -149,7 +147,8 @@ class TrainingDataGatherer:
 
                 # Check if at least one segment meets the threshold
                 if not all(count >= self.vertices_threshold for count in vertex_counts.values()):
-                    print(f"Skipping merge operation {operation_id}: No segment meets vertex threshold {self.vertices_threshold}")
+                    if self.verbose:
+                        print(f"Skipping merge operation {operation_id}: No segment meets vertex threshold {self.vertices_threshold}")
                     return None
 
                 # Sort before_root_ids by vertex count (descending) using the obtained counts
@@ -225,12 +224,7 @@ class TrainingDataGatherer:
                 for rid in after_root_ids:
                     if rid not in vertex_counts:
                         vertex_counts[rid] = 0
-
-                # # Check if at least one segment meets the threshold
-                # if not all(count >= self.vertices_threshold for count in vertex_counts.values()):
-                #     print(f"Skipping split operation {operation_id}: No segment meets vertex threshold {self.vertices_threshold}")
-                #     return None
-
+                        
                 # Sort after_root_ids by vertex count (descending)
                 after_root_ids.sort(key=lambda rid: vertex_counts.get(rid, 0), reverse=True)
 
@@ -424,7 +418,7 @@ class TrainingDataGatherer:
                 timestamp = edit['prev_timestamp']
             else:
                 timestamp = edit['timestamp']
-            visualizer = ConnectomeVisualizer(output_dir=self.output_dir, species=self.visualizer.species, timestamp=timestamp)
+            visualizer = ConnectomeVisualizer(output_dir=self.output_dir, species=self.visualizer.species, timestamp=timestamp, verbose=self.verbose)
             visualizer.timestamp = timestamp
             visualizer._connect_to_data_sources()
             print(f"Previous timestamp: {edit['prev_timestamp']}, Current timestamp: {edit['timestamp']}")
@@ -518,47 +512,89 @@ class TrainingDataGatherer:
 
 # Example usage
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Gather training data from connectome edit histories")
+    parser.add_argument("--species", type=str, required=True, choices=["fly", "mouse"],
+                        help="Species to process (human and fish are not supported)")
+    parser.add_argument("--num-neurons", type=int, default=200,
+                        help="Number of neurons to process (default: 200)")
+    parser.add_argument("--output-dir", type=str, default="./data",
+                        help="Output directory for saved data (default: ./data)")
+    parser.add_argument("--split-only", action="store_true",
+                        help="Only process split operations")
+    parser.add_argument("--merge-only", action="store_true",
+                        help="Only process merge operations")
+    parser.add_argument("--K", type=int, default=1000,
+                        help="Number of edits to sample per neuron (default: 1000)")
+    parser.add_argument("--vertices-threshold", type=int, default=1000,
+                        help="Minimum vertex count threshold (default: 1000)")
+    parser.add_argument("--valid-segment-vertices-threshold", type=int, default=1000,
+                        help="Valid segment vertex threshold (default: 1000)")
+    parser.add_argument("--random-seed", type=int, default=84,
+                        help="Random seed for neuron sampling (default: 84)")
+    parser.add_argument("--window-size-nm", type=int, default=512,
+                        help="EM data window size in nanometers (default: 512)")
+    parser.add_argument("--window-z", type=int, default=3,
+                        help="EM data window Z depth (default: 3)")
+    parser.add_argument("--verbose", action="store_true",
+                        help="Enable verbose output from ConnectomeVisualizer")
+
+    args = parser.parse_args()
+
+    # Validate species
+    if args.species in ["human", "fish"]:
+        raise ValueError(f"Species '{args.species}' is not supported. Only 'fly' and 'mouse' are supported.")
+
+    if args.split_only and args.merge_only:
+        raise ValueError("Cannot specify both --split-only and --merge-only")
+
     try:
-        species = "mouse"
-        num_neurons = 200
-        if species == "fly":
+        # Get neuron IDs based on species
+        if args.species == "fly":
             client = caveclient.CAVEclient("flywire_fafb_public")
-            neuron_ids = list(client.materialize.query_table('proofread_neurons')['pt_root_id'])[:num_neurons]
-        elif species == "mouse":
+            neuron_ids = list(client.materialize.query_table('proofread_neurons')['pt_root_id'])[:args.num_neurons]
+        elif args.species == "mouse":
             client = caveclient.CAVEclient("minnie65_public")
             neuron_ids = list(client.materialize.query_table('proofreading_status_and_strategy')['valid_id'])
-            # random.seed(42)
-            random.seed(84)
-            neuron_ids = random.sample(neuron_ids, num_neurons)
-        elif species == "human":
-            url = "https://global.brain-wire-test.org/"
-            client = caveclient.CAVEclient(datastack_name='h01_c3_flat', server_address=url)
-            neuron_ids = list(client.materialize.query_table('proofreading_status_test')['pt_root_id'])[:num_neurons]
-        elif species == "fish":
-            url = "https://global.brain-wire-test.org/"
+            random.seed(args.random_seed)
+            neuron_ids = random.sample(neuron_ids, args.num_neurons)
 
+        print(f"Processing {len(neuron_ids)} {args.species} neurons...")
+        print(f"Settings: K={args.K}, split_only={args.split_only}, merge_only={args.merge_only}")
 
-        gatherer = TrainingDataGatherer(output_dir="./training_data", species=species)
+        # Initialize gatherer
+        gatherer = TrainingDataGatherer(
+            output_dir=args.output_dir,
+            species=args.species,
+            vertices_threshold=args.vertices_threshold,
+            valid_segment_vertices_threshold=args.valid_segment_vertices_threshold,
+            verbose=args.verbose
+        )
 
-        
-        # neuron_ids = [
-        #     864691135441799752
-        # ]
-        
-        # # Process the neurons
-        edits = asyncio.run(gatherer.process_neuron_list(neuron_ids, split_only=True, K = 1000))
-        
-        # edits = asyncio.run(gatherer.process_neuron_list(neuron_ids, split_only=False, merge_only=True, K = 200))
+        # Process the neurons
+        edits = asyncio.run(gatherer.process_neuron_list(
+            neuron_ids,
+            split_only=args.split_only,
+            merge_only=args.merge_only,
+            K=args.K
+        ))
 
         edits_flat = [x for y in edits for x in y]
-        breakpoint()
-        
+
+
         edits_flat = [x for x in edits_flat if x['interface_point'] is not None]
+        print(f"Found {len(edits_flat)} edits with interface points")
 
         # Generate EM data for the edits
-        em_data = asyncio.run(gatherer.generate_em_data_for_edits(edits_flat))
-        
+        em_data = asyncio.run(gatherer.generate_em_data_for_edits(
+            edits_flat,
+            window_size_nm=args.window_size_nm,
+            window_z=args.window_z
+        ))
+
         # Save the EM data
-        gatherer.save_em_data(em_data) 
-    except:
+        gatherer.save_em_data(em_data)
+        print("Processing complete!")
+
+    except Exception as e:
+        print(f"Error: {e}")
         import pdb; pdb.post_mortem()
