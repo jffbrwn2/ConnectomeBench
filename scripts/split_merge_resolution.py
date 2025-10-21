@@ -420,7 +420,6 @@ def generate_neuron_images(
     return image_paths
 
 
-
 def _process_single_split_event(item, output_dir, task, force_regenerate, use_zoomed_images, views, species, zoom_margin, model):
     """Processes a single merge event: generates images and evaluates options."""
     operation_id = item.get('operation_id', 'N/A')
@@ -635,9 +634,7 @@ def _process_single_merge_event(item, output_dir, force_regenerate, use_zoomed_i
                     if not os.path.exists(f"{option_dir_check}_{view}.png"):
                         expected_has_images = False
                         break
-                # Currently not checking EM, just the 3D views for simplicity as requested
-                # if expected_has_images and not os.path.exists(os.path.join(neuron_dir, f"option_{expected_id}_em_slice_with_segmentation.png")):
-                #     expected_has_images = False
+    
 
                 if expected_has_images:
                     print(f"Found existing complete images for correct option: {expected_id}")
@@ -655,8 +652,7 @@ def _process_single_merge_event(item, output_dir, force_regenerate, use_zoomed_i
                      if not os.path.exists(f"{option_dir_check}_{view}.png"):
                         incorrect_has_images = False
                         break
-                # if incorrect_has_images and not os.path.exists(os.path.join(neuron_dir, f"option_{incorrect_id}_em_slice_with_segmentation.png")):
-                #    incorrect_has_images = False
+     
 
                 if incorrect_has_images:
                     print(f"Found existing complete images for incorrect option: {incorrect_id}")

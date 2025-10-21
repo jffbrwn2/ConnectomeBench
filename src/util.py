@@ -471,14 +471,170 @@ class LLMProcessor:
 
     async def batch_completions(self, prompts, parse=None, get_response=False):
         """
-        Creates async tasks to call `_call_api_async` for each set of messages 
+        Creates async tasks to call `_call_api_async` for each set of messages
         (or use your direct litellm usage).
         """
         tasks = [
-            asyncio.create_task(self._call_api_async(p, parse=parse, get_response=get_response)) 
+            asyncio.create_task(self._call_api_async(p, parse=parse, get_response=get_response))
             for p in prompts
         ]
         # Gather results
         results = await asyncio.gather(*tasks, return_exceptions=True)
         return results
+
+
+##################### Shared Resolution Functions #########################
+
+def evaluate_response(response: str) -> Dict[str, Any]:
+    """Get model's evaluation of merge identification options using LLMProcessor.
+    Returns a dictionary containing 'answer' (chosen option index as string, 'none', or error string)
+    and 'analysis' (the analysis text, or None).
+    """
+    result = {"answer": None, "analysis": None}
+
+    # Extract Analysis
+    analysis_start = response.find("<analysis>")
+    analysis_end = response.find("</analysis>")
+    if analysis_start != -1 and analysis_end != -1:
+        result["analysis"] = response[analysis_start + len("<analysis>"):analysis_end].strip()
+    else:
+        print("Warning: Could not find <analysis> tags in the model response.")
+        result["analysis"] = "Analysis tags not found in response."
+
+    # Extract Answer
+    answer_start = response.find("<answer>")
+    answer_end = response.find("</answer>")
+    if answer_start != -1 and answer_end != -1:
+        answer = response[answer_start + len("<answer>"):answer_end].strip().lower()
+
+        if answer == "none":
+            result["answer"] = "none"
+        elif answer == "-1":
+            result["answer"] = "none"
+            print("Info: Model responded with '-1', interpreting as 'none'.")
+        else:
+            try:
+                choice_index = int(answer)
+                if choice_index > 0:
+                    result["answer"] = answer
+                else:
+                    print(f"Warning: Model returned non-positive integer '{answer}'. Treating as 'none'.")
+                    result["answer"] = "none"
+            except ValueError:
+                print(f"Warning: Could not parse model answer '{answer}' as an integer or 'none'. Treating as 'none'.")
+                result["answer"] = "none"
+    else:
+        print("Warning: Could not find <answer> tags in the model response. Treating as 'none'.")
+        result["answer"] = "none"
+
+    return result
+
+
+def create_unified_result_structure(
+    task: str,
+    event_result: Dict[str, Any],
+    option_data: Any = None,
+    response: str = None,
+    answer_analysis: Dict[str, Any] = None,
+    index: int = None,
+    model: str = "unknown",
+    zoom_margin: int = 5000,
+    prompt_mode: str = "informative",
+    correct_answer: str = None
+) -> Dict[str, Any]:
+    """
+    Create a unified result structure for all tasks with consistent keys.
+
+    Args:
+        task: The task type ('merge_comparison', 'merge_identification', 'split_comparison', 'split_identification')
+        event_result: The processed event result containing operation details
+        option_data: Optional option data for identification tasks
+        response: Optional raw LLM response
+        answer_analysis: Optional parsed answer analysis
+        index: Optional index for multiple runs
+        model: Model name used
+        zoom_margin: Zoom margin used
+        prompt_mode: Prompt mode used
+        correct_answer: Optional correct answer for comparison tasks
+
+    Returns:
+        Dictionary with unified structure for all tasks
+    """
+    # Base structure with common fields
+    unified_result = {
+        # Task and operation info
+        'task': task,
+        'operation_id': event_result.get('operation_id', 'unknown'),
+        'timestamp': event_result.get('timestamp', None),
+
+        # Coordinates and location
+        'merge_coords': event_result.get('merge_coords', None),
+        'interface_point': event_result.get('interface_point', None),
+
+        # Neuron IDs - always present but may be None for some tasks
+        'base_neuron_id': event_result.get('base_neuron_id', None),
+        'before_root_ids': event_result.get('before_root_ids', []),
+        'after_root_ids': event_result.get('after_root_ids', []),
+        'proofread_root_id': event_result.get('proofread_root_id', None),
+
+        # Model and evaluation info
+        'model': model,
+        'model_raw_answer': response,
+        'model_analysis': answer_analysis.get('analysis', None) if answer_analysis else None,
+        'model_prediction': answer_analysis.get('answer', None) if answer_analysis else None,
+        'index': index,
+
+        # Image and view settings
+        'views': event_result.get('views', []),
+        'use_zoomed_images': event_result.get('use_zoomed_images', True),
+        'zoom_margin': zoom_margin,
+        'prompt_mode': prompt_mode,
+
+        # Task-specific fields (will be filled based on task)
+        'correct_answer': correct_answer,
+        'is_split': None,
+        'model_chosen_id': None,
+        'model_answer': None,
+        'error': None,
+
+        # Image paths (if available)
+        'image_paths': event_result.get('image_paths', {}),
+        'prompt_options': event_result.get('prompt_options', [])
+    }
+
+    # Task-specific field mapping
+    if task == 'merge_comparison':
+        unified_result.update({
+            'correct_answer': event_result.get('expected_choice_ids', []),
+            'model_chosen_id': event_result.get('model_chosen_id', None),
+            'error': event_result.get('error', None),
+            'options_presented_ids': event_result.get('options_presented_ids', []),
+            'num_options_presented': event_result.get('num_options_presented', 0),
+            'correct_merged_pair': event_result.get('correct_merged_pair', [])
+        })
+
+    elif task == 'merge_identification':
+        if option_data:
+            unified_result.update({
+                'id': option_data.get('id', None),
+                'model_answer': answer_analysis.get('answer', None) if answer_analysis else None,
+                'is_correct_merge': option_data.get('id') in event_result.get('expected_choice_ids', [])
+            })
+
+    elif task == 'split_identification':
+        if option_data:
+            unified_result.update({
+                'id': option_data.get('id', None),
+                'is_split': int(option_data.get('id', 0)) in event_result.get('before_root_ids', []),
+                'model_answer': answer_analysis.get('answer', None) if answer_analysis else None
+            })
+
+    elif task == 'split_comparison':
+        unified_result.update({
+            'root_id_requires_split': event_result.get('root_id_requires_split', None),
+            'root_id_does_not_require_split': event_result.get('root_id_does_not_require_split', None),
+            'correct_answer': correct_answer
+        })
+
+    return unified_result
 
