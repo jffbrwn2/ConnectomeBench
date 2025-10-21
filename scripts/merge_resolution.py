@@ -102,8 +102,7 @@ def generate_neuron_option_images(
     output_dir: str,
     timestamp: Optional[int] = None,
     species: str = "fly",
-    zoom_margin: int = 5000,
-    model: str = "gpt-4o-mini"
+    zoom_margin: int = 5000
 ) -> Dict[str, Any]:
     """
     Generate images for a base neuron and potential merge options near merge coordinates.
@@ -116,7 +115,6 @@ def generate_neuron_option_images(
         timestamp: Optional timestamp for CAVEclient state
         species: Species for the dataset
         zoom_margin: Margin around merge point for zoomed views
-        model: Model name for metadata
 
     Returns:
         Dictionary with paths to generated images
@@ -167,8 +165,7 @@ def generate_neuron_option_images(
         'option_ids_processed': option_ids_to_process,
         'merge_coords': merge_coords,
         'timestamp': timestamp,
-        'image_paths': final_image_paths,
-        'model': model
+        'image_paths': final_image_paths
     }
     metadata_path = os.path.join(neuron_dir, "generation_metadata.json")
     try:
@@ -340,7 +337,7 @@ def _prepare_prompt_options(
     return prompt_options, option_index_to_id
 
 
-def _process_single_merge_event(item, output_dir, force_regenerate, use_zoomed_images, views, zoom_margin, model, skip_image_generation=False):
+def _process_single_merge_event(item, output_dir, force_regenerate, use_zoomed_images, views, zoom_margin, skip_image_generation=False):
     """
     Process a single merge event: load/generate images and prepare evaluation data.
 
@@ -419,8 +416,7 @@ def _process_single_merge_event(item, output_dir, force_regenerate, use_zoomed_i
                 output_dir,
                 timestamp=timestamp_before_merge,
                 species=item.get('species', 'Not specified'),
-                zoom_margin=zoom_margin,
-                model=model
+                zoom_margin=zoom_margin
             )
 
         if not image_paths:
@@ -515,7 +511,6 @@ def _run_parallel_image_generation(
     use_zoomed_images: bool,
     views: List[str],
     zoom_margin: int,
-    model: str,
     max_workers: Optional[int] = None
 ) -> List[Dict]:
     """
@@ -532,7 +527,7 @@ def _run_parallel_image_generation(
     print(f"Using up to {max_workers} processes for parallel processing.")
 
     args_list = [
-        (item, output_dir, force_regenerate, use_zoomed_images, views, zoom_margin, model)
+        (item, output_dir, force_regenerate, use_zoomed_images, views, zoom_margin)
         for item in merge_data
     ]
 
@@ -684,7 +679,7 @@ def _process_llm_responses_for_merges(
     return final_results
 
 
-async def process_merge_data(
+def process_merge_images(
     json_path: str,
     output_dir: str,
     force_regenerate=False,
@@ -692,43 +687,59 @@ async def process_merge_data(
     use_zoomed_images=True,
     max_workers: Optional[int] = None,
     views=['front', 'side', 'top'],
-    task='merge_comparison',
-    llm_processor: LLMProcessor = None,
-    zoom_margin: int = 5000,
-    species: str = "fly",
-    model: str = "gpt-4o-mini",
-    prompt_mode: str = 'informative',
-    K: int = 10
-):
+    zoom_margin: int = 5000
+) -> List[Dict]:
     """
-    Process merge data: load data, generate images, evaluate with LLM, and save results.
+    Phase 1: Load merge data and generate images for all merge events.
 
-    This is the main pipeline that orchestrates:
-    1. Loading and filtering input data
-    2. Parallel image generation for merge events
-    3. Creating prompts for LLM evaluation
-    4. Running LLM batch processing
-    5. Processing responses into structured results
-    6. Saving results to CSV
+    This phase:
+    1. Loads and filters input data
+    2. Runs parallel image generation for merge events
 
     Returns:
-        DataFrame with evaluation results
+        List of processed event dictionaries with image paths
     """
     # 1. Load and filter data
     merge_data = _load_and_filter_merge_data(json_path, num_samples)
     if not merge_data:
-        return pd.DataFrame()
+        return []
 
     # 2. Run parallel image generation
     processed_events = _run_parallel_image_generation(
         merge_data, output_dir, force_regenerate, use_zoomed_images,
-        views, zoom_margin, model, max_workers
+        views, zoom_margin, max_workers
     )
 
     if not processed_events:
         print("No events were successfully processed.")
-        return pd.DataFrame()
+        return []
 
+    print(f"Image generation complete. Processed {len(processed_events)} events.")
+    return processed_events
+
+
+async def evaluate_merge_events(
+    processed_events: List[Dict],
+    output_dir: str,
+    task: str,
+    model: str,
+    llm_processor: LLMProcessor,
+    zoom_margin: int = 5000,
+    prompt_mode: str = 'informative',
+    K: int = 10
+) -> pd.DataFrame:
+    """
+    Phase 2: Evaluate processed merge events with LLM.
+
+    This phase:
+    3. Creates prompts for LLM evaluation
+    4. Runs LLM batch processing
+    5. Processes responses into structured results
+    6. Saves results to CSV
+
+    Returns:
+        DataFrame with evaluation results
+    """
     # 3. Create prompts
     prompts, indices = _create_merge_prompts(
         processed_events, task, llm_processor, zoom_margin, prompt_mode, K
@@ -739,6 +750,7 @@ async def process_merge_data(
         return pd.DataFrame()
 
     # 4. Run LLM evaluation
+    print(f"Running LLM evaluation with {model} on {len(prompts)} prompts...")
     llm_analysis = await llm_processor.process_batch(prompts)
 
     # 5. Process LLM responses
@@ -756,6 +768,13 @@ async def process_merge_data(
     output_filename += ".csv"
 
     results_df.to_csv(output_filename, index=False)
+
+    # Also save JSON with timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    json_filename = os.path.join(output_dir, f"{task}_results_{model}_{prompt_mode}_{timestamp}.json")
+    results_df.to_json(json_filename, orient='records', indent=2)
+    print(f"Saved results to {output_filename} and {json_filename}")
+
     return results_df
 
 
@@ -808,7 +827,7 @@ def _reconstruct_prompts_from_results(
     """
     # Group results by operation_id
     results_by_operation = {}
-    for result in existing_results[:100]:
+    for result in existing_results:
         op_id = result.get('operation_id', 'unknown')
         if op_id not in results_by_operation:
             results_by_operation[op_id] = []
@@ -1050,25 +1069,25 @@ def main():
     prompt_modes = args.prompt_modes
     K = args.K
 
-    # Process each combination of model and prompt mode
-    for model in models:
-        for prompt_mode in prompt_modes:
-            print(f"\nProcessing with model: {model} and prompt mode: {prompt_mode}")
+    # Check if we should use existing results file workflow
+    if results_file:
+        if not os.path.exists(results_file):
+            print(f"Error: Results file not found at {results_file}")
+            return
 
-            # Check if we should use existing results file workflow
-            if results_file:
-                if not os.path.exists(results_file):
-                    print(f"Error: Results file not found at {results_file}")
-                    continue
+        print(f"Using existing results file: {results_file}")
+        print("Skipping image generation and re-evaluating with new LLM")
 
-                print(f"Using existing results file: {results_file}")
-                print("Skipping image generation and re-evaluating with new LLM")
+        # Determine output directory based on results file location or use default
+        if os.path.dirname(results_file):
+            current_output_dir = os.path.dirname(results_file)
+        else:
+            current_output_dir = f"output/{species}_merge_{zoom_margin}nm"
 
-                # Determine output directory based on results file location or use default
-                if os.path.dirname(results_file):
-                    current_output_dir = os.path.dirname(results_file)
-                else:
-                    current_output_dir = f"output/{species}_merge_{zoom_margin}nm"
+        # Process each combination of model and prompt mode
+        for model in models:
+            for prompt_mode in prompt_modes:
+                print(f"\nRe-evaluating with model: {model} and prompt mode: {prompt_mode}")
 
                 llm_processor = LLMProcessor(model=model, max_tokens=4096, max_concurrent=25)
 
@@ -1088,65 +1107,82 @@ def main():
                 else:
                     print(f"Successfully re-evaluated existing results with {model}")
 
-                continue  # Skip the regular processing workflow
+        return  # Exit after processing results file
 
-            # Regular processing workflow (when no results file is provided)
-            current_output_dir = f"output/{species}_merge_{zoom_margin}nm"
+    # Regular processing workflow (when no results file is provided)
+    current_output_dir = f"output/{species}_merge_{zoom_margin}nm"
+
+    # Validate input path
+    if not os.path.exists(json_path):
+        print(f"Error: Input JSON file not found at {json_path}")
+        return
+
+    print(f"Selected Task: {task}")
+    print(f"Using input JSON: {json_path}")
+    print(f"Output directory: {current_output_dir}")
+    print(f"Force regenerate images: {force_regenerate}")
+    print(f"Using zoomed images: {use_zoomed}")
+    print(f"Selected views: {selected_views}")
+    print(f"K (repetitions): {K}")
+    if num_samples is not None:
+        print(f"Number of samples to process: {num_samples}")
+    if max_workers is not None:
+        print(f"Max workers specified: {max_workers}")
+
+    # Create output directory
+    os.makedirs(current_output_dir, exist_ok=True)
+
+    # ========================================================================
+    # PHASE 1: Generate images once (outside model/prompt loop)
+    # ========================================================================
+    print("\n" + "="*60)
+    print("PHASE 1: Generating images for all merge events")
+    print("="*60)
+
+    processed_events = process_merge_images(
+        json_path,
+        current_output_dir,
+        force_regenerate=force_regenerate,
+        num_samples=num_samples,
+        use_zoomed_images=use_zoomed,
+        max_workers=max_workers,
+        views=selected_views,
+        zoom_margin=zoom_margin
+    )
+
+    if not processed_events:
+        print("No events were successfully processed. Exiting.")
+        return
+
+    # ========================================================================
+    # PHASE 2: Loop over models and prompts, evaluating with LLM
+    # ========================================================================
+    print("\n" + "="*60)
+    print("PHASE 2: Running LLM evaluations")
+    print("="*60)
+
+    for model in models:
+        for prompt_mode in prompt_modes:
+            print(f"\nEvaluating with model: {model} and prompt mode: {prompt_mode}")
 
             llm_processor = LLMProcessor(model=model, max_tokens=4096, max_concurrent=10)
 
-            # Validate input path
-            if not os.path.exists(json_path):
-                print(f"Error: Input JSON file not found at {json_path}")
-                continue
-
-            print(f"Selected Task: {task}")
-            print(f"Using input JSON: {json_path}")
-            print(f"Output directory: {current_output_dir}")
-            print(f"Force regenerate images: {force_regenerate}")
-            print(f"Using zoomed images: {use_zoomed}")
-            print(f"Selected views: {selected_views}")
-            print(f"K (repetitions): {K}")
-            if num_samples is not None:
-                print(f"Number of samples to process: {num_samples}")
-            if max_workers is not None:
-                print(f"Max workers specified: {max_workers}")
-
-            # Create output directory
-            os.makedirs(current_output_dir, exist_ok=True)
-
-            # Process all merge events
-            results_df = asyncio.run(process_merge_data(
-                json_path,
+            results_df = asyncio.run(evaluate_merge_events(
+                processed_events,
                 current_output_dir,
                 task=task,
-                force_regenerate=force_regenerate,
-                num_samples=num_samples,
-                use_zoomed_images=use_zoomed,
-                max_workers=max_workers,
-                views=selected_views,
+                model=model,
                 llm_processor=llm_processor,
                 zoom_margin=zoom_margin,
-                species=species,
-                model=model,
                 prompt_mode=prompt_mode,
                 K=K
             ))
 
             if results_df.empty:
-                print("No results generated.")
+                print(f"No results generated for {model} with {prompt_mode}.")
                 continue
-
-            # Save results
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-            # Save raw results DataFrame
-            results_filename = os.path.join(current_output_dir, f"{task}_results_{timestamp}.json")
-            try:
-                results_df.to_json(results_filename, orient='records', indent=2)
-                print(f"Saved detailed results to {results_filename}")
-            except Exception as e:
-                print(f"Error saving results DataFrame: {e}")
+            else:
+                print(f"Successfully completed evaluation for {model} with {prompt_mode}")
 
 
 if __name__ == "__main__":
