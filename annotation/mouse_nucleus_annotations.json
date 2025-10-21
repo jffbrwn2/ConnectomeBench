@@ -1,0 +1,4426 @@
+[
+  {
+    "entry_index": 1,
+    "neuron_id": 864691135591041291,
+    "operation_id": 254620,
+    "timestamp": 1624546705,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136874805614,
+    "after_root_ids": [
+      864691135758752334,
+      864691137197234497
+    ],
+    "before_root_ids": [
+      864691136874805614
+    ],
+    "interface_point": [
+      1272403.125,
+      707568.75,
+      768424.125
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_1_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_1_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_1_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_1_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 2,
+    "neuron_id": 864691135591041291,
+    "operation_id": 254623,
+    "timestamp": 1624546868,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135999950794,
+    "after_root_ids": [
+      864691135497866771,
+      864691135501788226
+    ],
+    "before_root_ids": [
+      864691135999950794
+    ],
+    "interface_point": [
+      1279467.0,
+      703647.0,
+      766164.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_2_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_2_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_2_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_2_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 3,
+    "neuron_id": 864691135591041291,
+    "operation_id": 254915,
+    "timestamp": 1624640220,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136852593518,
+    "after_root_ids": [
+      864691135660678128,
+      864691135974683759
+    ],
+    "before_root_ids": [
+      864691136852593518
+    ],
+    "interface_point": [
+      773157.0,
+      864885.0,
+      879112.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_3_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_3_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_3_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_3_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 4,
+    "neuron_id": 864691135591041291,
+    "operation_id": 254917,
+    "timestamp": 1624640273,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135660678384,
+    "after_root_ids": [
+      864691136923006180,
+      864691136577747732
+    ],
+    "before_root_ids": [
+      864691135660678384
+    ],
+    "interface_point": [
+      774658.5,
+      864297.0,
+      879553.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_4_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_4_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_4_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_4_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 5,
+    "neuron_id": 864691135591041291,
+    "operation_id": 255623,
+    "timestamp": 1625058131,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135032280481,
+    "after_root_ids": [
+      864691135367429881,
+      864691135194692138
+    ],
+    "before_root_ids": [
+      864691135032280481
+    ],
+    "interface_point": [
+      690614.375,
+      730296.0,
+      927532.1875
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_5_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_5_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_5_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_5_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 6,
+    "neuron_id": 864691135591041291,
+    "operation_id": 255629,
+    "timestamp": 1625058308,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135560769761,
+    "after_root_ids": [
+      864691135100068896,
+      864691135609745159
+    ],
+    "before_root_ids": [
+      864691135560769761
+    ],
+    "interface_point": [
+      702564.0,
+      770828.75,
+      891700.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_6_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_6_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_6_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_6_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 7,
+    "neuron_id": 864691135591041291,
+    "operation_id": 255760,
+    "timestamp": 1625074231,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135542974206,
+    "after_root_ids": [
+      864691136423005487,
+      864691135341270981
+    ],
+    "before_root_ids": [
+      864691135542974206
+    ],
+    "interface_point": [
+      616050.75,
+      858921.0,
+      991499.25
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_7_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_7_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_7_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_7_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 8,
+    "neuron_id": 864691135591041291,
+    "operation_id": 255776,
+    "timestamp": 1625076719,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135499540932,
+    "after_root_ids": [
+      864691136388511351,
+      864691136361715938
+    ],
+    "before_root_ids": [
+      864691135499540932
+    ],
+    "interface_point": [
+      705463.5,
+      491536.5,
+      788980.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_8_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_8_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_8_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_8_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 9,
+    "neuron_id": 864691135591041291,
+    "operation_id": 255965,
+    "timestamp": 1625154241,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135389908722,
+    "after_root_ids": [
+      864691136361716962,
+      864691135472238642
+    ],
+    "before_root_ids": [
+      864691135389908722
+    ],
+    "interface_point": [
+      691278.0,
+      755790.0,
+      762405.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_9_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_9_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_9_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_9_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 10,
+    "neuron_id": 864691135591041291,
+    "operation_id": 255979,
+    "timestamp": 1625154774,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135489674436,
+    "after_root_ids": [
+      864691136051049715,
+      864691136209345724
+    ],
+    "before_root_ids": [
+      864691135489674436
+    ],
+    "interface_point": [
+      750009.75,
+      786297.75,
+      776874.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_10_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_10_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_10_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_10_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 11,
+    "neuron_id": 864691135591041291,
+    "operation_id": 255982,
+    "timestamp": 1625154881,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135876245843,
+    "after_root_ids": [
+      864691135382790618,
+      864691135155839332
+    ],
+    "before_root_ids": [
+      864691135876245843
+    ],
+    "interface_point": [
+      750112.125,
+      789285.0,
+      775719.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_11_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_11_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_11_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_11_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 12,
+    "neuron_id": 864691135591041291,
+    "operation_id": 255999,
+    "timestamp": 1625155225,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135396570610,
+    "after_root_ids": [
+      864691135162559789,
+      864691135584102520
+    ],
+    "before_root_ids": [
+      864691135396570610
+    ],
+    "interface_point": [
+      674870.0,
+      774868.5,
+      738921.75
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_12_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_12_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_12_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_12_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 13,
+    "neuron_id": 864691135591041291,
+    "operation_id": 256001,
+    "timestamp": 1625155307,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136731909486,
+    "after_root_ids": [
+      864691135445852818,
+      864691137053877366
+    ],
+    "before_root_ids": [
+      864691136731909486
+    ],
+    "interface_point": [
+      684159.0,
+      780717.0,
+      741137.25
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_13_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_13_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_13_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_13_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 14,
+    "neuron_id": 864691135591041291,
+    "operation_id": 256002,
+    "timestamp": 1625155372,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135445852818,
+    "after_root_ids": [
+      864691135382790874,
+      864691135155839588
+    ],
+    "before_root_ids": [
+      864691135445852818
+    ],
+    "interface_point": [
+      684602.125,
+      781401.625,
+      741102.625
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_14_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_14_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_14_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_14_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 15,
+    "neuron_id": 864691135591041291,
+    "operation_id": 256033,
+    "timestamp": 1625156216,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136089171767,
+    "after_root_ids": [
+      864691135385631573,
+      864691136952106207
+    ],
+    "before_root_ids": [
+      864691136089171767
+    ],
+    "interface_point": [
+      609850.5,
+      472505.25,
+      1005369.75
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_15_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_15_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_15_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_15_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 16,
+    "neuron_id": 864691135591041291,
+    "operation_id": 256036,
+    "timestamp": 1625156351,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135785628356,
+    "after_root_ids": [
+      864691135501792066,
+      864691135272343569
+    ],
+    "before_root_ids": [
+      864691135785628356
+    ],
+    "interface_point": [
+      608499.8125,
+      470819.28125,
+      1007009.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_16_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_16_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_16_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_16_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 17,
+    "neuron_id": 864691135591041291,
+    "operation_id": 256039,
+    "timestamp": 1625156479,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136594757026,
+    "after_root_ids": [
+      864691136175372038,
+      864691135337973478
+    ],
+    "before_root_ids": [
+      864691136594757026
+    ],
+    "interface_point": [
+      608391.0,
+      466347.0,
+      1013460.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_17_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_17_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_17_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_17_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 18,
+    "neuron_id": 864691135591041291,
+    "operation_id": 256045,
+    "timestamp": 1625156651,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136444037507,
+    "after_root_ids": [
+      864691135876246355,
+      864691135334699241
+    ],
+    "before_root_ids": [
+      864691136444037507
+    ],
+    "interface_point": [
+      609819.0,
+      466042.5,
+      1028653.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_18_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_18_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_18_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_18_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 19,
+    "neuron_id": 864691135591041291,
+    "operation_id": 256081,
+    "timestamp": 1625157584,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136717435502,
+    "after_root_ids": [
+      864691135155840356,
+      864691135876246867
+    ],
+    "before_root_ids": [
+      864691136717435502
+    ],
+    "interface_point": [
+      679154.0,
+      825888.0,
+      888433.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_19_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_19_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_19_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_19_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 20,
+    "neuron_id": 864691135591041291,
+    "operation_id": 256087,
+    "timestamp": 1625157875,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135618423615,
+    "after_root_ids": [
+      864691136136875133,
+      864691136418825623
+    ],
+    "before_root_ids": [
+      864691135618423615
+    ],
+    "interface_point": [
+      580167.0,
+      877086.0,
+      885538.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_20_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_20_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_20_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_20_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 21,
+    "neuron_id": 864691135591041291,
+    "operation_id": 256090,
+    "timestamp": 1625157980,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135607506628,
+    "after_root_ids": [
+      864691136175372294,
+      864691135337973734
+    ],
+    "before_root_ids": [
+      864691135607506628
+    ],
+    "interface_point": [
+      572544.0,
+      877632.0,
+      886263.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_21_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_21_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_21_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_21_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 22,
+    "neuron_id": 864691135591041291,
+    "operation_id": 256095,
+    "timestamp": 1625158092,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136952106719,
+    "after_root_ids": [
+      864691136436698526,
+      864691135850796743
+    ],
+    "before_root_ids": [
+      864691136952106719
+    ],
+    "interface_point": [
+      544887.0,
+      878955.0,
+      885717.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_22_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_22_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_22_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_22_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 23,
+    "neuron_id": 864691135591041291,
+    "operation_id": 256144,
+    "timestamp": 1625160183,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691134953978942,
+    "after_root_ids": [
+      864691135692977087,
+      864691136008788910
+    ],
+    "before_root_ids": [
+      864691134953978942
+    ],
+    "interface_point": [
+      786348.0,
+      455418.0,
+      1092372.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_23_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_23_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_23_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_23_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 24,
+    "neuron_id": 864691135591041291,
+    "operation_id": 256147,
+    "timestamp": 1625160286,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135855937582,
+    "after_root_ids": [
+      864691135428743216,
+      864691135945808932
+    ],
+    "before_root_ids": [
+      864691135855937582
+    ],
+    "interface_point": [
+      784518.0,
+      451080.0,
+      1087562.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_24_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_24_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_24_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_24_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 25,
+    "neuron_id": 864691135591041291,
+    "operation_id": 256570,
+    "timestamp": 1625585471,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135975756867,
+    "after_root_ids": [
+      864691135926532564,
+      864691136005031626
+    ],
+    "before_root_ids": [
+      864691135975756867
+    ],
+    "interface_point": [
+      544320.0,
+      879375.0,
+      885691.8125
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_25_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_25_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_25_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_25_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 26,
+    "neuron_id": 864691135591041291,
+    "operation_id": 256575,
+    "timestamp": 1625585847,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135359149912,
+    "after_root_ids": [
+      864691136309933658,
+      864691135474890560
+    ],
+    "before_root_ids": [
+      864691135359149912
+    ],
+    "interface_point": [
+      523839.75,
+      881758.5,
+      884021.25
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_26_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_26_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_26_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_26_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 27,
+    "neuron_id": 864691135591041291,
+    "operation_id": 256577,
+    "timestamp": 1625586073,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691134813472181,
+    "after_root_ids": [
+      864691136329177066,
+      864691136116391588
+    ],
+    "before_root_ids": [
+      864691134813472181
+    ],
+    "interface_point": [
+      520731.75,
+      881997.375,
+      884312.625
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_27_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_27_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_27_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_27_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 28,
+    "neuron_id": 864691135591041291,
+    "operation_id": 256578,
+    "timestamp": 1625586097,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136329177066,
+    "after_root_ids": [
+      864691135700536443,
+      864691135939856806
+    ],
+    "before_root_ids": [
+      864691136329177066
+    ],
+    "interface_point": [
+      519214.5,
+      881433.0,
+      884243.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_28_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_28_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_28_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_28_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 29,
+    "neuron_id": 864691135591041291,
+    "operation_id": 256589,
+    "timestamp": 1625586913,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136005032138,
+    "after_root_ids": [
+      864691136973909532,
+      864691136740687964
+    ],
+    "before_root_ids": [
+      864691136005032138
+    ],
+    "interface_point": [
+      481183.5,
+      769629.0,
+      992071.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_29_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_29_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_29_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_29_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 30,
+    "neuron_id": 864691135591041291,
+    "operation_id": 256591,
+    "timestamp": 1625587008,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136134674827,
+    "after_root_ids": [
+      864691135926533076,
+      864691136005032394
+    ],
+    "before_root_ids": [
+      864691136134674827
+    ],
+    "interface_point": [
+      480679.5,
+      768652.5,
+      992670.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_30_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_30_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_30_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_30_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 31,
+    "neuron_id": 864691135591041291,
+    "operation_id": 257857,
+    "timestamp": 1626093553,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135011338841,
+    "after_root_ids": [
+      864691135730487481,
+      864691136436704158
+    ],
+    "before_root_ids": [
+      864691135011338841
+    ],
+    "interface_point": [
+      1240549.0,
+      664703.125,
+      763305.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_31_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_31_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_31_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_31_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 32,
+    "neuron_id": 864691135591041291,
+    "operation_id": 257869,
+    "timestamp": 1626094726,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136740691292,
+    "after_root_ids": [
+      864691135684365239,
+      864691135841278691
+    ],
+    "before_root_ids": [
+      864691136740691292
+    ],
+    "interface_point": [
+      1258376.0,
+      554155.0,
+      760175.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_32_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_32_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_32_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_32_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 33,
+    "neuron_id": 864691135591041291,
+    "operation_id": 257901,
+    "timestamp": 1626095461,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135566165835,
+    "after_root_ids": [
+      864691136617407195,
+      864691135841279459
+    ],
+    "before_root_ids": [
+      864691135566165835
+    ],
+    "interface_point": [
+      767616.5,
+      538219.5,
+      1029353.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_33_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_33_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_33_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_33_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 34,
+    "neuron_id": 864691135591041291,
+    "operation_id": 257904,
+    "timestamp": 1626095561,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135345487519,
+    "after_root_ids": [
+      864691136672919943,
+      864691135946907745
+    ],
+    "before_root_ids": [
+      864691135345487519
+    ],
+    "interface_point": [
+      659979.9375,
+      662659.875,
+      1024137.6875
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_34_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_34_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_34_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_34_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 35,
+    "neuron_id": 864691135591041291,
+    "operation_id": 257933,
+    "timestamp": 1626096575,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136681404790,
+    "after_root_ids": [
+      864691135476367528,
+      864691136451298303
+    ],
+    "before_root_ids": [
+      864691136681404790
+    ],
+    "interface_point": [
+      774102.0,
+      532434.0,
+      1031205.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_35_neuron_864691135591041291/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_35_neuron_864691135591041291/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_35_neuron_864691135591041291/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_35_neuron_864691135591041291",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 36,
+    "neuron_id": 864691135270780837,
+    "operation_id": 273307,
+    "timestamp": 1631643815,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136273192382,
+    "after_root_ids": [
+      864691136109135288,
+      864691136005075146
+    ],
+    "before_root_ids": [
+      864691136273192382
+    ],
+    "interface_point": [
+      715695.0,
+      755749.5,
+      877306.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_36_neuron_864691135270780837/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_36_neuron_864691135270780837/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_36_neuron_864691135270780837/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_36_neuron_864691135270780837",
+    "has_nucleus": true
+  },
+  {
+    "entry_index": 37,
+    "neuron_id": 864691135270780837,
+    "operation_id": 320551,
+    "timestamp": 1644776998,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136237025551,
+    "after_root_ids": [
+      864691135476432296,
+      864691136436784030
+    ],
+    "before_root_ids": [
+      864691136237025551
+    ],
+    "interface_point": [
+      669490.5,
+      532402.5,
+      942028.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_37_neuron_864691135270780837/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_37_neuron_864691135270780837/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_37_neuron_864691135270780837/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_37_neuron_864691135270780837",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 38,
+    "neuron_id": 864691135270780837,
+    "operation_id": 886461,
+    "timestamp": 1696524548,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135013937398,
+    "after_root_ids": [
+      864691135655395778,
+      864691135257395887
+    ],
+    "before_root_ids": [
+      864691135013937398
+    ],
+    "interface_point": [
+      764358.0,
+      511812.0,
+      1024296.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_38_neuron_864691135270780837/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_38_neuron_864691135270780837/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_38_neuron_864691135270780837/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_38_neuron_864691135270780837",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 39,
+    "neuron_id": 864691135270780837,
+    "operation_id": 886462,
+    "timestamp": 1696524564,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135655395778,
+    "after_root_ids": [
+      864691136389563511,
+      864691135866843781
+    ],
+    "before_root_ids": [
+      864691135655395778
+    ],
+    "interface_point": [
+      764620.5,
+      511549.5,
+      1024390.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_39_neuron_864691135270780837/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_39_neuron_864691135270780837/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_39_neuron_864691135270780837/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_39_neuron_864691135270780837",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 40,
+    "neuron_id": 864691135233242713,
+    "operation_id": 117165,
+    "timestamp": 1599338746,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135991537601,
+    "after_root_ids": [
+      864691135593629995,
+      864691135775840941
+    ],
+    "before_root_ids": [
+      864691135991537601
+    ],
+    "interface_point": [
+      1231755.0,
+      706968.5,
+      874510.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_40_neuron_864691135233242713/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_40_neuron_864691135233242713/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_40_neuron_864691135233242713/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_40_neuron_864691135233242713",
+    "has_nucleus": true
+  },
+  {
+    "entry_index": 41,
+    "neuron_id": 864691135233242713,
+    "operation_id": 118165,
+    "timestamp": 1599619878,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135657875330,
+    "after_root_ids": [
+      864691135988415488,
+      864691135771716347
+    ],
+    "before_root_ids": [
+      864691135657875330
+    ],
+    "interface_point": [
+      1148959.0,
+      658203.0,
+      1011654.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_41_neuron_864691135233242713/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_41_neuron_864691135233242713/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_41_neuron_864691135233242713/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_41_neuron_864691135233242713",
+    "has_nucleus": true
+  },
+  {
+    "entry_index": 42,
+    "neuron_id": 864691135233242713,
+    "operation_id": 120116,
+    "timestamp": 1599855299,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135754728146,
+    "after_root_ids": [
+      864691135593636907,
+      864691135162328365
+    ],
+    "before_root_ids": [
+      864691135754728146
+    ],
+    "interface_point": [
+      1196532.75,
+      689372.25,
+      962041.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_42_neuron_864691135233242713/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_42_neuron_864691135233242713/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_42_neuron_864691135233242713/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_42_neuron_864691135233242713",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 43,
+    "neuron_id": 864691135233242713,
+    "operation_id": 120120,
+    "timestamp": 1599855361,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135809557196,
+    "after_root_ids": [
+      864691135269844645,
+      864691136922808804
+    ],
+    "before_root_ids": [
+      864691135809557196
+    ],
+    "interface_point": [
+      1196485.5,
+      689451.0,
+      961978.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_43_neuron_864691135233242713/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_43_neuron_864691135233242713/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_43_neuron_864691135233242713/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_43_neuron_864691135233242713",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 44,
+    "neuron_id": 864691135233242713,
+    "operation_id": 120144,
+    "timestamp": 1599855514,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136039423742,
+    "after_root_ids": [
+      864691135697420565,
+      864691135771768139
+    ],
+    "before_root_ids": [
+      864691136039423742
+    ],
+    "interface_point": [
+      1196480.25,
+      689582.25,
+      962031.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_44_neuron_864691135233242713/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_44_neuron_864691135233242713/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_44_neuron_864691135233242713/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_44_neuron_864691135233242713",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 45,
+    "neuron_id": 864691135233242713,
+    "operation_id": 120192,
+    "timestamp": 1599859866,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135490636263,
+    "after_root_ids": [
+      864691135568971910,
+      864691135515994579
+    ],
+    "before_root_ids": [
+      864691135490636263
+    ],
+    "interface_point": [
+      1069390.0,
+      706604.5,
+      986944.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_45_neuron_864691135233242713/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_45_neuron_864691135233242713/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_45_neuron_864691135233242713/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_45_neuron_864691135233242713",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 46,
+    "neuron_id": 864691135233242713,
+    "operation_id": 161189,
+    "timestamp": 1605733954,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135323048860,
+    "after_root_ids": [
+      864691135355077071,
+      864691135658006402
+    ],
+    "before_root_ids": [
+      864691135323048860
+    ],
+    "interface_point": [
+      1284570.0,
+      418047.0,
+      1014531.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_46_neuron_864691135233242713/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_46_neuron_864691135233242713/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_46_neuron_864691135233242713/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_46_neuron_864691135233242713",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 47,
+    "neuron_id": 864691135233242713,
+    "operation_id": 162754,
+    "timestamp": 1605886774,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136334036915,
+    "after_root_ids": [
+      864691135207833465,
+      864691136134590859
+    ],
+    "before_root_ids": [
+      864691136334036915
+    ],
+    "interface_point": [
+      952564.9375,
+      712838.8125,
+      716847.375
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_47_neuron_864691135233242713/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_47_neuron_864691135233242713/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_47_neuron_864691135233242713/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_47_neuron_864691135233242713",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 48,
+    "neuron_id": 864691135233242713,
+    "operation_id": 164406,
+    "timestamp": 1606227317,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135675334467,
+    "after_root_ids": [
+      864691135841199331,
+      864691135567936236
+    ],
+    "before_root_ids": [
+      864691135675334467
+    ],
+    "interface_point": [
+      1197535.5,
+      544341.0,
+      996702.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_48_neuron_864691135233242713/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_48_neuron_864691135233242713/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_48_neuron_864691135233242713/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_48_neuron_864691135233242713",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 49,
+    "neuron_id": 864691135233242713,
+    "operation_id": 165006,
+    "timestamp": 1606323297,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135945273034,
+    "after_root_ids": [
+      864691136521665937,
+      864691135488301370
+    ],
+    "before_root_ids": [
+      864691135945273034
+    ],
+    "interface_point": [
+      1061973.875,
+      987935.4375,
+      863441.75
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_49_neuron_864691135233242713/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_49_neuron_864691135233242713/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_49_neuron_864691135233242713/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_49_neuron_864691135233242713",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 50,
+    "neuron_id": 864691135233242713,
+    "operation_id": 171347,
+    "timestamp": 1607529211,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136065522584,
+    "after_root_ids": [
+      864691135725701439,
+      864691135303286695
+    ],
+    "before_root_ids": [
+      864691136065522584
+    ],
+    "interface_point": [
+      847289.875,
+      913413.5,
+      824875.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_50_neuron_864691135233242713/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_50_neuron_864691135233242713/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_50_neuron_864691135233242713/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_50_neuron_864691135233242713",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 51,
+    "neuron_id": 864691135233242713,
+    "operation_id": 171380,
+    "timestamp": 1607532721,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136422892079,
+    "after_root_ids": [
+      864691135858809704,
+      864691136740585820
+    ],
+    "before_root_ids": [
+      864691136422892079
+    ],
+    "interface_point": [
+      763420.5,
+      928597.5,
+      780112.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_51_neuron_864691135233242713/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_51_neuron_864691135233242713/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_51_neuron_864691135233242713/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_51_neuron_864691135233242713",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 52,
+    "neuron_id": 864691135398107425,
+    "operation_id": 334684,
+    "timestamp": 1646628807,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136136245911,
+    "after_root_ids": [
+      864691136423086639,
+      864691135462778525
+    ],
+    "before_root_ids": [
+      864691136136245911
+    ],
+    "interface_point": [
+      714294.0,
+      496440.0,
+      812397.625
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_52_neuron_864691135398107425/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_52_neuron_864691135398107425/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_52_neuron_864691135398107425/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_52_neuron_864691135398107425",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 53,
+    "neuron_id": 864691135398107425,
+    "operation_id": 334951,
+    "timestamp": 1646636256,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135547168094,
+    "after_root_ids": [
+      864691136577874196,
+      864691135341564081
+    ],
+    "before_root_ids": [
+      864691135547168094
+    ],
+    "interface_point": [
+      815367.0,
+      561561.0,
+      852810.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_53_neuron_864691135398107425/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_53_neuron_864691135398107425/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_53_neuron_864691135398107425/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_53_neuron_864691135398107425",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 54,
+    "neuron_id": 864691135868060950,
+    "operation_id": 1011609,
+    "timestamp": 1717826334,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135641712236,
+    "after_root_ids": [
+      864691135408541641,
+      864691136578869268
+    ],
+    "before_root_ids": [
+      864691135641712236
+    ],
+    "interface_point": [
+      711203.5,
+      584132.5,
+      947142.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_54_neuron_864691135868060950/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_54_neuron_864691135868060950/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_54_neuron_864691135868060950/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_54_neuron_864691135868060950",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 55,
+    "neuron_id": 864691135868060950,
+    "operation_id": 1011614,
+    "timestamp": 1717826504,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135741593451,
+    "after_root_ids": [
+      864691135339106278,
+      864691135395445493
+    ],
+    "before_root_ids": [
+      864691135741593451
+    ],
+    "interface_point": [
+      708666.0,
+      565125.75,
+      958686.75
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_55_neuron_864691135868060950/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_55_neuron_864691135868060950/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_55_neuron_864691135868060950/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_55_neuron_864691135868060950",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 56,
+    "neuron_id": 864691135868060950,
+    "operation_id": 1011641,
+    "timestamp": 1717827807,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135133806496,
+    "after_root_ids": [
+      864691135491669095,
+      864691136953178847
+    ],
+    "before_root_ids": [
+      864691135133806496
+    ],
+    "interface_point": [
+      1049730.0,
+      629565.0,
+      736554.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_56_neuron_864691135868060950/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_56_neuron_864691135868060950/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_56_neuron_864691135868060950/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_56_neuron_864691135868060950",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 57,
+    "neuron_id": 864691135868060950,
+    "operation_id": 1011679,
+    "timestamp": 1717828944,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135380474354,
+    "after_root_ids": [
+      864691135940965633,
+      864691136444979843
+    ],
+    "before_root_ids": [
+      864691135380474354
+    ],
+    "interface_point": [
+      833157.5,
+      860125.0,
+      820407.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_57_neuron_864691135868060950/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_57_neuron_864691135868060950/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_57_neuron_864691135868060950/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_57_neuron_864691135868060950",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 58,
+    "neuron_id": 864691135868060950,
+    "operation_id": 1014508,
+    "timestamp": 1718067767,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135932820910,
+    "after_root_ids": [
+      864691135755184589,
+      864691135374772424
+    ],
+    "before_root_ids": [
+      864691135932820910
+    ],
+    "interface_point": [
+      791411.25,
+      675627.75,
+      761397.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_58_neuron_864691135868060950/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_58_neuron_864691135868060950/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_58_neuron_864691135868060950/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_58_neuron_864691135868060950",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 59,
+    "neuron_id": 864691135868060950,
+    "operation_id": 1020145,
+    "timestamp": 1718248955,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135066083261,
+    "after_root_ids": [
+      864691135810683340,
+      864691135368459769
+    ],
+    "before_root_ids": [
+      864691135066083261
+    ],
+    "interface_point": [
+      1214031.0,
+      587391.0,
+      708267.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_59_neuron_864691135868060950/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_59_neuron_864691135868060950/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_59_neuron_864691135868060950/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_59_neuron_864691135868060950",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 60,
+    "neuron_id": 864691135275621605,
+    "operation_id": 932700,
+    "timestamp": 1713158181,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135384096235,
+    "after_root_ids": [
+      864691136267662068,
+      864691135468708236
+    ],
+    "before_root_ids": [
+      864691135384096235
+    ],
+    "interface_point": [
+      621271.0,
+      848673.0,
+      762520.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_60_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_60_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_60_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_60_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 61,
+    "neuron_id": 864691135275621605,
+    "operation_id": 932977,
+    "timestamp": 1713163451,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136110123960,
+    "after_root_ids": [
+      864691135916511846,
+      864691135441836360
+    ],
+    "before_root_ids": [
+      864691136110123960
+    ],
+    "interface_point": [
+      1384103.0,
+      594715.3125,
+      657993.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_61_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_61_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_61_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_61_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 62,
+    "neuron_id": 864691135275621605,
+    "operation_id": 934615,
+    "timestamp": 1713240874,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136201815530,
+    "after_root_ids": [
+      864691136335047347,
+      864691135572136429
+    ],
+    "before_root_ids": [
+      864691136201815530
+    ],
+    "interface_point": [
+      548478.0,
+      859866.0,
+      713454.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_62_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_62_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_62_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_62_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 63,
+    "neuron_id": 864691135275621605,
+    "operation_id": 934643,
+    "timestamp": 1713241597,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135335664361,
+    "after_root_ids": [
+      864691135992874433,
+      864691135578025221
+    ],
+    "before_root_ids": [
+      864691135335664361
+    ],
+    "interface_point": [
+      521955.0,
+      855865.5,
+      689146.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_63_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_63_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_63_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_63_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 64,
+    "neuron_id": 864691135275621605,
+    "operation_id": 935508,
+    "timestamp": 1713256029,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135783670835,
+    "after_root_ids": [
+      864691135477319080,
+      864691136275291917
+    ],
+    "before_root_ids": [
+      864691135783670835
+    ],
+    "interface_point": [
+      609711.6875,
+      818165.8125,
+      741822.6875
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_64_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_64_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_64_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_64_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 65,
+    "neuron_id": 864691135275621605,
+    "operation_id": 935523,
+    "timestamp": 1713256123,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136275291917,
+    "after_root_ids": [
+      864691135123609895,
+      864691135783672883
+    ],
+    "before_root_ids": [
+      864691136275291917
+    ],
+    "interface_point": [
+      609924.0,
+      818643.0,
+      741741.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_65_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_65_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_65_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_65_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 66,
+    "neuron_id": 864691135275621605,
+    "operation_id": 937672,
+    "timestamp": 1713400476,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135698408981,
+    "after_root_ids": [
+      864691135416992698,
+      864691135940747009
+    ],
+    "before_root_ids": [
+      864691135698408981
+    ],
+    "interface_point": [
+      611775.0,
+      680739.0,
+      721728.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_66_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_66_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_66_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_66_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 67,
+    "neuron_id": 864691135275621605,
+    "operation_id": 937688,
+    "timestamp": 1713400785,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135279537057,
+    "after_root_ids": [
+      864691135849044574,
+      864691135335693545
+    ],
+    "before_root_ids": [
+      864691135279537057
+    ],
+    "interface_point": [
+      611496.375,
+      680738.625,
+      721796.25
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_67_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_67_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_67_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_67_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 68,
+    "neuron_id": 864691135275621605,
+    "operation_id": 939582,
+    "timestamp": 1713425149,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135173212623,
+    "after_root_ids": [
+      864691136237792527,
+      864691136313062717
+    ],
+    "before_root_ids": [
+      864691135173212623
+    ],
+    "interface_point": [
+      586660.1875,
+      608722.8125,
+      721879.1875
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_68_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_68_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_68_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_68_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 69,
+    "neuron_id": 864691135275621605,
+    "operation_id": 939630,
+    "timestamp": 1713425532,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136313062717,
+    "after_root_ids": [
+      864691135545857320,
+      864691135136025625
+    ],
+    "before_root_ids": [
+      864691136313062717
+    ],
+    "interface_point": [
+      586575.5,
+      609021.0,
+      721927.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_69_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_69_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_69_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_69_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 70,
+    "neuron_id": 864691135275621605,
+    "operation_id": 939878,
+    "timestamp": 1713470142,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691133461221931,
+    "after_root_ids": [
+      864691136618391515,
+      864691136025055033
+    ],
+    "before_root_ids": [
+      864691133461221931
+    ],
+    "interface_point": [
+      552840.75,
+      600395.25,
+      690627.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_70_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_70_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_70_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_70_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 71,
+    "neuron_id": 864691135275621605,
+    "operation_id": 939911,
+    "timestamp": 1713474241,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135688867794,
+    "after_root_ids": [
+      864691135849050974,
+      864691135335714281
+    ],
+    "before_root_ids": [
+      864691135688867794
+    ],
+    "interface_point": [
+      563604.3125,
+      576053.125,
+      714791.75
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_71_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_71_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_71_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_71_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 72,
+    "neuron_id": 864691135275621605,
+    "operation_id": 940425,
+    "timestamp": 1713494935,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135685493431,
+    "after_root_ids": [
+      864691135349710295,
+      864691135911081129
+    ],
+    "before_root_ids": [
+      864691135685493431
+    ],
+    "interface_point": [
+      507294.75,
+      615192.6875,
+      766942.5625
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_72_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_72_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_72_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_72_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 73,
+    "neuron_id": 864691135275621605,
+    "operation_id": 942085,
+    "timestamp": 1713664631,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135426431763,
+    "after_root_ids": [
+      864691135694055871,
+      864691135741541739
+    ],
+    "before_root_ids": [
+      864691135426431763
+    ],
+    "interface_point": [
+      411583.1875,
+      572098.8125,
+      766327.8125
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_73_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_73_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_73_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_73_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 74,
+    "neuron_id": 864691135275621605,
+    "operation_id": 945066,
+    "timestamp": 1713856778,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136093414531,
+    "after_root_ids": [
+      864691135275569893,
+      864691134941260643
+    ],
+    "before_root_ids": [
+      864691136093414531
+    ],
+    "interface_point": [
+      486885.0,
+      828660.0,
+      681870.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_74_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_74_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_74_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_74_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 75,
+    "neuron_id": 864691135275621605,
+    "operation_id": 947601,
+    "timestamp": 1713940385,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135283974682,
+    "after_root_ids": [
+      864691135476086080,
+      864691136195532620
+    ],
+    "before_root_ids": [
+      864691135283974682
+    ],
+    "interface_point": [
+      686886.375,
+      787242.75,
+      775220.25
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_75_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_75_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_75_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_75_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 76,
+    "neuron_id": 864691135275621605,
+    "operation_id": 947657,
+    "timestamp": 1713941444,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135940787201,
+    "after_root_ids": [
+      864691135940787457,
+      864691135463655325
+    ],
+    "before_root_ids": [
+      864691135940787201
+    ],
+    "interface_point": [
+      698376.0,
+      750918.0,
+      765996.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_76_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_76_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_76_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_76_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 77,
+    "neuron_id": 864691135275621605,
+    "operation_id": 947670,
+    "timestamp": 1713941845,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136101041525,
+    "after_root_ids": [
+      864691136967028174,
+      864691135118953693
+    ],
+    "before_root_ids": [
+      864691136101041525
+    ],
+    "interface_point": [
+      699073.1875,
+      747553.75,
+      765926.3125
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_77_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_77_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_77_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_77_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 78,
+    "neuron_id": 864691135275621605,
+    "operation_id": 947860,
+    "timestamp": 1713946636,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135468752780,
+    "after_root_ids": [
+      864691136310955866,
+      864691135749938473
+    ],
+    "before_root_ids": [
+      864691135468752780
+    ],
+    "interface_point": [
+      696171.0,
+      741389.25,
+      768426.75
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_78_neuron_864691135275621605/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_78_neuron_864691135275621605/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_78_neuron_864691135275621605/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_78_neuron_864691135275621605",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 79,
+    "neuron_id": 864691136287648195,
+    "operation_id": 146729,
+    "timestamp": 1603908293,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136723655421,
+    "after_root_ids": [
+      864691135445681042,
+      864691136903170738
+    ],
+    "before_root_ids": [
+      864691136723655421
+    ],
+    "interface_point": [
+      733188.625,
+      726185.25,
+      901224.625
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_79_neuron_864691136287648195/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_79_neuron_864691136287648195/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_79_neuron_864691136287648195/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_79_neuron_864691136287648195",
+    "has_nucleus": true
+  },
+  {
+    "entry_index": 80,
+    "neuron_id": 864691136287648195,
+    "operation_id": 146755,
+    "timestamp": 1603908586,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136672741511,
+    "after_root_ids": [
+      864691135609555975,
+      864691135946756449
+    ],
+    "before_root_ids": [
+      864691136672741511
+    ],
+    "interface_point": [
+      734661.625,
+      729396.125,
+      901977.625
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_80_neuron_864691136287648195/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_80_neuron_864691136287648195/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_80_neuron_864691136287648195/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_80_neuron_864691136287648195",
+    "has_nucleus": true
+  },
+  {
+    "entry_index": 81,
+    "neuron_id": 864691135659152002,
+    "operation_id": 375171,
+    "timestamp": 1650439505,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136099876177,
+    "after_root_ids": [
+      864691135447057492,
+      864691135472401202
+    ],
+    "before_root_ids": [
+      864691136099876177
+    ],
+    "interface_point": [
+      684768.0,
+      506740.5,
+      836745.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_81_neuron_864691135659152002/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_81_neuron_864691135659152002/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_81_neuron_864691135659152002/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_81_neuron_864691135659152002",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 82,
+    "neuron_id": 864691135659152002,
+    "operation_id": 375481,
+    "timestamp": 1650448200,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135437323762,
+    "after_root_ids": [
+      864691136175588614,
+      864691135538555506
+    ],
+    "before_root_ids": [
+      864691135437323762
+    ],
+    "interface_point": [
+      696832.5,
+      487389.0,
+      878745.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_82_neuron_864691135659152002/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_82_neuron_864691135659152002/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_82_neuron_864691135659152002/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_82_neuron_864691135659152002",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 83,
+    "neuron_id": 864691135659152002,
+    "operation_id": 375600,
+    "timestamp": 1650452189,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136194595148,
+    "after_root_ids": [
+      864691135404101358,
+      864691135467996044
+    ],
+    "before_root_ids": [
+      864691136194595148
+    ],
+    "interface_point": [
+      657730.5,
+      549906.0,
+      840661.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_83_neuron_864691135659152002/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_83_neuron_864691135659152002/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_83_neuron_864691135659152002/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_83_neuron_864691135659152002",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 84,
+    "neuron_id": 864691135659152002,
+    "operation_id": 375683,
+    "timestamp": 1650454629,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136756118894,
+    "after_root_ids": [
+      864691135781221968,
+      864691135856128558
+    ],
+    "before_root_ids": [
+      864691136756118894
+    ],
+    "interface_point": [
+      745799.25,
+      435482.25,
+      968079.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_84_neuron_864691135659152002/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_84_neuron_864691135659152002/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_84_neuron_864691135659152002/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_84_neuron_864691135659152002",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 85,
+    "neuron_id": 864691135659152002,
+    "operation_id": 376971,
+    "timestamp": 1650609940,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136811700078,
+    "after_root_ids": [
+      864691135113600665,
+      864691135348713943
+    ],
+    "before_root_ids": [
+      864691136811700078
+    ],
+    "interface_point": [
+      751128.0,
+      431781.0,
+      968163.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_85_neuron_864691135659152002/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_85_neuron_864691135659152002/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_85_neuron_864691135659152002/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_85_neuron_864691135659152002",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 86,
+    "neuron_id": 864691135946994785,
+    "operation_id": 320041,
+    "timestamp": 1644700320,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135687229408,
+    "after_root_ids": [
+      864691135616182121,
+      864691136388621687
+    ],
+    "before_root_ids": [
+      864691135687229408
+    ],
+    "interface_point": [
+      482937.0,
+      977676.0,
+      977224.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_86_neuron_864691135946994785/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_86_neuron_864691135946994785/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_86_neuron_864691135946994785/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_86_neuron_864691135946994785",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 87,
+    "neuron_id": 864691135336108265,
+    "operation_id": 526253,
+    "timestamp": 1673598548,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135511149520,
+    "after_root_ids": [
+      864691135397063457,
+      864691135441219400
+    ],
+    "before_root_ids": [
+      864691135511149520
+    ],
+    "interface_point": [
+      746004.0,
+      693756.0,
+      761712.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_87_neuron_864691135336108265/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_87_neuron_864691135336108265/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_87_neuron_864691135336108265/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_87_neuron_864691135336108265",
+    "has_nucleus": true
+  },
+  {
+    "entry_index": 88,
+    "neuron_id": 864691135336108265,
+    "operation_id": 775909,
+    "timestamp": 1675661053,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135749627177,
+    "after_root_ids": [
+      864691136297849115,
+      864691135346189471
+    ],
+    "before_root_ids": [
+      864691135749627177
+    ],
+    "interface_point": [
+      785606.0,
+      676534.125,
+      921131.9375
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_88_neuron_864691135336108265/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_88_neuron_864691135336108265/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_88_neuron_864691135336108265/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_88_neuron_864691135336108265",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 89,
+    "neuron_id": 864691135336108265,
+    "operation_id": 775920,
+    "timestamp": 1675661095,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136297849115,
+    "after_root_ids": [
+      864691135889659785,
+      864691136310724442
+    ],
+    "before_root_ids": [
+      864691136297849115
+    ],
+    "interface_point": [
+      787069.5,
+      676672.5,
+      920976.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_89_neuron_864691135336108265/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_89_neuron_864691135336108265/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_89_neuron_864691135336108265/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_89_neuron_864691135336108265",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 90,
+    "neuron_id": 864691135336108265,
+    "operation_id": 776837,
+    "timestamp": 1675670705,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135101004320,
+    "after_root_ids": [
+      864691135759503950,
+      864691135725282987
+    ],
+    "before_root_ids": [
+      864691135101004320
+    ],
+    "interface_point": [
+      787279.5,
+      688138.5,
+      820911.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_90_neuron_864691135336108265/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_90_neuron_864691135336108265/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_90_neuron_864691135336108265/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_90_neuron_864691135336108265",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 91,
+    "neuron_id": 864691135336108265,
+    "operation_id": 776907,
+    "timestamp": 1675671157,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135561044676,
+    "after_root_ids": [
+      864691135838298771,
+      864691135615161803
+    ],
+    "before_root_ids": [
+      864691135561044676
+    ],
+    "interface_point": [
+      822885.0,
+      665889.0,
+      823536.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_91_neuron_864691135336108265/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_91_neuron_864691135336108265/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_91_neuron_864691135336108265/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_91_neuron_864691135336108265",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 92,
+    "neuron_id": 864691135336108265,
+    "operation_id": 777104,
+    "timestamp": 1675672456,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135416248202,
+    "after_root_ids": [
+      864691135684438514,
+      864691135495293840
+    ],
+    "before_root_ids": [
+      864691135416248202
+    ],
+    "interface_point": [
+      789237.75,
+      654318.0,
+      841065.75
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_92_neuron_864691135336108265/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_92_neuron_864691135336108265/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_92_neuron_864691135336108265/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_92_neuron_864691135336108265",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 93,
+    "neuron_id": 864691135336108265,
+    "operation_id": 777488,
+    "timestamp": 1675674502,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136297852187,
+    "after_root_ids": [
+      864691136452093439,
+      864691136362602978
+    ],
+    "before_root_ids": [
+      864691136297852187
+    ],
+    "interface_point": [
+      712033.875,
+      681452.625,
+      775965.75
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_93_neuron_864691135336108265/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_93_neuron_864691135336108265/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_93_neuron_864691135336108265/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_93_neuron_864691135336108265",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 94,
+    "neuron_id": 864691135336108265,
+    "operation_id": 777583,
+    "timestamp": 1675675167,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136595644578,
+    "after_root_ids": [
+      864691135953026595,
+      864691136085361516
+    ],
+    "before_root_ids": [
+      864691136595644578
+    ],
+    "interface_point": [
+      752878.0,
+      802025.0,
+      828383.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_94_neuron_864691135336108265/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_94_neuron_864691135336108265/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_94_neuron_864691135336108265/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_94_neuron_864691135336108265",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 95,
+    "neuron_id": 864691135336108265,
+    "operation_id": 777753,
+    "timestamp": 1675675893,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136312894013,
+    "after_root_ids": [
+      864691135700327714,
+      864691135856954414
+    ],
+    "before_root_ids": [
+      864691136312894013
+    ],
+    "interface_point": [
+      724342.5,
+      732354.0,
+      884793.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_95_neuron_864691135336108265/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_95_neuron_864691135336108265/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_95_neuron_864691135336108265/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_95_neuron_864691135336108265",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 96,
+    "neuron_id": 864691135336108265,
+    "operation_id": 786763,
+    "timestamp": 1675845022,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135576354100,
+    "after_root_ids": [
+      864691135463511965,
+      864691134918464010
+    ],
+    "before_root_ids": [
+      864691135576354100
+    ],
+    "interface_point": [
+      634511.5,
+      611474.5,
+      922029.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_96_neuron_864691135336108265/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_96_neuron_864691135336108265/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_96_neuron_864691135336108265/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_96_neuron_864691135336108265",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 97,
+    "neuron_id": 864691135336108265,
+    "operation_id": 788692,
+    "timestamp": 1675861189,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135702498817,
+    "after_root_ids": [
+      864691135954880520,
+      864691136452140543
+    ],
+    "before_root_ids": [
+      864691135702498817
+    ],
+    "interface_point": [
+      825898.5,
+      692695.5,
+      761974.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_97_neuron_864691135336108265/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_97_neuron_864691135336108265/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_97_neuron_864691135336108265/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_97_neuron_864691135336108265",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 98,
+    "neuron_id": 864691135336108265,
+    "operation_id": 807242,
+    "timestamp": 1676373268,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135367961074,
+    "after_root_ids": [
+      864691135740635028,
+      864691135257310127
+    ],
+    "before_root_ids": [
+      864691135367961074
+    ],
+    "interface_point": [
+      764452.5,
+      695604.0,
+      862438.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_98_neuron_864691135336108265/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_98_neuron_864691135336108265/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_98_neuron_864691135336108265/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_98_neuron_864691135336108265",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 99,
+    "neuron_id": 864691135336108265,
+    "operation_id": 807452,
+    "timestamp": 1676374739,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135443122418,
+    "after_root_ids": [
+      864691136106704089,
+      864691135368189177
+    ],
+    "before_root_ids": [
+      864691135443122418
+    ],
+    "interface_point": [
+      733950.0,
+      629307.0,
+      793138.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_99_neuron_864691135336108265/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_99_neuron_864691135336108265/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_99_neuron_864691135336108265/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_99_neuron_864691135336108265",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 100,
+    "neuron_id": 864691135336108265,
+    "operation_id": 1264954,
+    "timestamp": 1730224735,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135430630960,
+    "after_root_ids": [
+      864691135726148011,
+      864691135430631216
+    ],
+    "before_root_ids": [
+      864691135430630960
+    ],
+    "interface_point": [
+      715197.0,
+      529032.0,
+      849303.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_100_neuron_864691135336108265/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_100_neuron_864691135336108265/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_100_neuron_864691135336108265/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_100_neuron_864691135336108265",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 101,
+    "neuron_id": 864691137055544438,
+    "operation_id": 739883,
+    "timestamp": 1674639738,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136106566105,
+    "after_root_ids": [
+      864691135926661134,
+      864691135586151292
+    ],
+    "before_root_ids": [
+      864691136106566105
+    ],
+    "interface_point": [
+      706314.0,
+      381276.0,
+      981771.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_101_neuron_864691137055544438/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_101_neuron_864691137055544438/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_101_neuron_864691137055544438/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_101_neuron_864691137055544438",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 102,
+    "neuron_id": 864691137055544438,
+    "operation_id": 740158,
+    "timestamp": 1674641046,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136101699665,
+    "after_root_ids": [
+      864691135866619781,
+      864691135511520208
+    ],
+    "before_root_ids": [
+      864691136101699665
+    ],
+    "interface_point": [
+      707322.0,
+      492009.0,
+      805980.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_102_neuron_864691137055544438/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_102_neuron_864691137055544438/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_102_neuron_864691137055544438/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_102_neuron_864691137055544438",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 103,
+    "neuron_id": 864691137055544438,
+    "operation_id": 741043,
+    "timestamp": 1674645846,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135865747164,
+    "after_root_ids": [
+      864691136011942563,
+      864691135926667790
+    ],
+    "before_root_ids": [
+      864691135865747164
+    ],
+    "interface_point": [
+      726421.5,
+      484505.0,
+      813788.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_103_neuron_864691137055544438/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_103_neuron_864691137055544438/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_103_neuron_864691137055544438/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_103_neuron_864691137055544438",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 104,
+    "neuron_id": 864691137055544438,
+    "operation_id": 741697,
+    "timestamp": 1674649119,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691134070076884,
+    "after_root_ids": [
+      864691135938562357,
+      864691135502654018
+    ],
+    "before_root_ids": [
+      864691134070076884
+    ],
+    "interface_point": [
+      671118.0,
+      420630.0,
+      915820.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_104_neuron_864691137055544438/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_104_neuron_864691137055544438/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_104_neuron_864691137055544438/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_104_neuron_864691137055544438",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 105,
+    "neuron_id": 864691137055544438,
+    "operation_id": 741816,
+    "timestamp": 1674649715,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135697964642,
+    "after_root_ids": [
+      864691135976654147,
+      864691135586162812
+    ],
+    "before_root_ids": [
+      864691135697964642
+    ],
+    "interface_point": [
+      791847.0,
+      486213.0,
+      816270.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_105_neuron_864691137055544438/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_105_neuron_864691137055544438/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_105_neuron_864691137055544438/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_105_neuron_864691137055544438",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 106,
+    "neuron_id": 864691137055544438,
+    "operation_id": 1096270,
+    "timestamp": 1722294469,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136297789996,
+    "after_root_ids": [
+      864691136389924983,
+      864691135801379426
+    ],
+    "before_root_ids": [
+      864691136297789996
+    ],
+    "interface_point": [
+      866852.5625,
+      842846.3125,
+      776762.5625
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_106_neuron_864691137055544438/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_106_neuron_864691137055544438/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_106_neuron_864691137055544438/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_106_neuron_864691137055544438",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 107,
+    "neuron_id": 864691135996445610,
+    "operation_id": 1392842,
+    "timestamp": 1734668647,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136484498988,
+    "after_root_ids": [
+      864691135640646971,
+      864691135662087664
+    ],
+    "before_root_ids": [
+      864691136484498988
+    ],
+    "interface_point": [
+      644966.0,
+      457548.0,
+      921018.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_107_neuron_864691135996445610/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_107_neuron_864691135996445610/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_107_neuron_864691135996445610/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_107_neuron_864691135996445610",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 108,
+    "neuron_id": 864691135996445610,
+    "operation_id": 1393007,
+    "timestamp": 1734670429,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135510270070,
+    "after_root_ids": [
+      864691135343089585,
+      864691136664230110
+    ],
+    "before_root_ids": [
+      864691135510270070
+    ],
+    "interface_point": [
+      583529.3125,
+      387870.0,
+      1004227.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_108_neuron_864691135996445610/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_108_neuron_864691135996445610/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_108_neuron_864691135996445610/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_108_neuron_864691135996445610",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 109,
+    "neuron_id": 864691135996445610,
+    "operation_id": 1393197,
+    "timestamp": 1734672865,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135760313678,
+    "after_root_ids": [
+      864691136176736262,
+      864691135324514972
+    ],
+    "before_root_ids": [
+      864691135760313678
+    ],
+    "interface_point": [
+      854154.0,
+      743607.875,
+      901771.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_109_neuron_864691135996445610/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_109_neuron_864691135996445610/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_109_neuron_864691135996445610/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_109_neuron_864691135996445610",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 110,
+    "neuron_id": 864691135996445610,
+    "operation_id": 1394718,
+    "timestamp": 1734680317,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135338146790,
+    "after_root_ids": [
+      864691135360485720,
+      864691135105724493
+    ],
+    "before_root_ids": [
+      864691135338146790
+    ],
+    "interface_point": [
+      1373389.5,
+      571294.5,
+      998655.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_110_neuron_864691135996445610/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_110_neuron_864691135996445610/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_110_neuron_864691135996445610/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_110_neuron_864691135996445610",
+    "has_nucleus": true
+  },
+  {
+    "entry_index": 111,
+    "neuron_id": 864691135996445610,
+    "operation_id": 1395837,
+    "timestamp": 1734827460,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135483940435,
+    "after_root_ids": [
+      864691135477693608,
+      864691136268039156
+    ],
+    "before_root_ids": [
+      864691135483940435
+    ],
+    "interface_point": [
+      1473592.125,
+      562141.5625,
+      1003585.0625
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_111_neuron_864691135996445610/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_111_neuron_864691135996445610/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_111_neuron_864691135996445610/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_111_neuron_864691135996445610",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 112,
+    "neuron_id": 864691135996445610,
+    "operation_id": 1395917,
+    "timestamp": 1734829253,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135209459065,
+    "after_root_ids": [
+      864691136120187160,
+      864691135347028895
+    ],
+    "before_root_ids": [
+      864691135209459065
+    ],
+    "interface_point": [
+      1446609.75,
+      596676.125,
+      1010175.4375
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_112_neuron_864691135996445610/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_112_neuron_864691135996445610/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_112_neuron_864691135996445610/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_112_neuron_864691135996445610",
+    "has_nucleus": true
+  },
+  {
+    "entry_index": 113,
+    "neuron_id": 864691135996445610,
+    "operation_id": 1396090,
+    "timestamp": 1734832678,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135464287550,
+    "after_root_ids": [
+      864691136484502060,
+      864691135996410282
+    ],
+    "before_root_ids": [
+      864691135464287550
+    ],
+    "interface_point": [
+      1016988.0,
+      447258.0,
+      774697.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_113_neuron_864691135996445610/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_113_neuron_864691135996445610/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_113_neuron_864691135996445610/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_113_neuron_864691135996445610",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 114,
+    "neuron_id": 864691135996445610,
+    "operation_id": 1396099,
+    "timestamp": 1734833085,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135623859267,
+    "after_root_ids": [
+      864691135976184943,
+      864691136057918680
+    ],
+    "before_root_ids": [
+      864691135623859267
+    ],
+    "interface_point": [
+      1009589.0,
+      429247.0,
+      780034.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_114_neuron_864691135996445610/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_114_neuron_864691135996445610/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_114_neuron_864691135996445610/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_114_neuron_864691135996445610",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 115,
+    "neuron_id": 864691135996445610,
+    "operation_id": 1396106,
+    "timestamp": 1734833142,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135976184943,
+    "after_root_ids": [
+      864691136010836398,
+      864691135640667195
+    ],
+    "before_root_ids": [
+      864691135976184943
+    ],
+    "interface_point": [
+      1009900.5,
+      429870.0,
+      779887.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_115_neuron_864691135996445610/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_115_neuron_864691135996445610/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_115_neuron_864691135996445610/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_115_neuron_864691135996445610",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 116,
+    "neuron_id": 864691135996445610,
+    "operation_id": 1396224,
+    "timestamp": 1734835108,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136747346030,
+    "after_root_ids": [
+      864691134941696099,
+      864691135492423655
+    ],
+    "before_root_ids": [
+      864691136747346030
+    ],
+    "interface_point": [
+      875915.25,
+      403782.75,
+      761349.75
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_116_neuron_864691135996445610/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_116_neuron_864691135996445610/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_116_neuron_864691135996445610/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_116_neuron_864691135996445610",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 117,
+    "neuron_id": 864691135996445610,
+    "operation_id": 1396776,
+    "timestamp": 1734851813,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135500144836,
+    "after_root_ids": [
+      864691135970568805,
+      864691134941700451
+    ],
+    "before_root_ids": [
+      864691135500144836
+    ],
+    "interface_point": [
+      733603.5,
+      691813.5,
+      960125.25
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_117_neuron_864691135996445610/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_117_neuron_864691135996445610/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_117_neuron_864691135996445610/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_117_neuron_864691135996445610",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 118,
+    "neuron_id": 864691135996445610,
+    "operation_id": 1396812,
+    "timestamp": 1734853222,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691134984320356,
+    "after_root_ids": [
+      864691135384431339,
+      864691136176748806
+    ],
+    "before_root_ids": [
+      864691134984320356
+    ],
+    "interface_point": [
+      579709.875,
+      568920.6875,
+      1006614.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_118_neuron_864691135996445610/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_118_neuron_864691135996445610/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_118_neuron_864691135996445610/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_118_neuron_864691135996445610",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 119,
+    "neuron_id": 864691135996445610,
+    "operation_id": 1396838,
+    "timestamp": 1734853716,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135566534378,
+    "after_root_ids": [
+      864691135465422661,
+      864691136725198333
+    ],
+    "before_root_ids": [
+      864691135566534378
+    ],
+    "interface_point": [
+      578482.5,
+      564736.5,
+      1007182.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_119_neuron_864691135996445610/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_119_neuron_864691135996445610/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_119_neuron_864691135996445610/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_119_neuron_864691135996445610",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 120,
+    "neuron_id": 864691134965949727,
+    "operation_id": 107719,
+    "timestamp": 1597887498,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135031518625,
+    "after_root_ids": [
+      864691135256205743,
+      864691135337777382
+    ],
+    "before_root_ids": [
+      864691135031518625
+    ],
+    "interface_point": [
+      638106.0,
+      693504.0,
+      904344.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_120_neuron_864691134965949727/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_120_neuron_864691134965949727/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_120_neuron_864691134965949727/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_120_neuron_864691134965949727",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 121,
+    "neuron_id": 864691134965949727,
+    "operation_id": 583354,
+    "timestamp": 1674240170,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135437383922,
+    "after_root_ids": [
+      864691136371526024,
+      864691135777408608
+    ],
+    "before_root_ids": [
+      864691135437383922
+    ],
+    "interface_point": [
+      664965.0,
+      600495.0,
+      934017.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_121_neuron_864691134965949727/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_121_neuron_864691134965949727/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_121_neuron_864691134965949727/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_121_neuron_864691134965949727",
+    "has_nucleus": true
+  },
+  {
+    "entry_index": 122,
+    "neuron_id": 864691134965949727,
+    "operation_id": 727032,
+    "timestamp": 1674534024,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136009447084,
+    "after_root_ids": [
+      864691137020682606,
+      864691135368114425
+    ],
+    "before_root_ids": [
+      864691136009447084
+    ],
+    "interface_point": [
+      700944.625,
+      601095.625,
+      899929.1875
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_122_neuron_864691134965949727/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_122_neuron_864691134965949727/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_122_neuron_864691134965949727/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_122_neuron_864691134965949727",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 123,
+    "neuron_id": 864691134965949727,
+    "operation_id": 735623,
+    "timestamp": 1674616271,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135910295721,
+    "after_root_ids": [
+      864691135639929915,
+      864691136974586396
+    ],
+    "before_root_ids": [
+      864691135910295721
+    ],
+    "interface_point": [
+      619843.0,
+      515683.0,
+      825237.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_123_neuron_864691134965949727/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_123_neuron_864691134965949727/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_123_neuron_864691134965949727/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_123_neuron_864691134965949727",
+    "has_nucleus": true
+  },
+  {
+    "entry_index": 124,
+    "neuron_id": 864691134965949727,
+    "operation_id": 760477,
+    "timestamp": 1675225540,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135182900994,
+    "after_root_ids": [
+      864691136619380365,
+      864691135808486429
+    ],
+    "before_root_ids": [
+      864691135182900994
+    ],
+    "interface_point": [
+      717265.5,
+      718389.0,
+      919474.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_124_neuron_864691134965949727/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_124_neuron_864691134965949727/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_124_neuron_864691134965949727/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_124_neuron_864691134965949727",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 125,
+    "neuron_id": 864691134965949727,
+    "operation_id": 761648,
+    "timestamp": 1675233070,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136117168036,
+    "after_root_ids": [
+      864691135617007977,
+      864691135953012003
+    ],
+    "before_root_ids": [
+      864691136117168036
+    ],
+    "interface_point": [
+      662896.5,
+      647461.5,
+      882393.75
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_125_neuron_864691134965949727/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_125_neuron_864691134965949727/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_125_neuron_864691134965949727/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_125_neuron_864691134965949727",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 126,
+    "neuron_id": 864691134965949727,
+    "operation_id": 762380,
+    "timestamp": 1675239993,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135560874209,
+    "after_root_ids": [
+      864691136812982899,
+      864691135565655639
+    ],
+    "before_root_ids": [
+      864691135560874209
+    ],
+    "interface_point": [
+      682447.5,
+      586719.0,
+      885066.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_126_neuron_864691134965949727/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_126_neuron_864691134965949727/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_126_neuron_864691134965949727/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_126_neuron_864691134965949727",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 127,
+    "neuron_id": 864691134965949727,
+    "operation_id": 767849,
+    "timestamp": 1675340375,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135118829789,
+    "after_root_ids": [
+      864691136273962174,
+      864691136066540696
+    ],
+    "before_root_ids": [
+      864691135118829789
+    ],
+    "interface_point": [
+      785908.1875,
+      661962.0,
+      933798.625
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_127_neuron_864691134965949727/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_127_neuron_864691134965949727/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_127_neuron_864691134965949727/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_127_neuron_864691134965949727",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 128,
+    "neuron_id": 864691134965949727,
+    "operation_id": 769567,
+    "timestamp": 1675403868,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136228014161,
+    "after_root_ids": [
+      864691135123388455,
+      864691135568896236
+    ],
+    "before_root_ids": [
+      864691136228014161
+    ],
+    "interface_point": [
+      763077.0,
+      660870.0,
+      960897.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_128_neuron_864691134965949727/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_128_neuron_864691134965949727/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_128_neuron_864691134965949727/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_128_neuron_864691134965949727",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 129,
+    "neuron_id": 864691134965949727,
+    "operation_id": 770398,
+    "timestamp": 1675412915,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135927446484,
+    "after_root_ids": [
+      864691135731292089,
+      864691135346184607
+    ],
+    "before_root_ids": [
+      864691135927446484
+    ],
+    "interface_point": [
+      705936.0,
+      707658.0,
+      924325.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_129_neuron_864691134965949727/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_129_neuron_864691134965949727/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_129_neuron_864691134965949727/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_129_neuron_864691134965949727",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 130,
+    "neuron_id": 864691134965949727,
+    "operation_id": 770899,
+    "timestamp": 1675416238,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135528885700,
+    "after_root_ids": [
+      864691135838293139,
+      864691135615156427
+    ],
+    "before_root_ids": [
+      864691135528885700
+    ],
+    "interface_point": [
+      624099.0,
+      667311.75,
+      865709.25
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_130_neuron_864691134965949727/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_130_neuron_864691134965949727/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_130_neuron_864691134965949727/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_130_neuron_864691134965949727",
+    "has_nucleus": true
+  },
+  {
+    "entry_index": 131,
+    "neuron_id": 864691134965949727,
+    "operation_id": 771155,
+    "timestamp": 1675419099,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136009547180,
+    "after_root_ids": [
+      864691136057387480,
+      864691135738583409
+    ],
+    "before_root_ids": [
+      864691136009547180
+    ],
+    "interface_point": [
+      624902.25,
+      631386.0,
+      844284.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_131_neuron_864691134965949727/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_131_neuron_864691134965949727/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_131_neuron_864691134965949727/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_131_neuron_864691134965949727",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 132,
+    "neuron_id": 864691134965949727,
+    "operation_id": 771422,
+    "timestamp": 1675422193,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135655215042,
+    "after_root_ids": [
+      864691135368162297,
+      864691135273332497
+    ],
+    "before_root_ids": [
+      864691135655215042
+    ],
+    "interface_point": [
+      723723.0,
+      770595.0,
+      898254.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_132_neuron_864691134965949727/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_132_neuron_864691134965949727/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_132_neuron_864691134965949727/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_132_neuron_864691134965949727",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 133,
+    "neuron_id": 864691134965949727,
+    "operation_id": 781939,
+    "timestamp": 1675745871,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135349423063,
+    "after_root_ids": [
+      864691136090188087,
+      864691136032827067
+    ],
+    "before_root_ids": [
+      864691135349423063
+    ],
+    "interface_point": [
+      705831.0,
+      707637.0,
+      924336.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_133_neuron_864691134965949727/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_133_neuron_864691134965949727/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_133_neuron_864691134965949727/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_133_neuron_864691134965949727",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 134,
+    "neuron_id": 864691134965949727,
+    "operation_id": 782456,
+    "timestamp": 1675750162,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136009576108,
+    "after_root_ids": [
+      864691135576371230,
+      864691136673824903
+    ],
+    "before_root_ids": [
+      864691136009576108
+    ],
+    "interface_point": [
+      715572.375,
+      715487.0625,
+      921365.8125
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_134_neuron_864691134965949727/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_134_neuron_864691134965949727/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_134_neuron_864691134965949727/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_134_neuron_864691134965949727",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 135,
+    "neuron_id": 864691135919630768,
+    "operation_id": 225426,
+    "timestamp": 1618261224,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135382730714,
+    "after_root_ids": [
+      864691136273875725,
+      864691135058731675
+    ],
+    "before_root_ids": [
+      864691135382730714
+    ],
+    "interface_point": [
+      624650.25,
+      499978.5,
+      771503.25
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_135_neuron_864691135919630768/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_135_neuron_864691135919630768/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_135_neuron_864691135919630768/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_135_neuron_864691135919630768",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 136,
+    "neuron_id": 864691135919630768,
+    "operation_id": 244086,
+    "timestamp": 1621891259,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136105692633,
+    "after_root_ids": [
+      864691135407504329,
+      864691135058748571
+    ],
+    "before_root_ids": [
+      864691136105692633
+    ],
+    "interface_point": [
+      705295.5,
+      441693.0,
+      882672.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_136_neuron_864691135919630768/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_136_neuron_864691135919630768/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_136_neuron_864691135919630768/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_136_neuron_864691135919630768",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 137,
+    "neuron_id": 864691135919630768,
+    "operation_id": 244089,
+    "timestamp": 1621891326,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135407504329,
+    "after_root_ids": [
+      864691136273918989,
+      864691135491485279
+    ],
+    "before_root_ids": [
+      864691135407504329
+    ],
+    "interface_point": [
+      704634.0,
+      442323.0,
+      882903.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_137_neuron_864691135919630768/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_137_neuron_864691135919630768/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_137_neuron_864691135919630768/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_137_neuron_864691135919630768",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 138,
+    "neuron_id": 864691135539658098,
+    "operation_id": 251639,
+    "timestamp": 1623452831,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135042847649,
+    "after_root_ids": [
+      864691135700528507,
+      864691135407519945
+    ],
+    "before_root_ids": [
+      864691135042847649
+    ],
+    "interface_point": [
+      694393.0,
+      724144.375,
+      889667.8125
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_138_neuron_864691135539658098/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_138_neuron_864691135539658098/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_138_neuron_864691135539658098/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_138_neuron_864691135539658098",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 139,
+    "neuron_id": 864691135539658098,
+    "operation_id": 685398,
+    "timestamp": 1674402100,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136194601942,
+    "after_root_ids": [
+      864691136379755989,
+      864691135947564385
+    ],
+    "before_root_ids": [
+      864691136194601942
+    ],
+    "interface_point": [
+      801864.0,
+      629863.5,
+      754645.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_139_neuron_864691135539658098/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_139_neuron_864691135539658098/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_139_neuron_864691135539658098/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_139_neuron_864691135539658098",
+    "has_nucleus": true
+  },
+  {
+    "entry_index": 140,
+    "neuron_id": 864691135539658098,
+    "operation_id": 811199,
+    "timestamp": 1676452152,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136825621870,
+    "after_root_ids": [
+      864691135754833869,
+      864691135511614160
+    ],
+    "before_root_ids": [
+      864691136825621870
+    ],
+    "interface_point": [
+      591878.0,
+      749357.0,
+      892808.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_140_neuron_864691135539658098/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_140_neuron_864691135539658098/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_140_neuron_864691135539658098/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_140_neuron_864691135539658098",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 141,
+    "neuron_id": 864691135539658098,
+    "operation_id": 811615,
+    "timestamp": 1676454743,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136117277348,
+    "after_root_ids": [
+      864691135545616680,
+      864691135565742167
+    ],
+    "before_root_ids": [
+      864691136117277348
+    ],
+    "interface_point": [
+      772390.5,
+      740386.5,
+      903147.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_141_neuron_864691135539658098/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_141_neuron_864691135539658098/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_141_neuron_864691135539658098/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_141_neuron_864691135539658098",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 142,
+    "neuron_id": 864691134989919098,
+    "operation_id": 522316,
+    "timestamp": 1673521479,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135307680326,
+    "after_root_ids": [
+      864691135954439688,
+      864691136144193588
+    ],
+    "before_root_ids": [
+      864691135307680326
+    ],
+    "interface_point": [
+      787867.5,
+      995547.0,
+      1061308.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_142_neuron_864691134989919098/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_142_neuron_864691134989919098/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_142_neuron_864691134989919098/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_142_neuron_864691134989919098",
+    "has_nucleus": true
+  },
+  {
+    "entry_index": 143,
+    "neuron_id": 864691134989919098,
+    "operation_id": 1122066,
+    "timestamp": 1723607676,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136845654638,
+    "after_root_ids": [
+      864691135865627006,
+      864691135838697107
+    ],
+    "before_root_ids": [
+      864691136845654638
+    ],
+    "interface_point": [
+      754675.4375,
+      877120.875,
+      959631.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_143_neuron_864691134989919098/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_143_neuron_864691134989919098/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_143_neuron_864691134989919098/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_143_neuron_864691134989919098",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 144,
+    "neuron_id": 864691134989919098,
+    "operation_id": 1122330,
+    "timestamp": 1723612237,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135801447522,
+    "after_root_ids": [
+      864691135782235728,
+      864691136195541974
+    ],
+    "before_root_ids": [
+      864691135801447522
+    ],
+    "interface_point": [
+      758885.8125,
+      850763.5,
+      951600.875
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_144_neuron_864691134989919098/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_144_neuron_864691134989919098/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_144_neuron_864691134989919098/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_144_neuron_864691134989919098",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 145,
+    "neuron_id": 864691134989919098,
+    "operation_id": 1122336,
+    "timestamp": 1723612316,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136195541974,
+    "after_root_ids": [
+      864691135101300000,
+      864691136228531537
+    ],
+    "before_root_ids": [
+      864691136195541974
+    ],
+    "interface_point": [
+      758803.5,
+      850573.5,
+      951583.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_145_neuron_864691134989919098/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_145_neuron_864691134989919098/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_145_neuron_864691134989919098/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_145_neuron_864691134989919098",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 146,
+    "neuron_id": 864691134989919098,
+    "operation_id": 1122500,
+    "timestamp": 1723613487,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135865630334,
+    "after_root_ids": [
+      864691135698866965,
+      864691136012399011
+    ],
+    "before_root_ids": [
+      864691135865630334
+    ],
+    "interface_point": [
+      741796.125,
+      902099.625,
+      1018589.25
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_146_neuron_864691134989919098/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_146_neuron_864691134989919098/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_146_neuron_864691134989919098/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_146_neuron_864691134989919098",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 147,
+    "neuron_id": 864691134989919098,
+    "operation_id": 1122617,
+    "timestamp": 1723614793,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135698867477,
+    "after_root_ids": [
+      864691136618576859,
+      864691135942698356
+    ],
+    "before_root_ids": [
+      864691135698867477
+    ],
+    "interface_point": [
+      769686.75,
+      995452.5,
+      949882.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_147_neuron_864691134989919098/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_147_neuron_864691134989919098/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_147_neuron_864691134989919098/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_147_neuron_864691134989919098",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 148,
+    "neuron_id": 864691136089194039,
+    "operation_id": 122815,
+    "timestamp": 1600372215,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136689941084,
+    "after_root_ids": [
+      864691136134529931,
+      864691135341111493
+    ],
+    "before_root_ids": [
+      864691136689941084
+    ],
+    "interface_point": [
+      1165447.5,
+      855946.0,
+      1058624.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_148_neuron_864691136089194039/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_148_neuron_864691136089194039/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_148_neuron_864691136089194039/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_148_neuron_864691136089194039",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 149,
+    "neuron_id": 864691136089194039,
+    "operation_id": 123219,
+    "timestamp": 1600436038,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136388325751,
+    "after_root_ids": [
+      864691136973742876,
+      864691135657904002
+    ],
+    "before_root_ids": [
+      864691136388325751
+    ],
+    "interface_point": [
+      1260567.0,
+      697830.0,
+      646243.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_149_neuron_864691136089194039/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_149_neuron_864691136089194039/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_149_neuron_864691136089194039/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_149_neuron_864691136089194039",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 150,
+    "neuron_id": 864691136089194039,
+    "operation_id": 123969,
+    "timestamp": 1600695298,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136906953070,
+    "after_root_ids": [
+      864691135809571788,
+      864691137019617134
+    ],
+    "before_root_ids": [
+      864691136906953070
+    ],
+    "interface_point": [
+      1095038.0,
+      724570.0,
+      747946.5
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_150_neuron_864691136089194039/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_150_neuron_864691136089194039/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_150_neuron_864691136089194039/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_150_neuron_864691136089194039",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 151,
+    "neuron_id": 864691136089194039,
+    "operation_id": 125462,
+    "timestamp": 1600872305,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136194154966,
+    "after_root_ids": [
+      864691135568979078,
+      864691135491311455
+    ],
+    "before_root_ids": [
+      864691136194154966
+    ],
+    "interface_point": [
+      557858.0,
+      717692.5,
+      804062.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_151_neuron_864691136089194039/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_151_neuron_864691136089194039/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_151_neuron_864691136089194039/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_151_neuron_864691136089194039",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 152,
+    "neuron_id": 864691135738047620,
+    "operation_id": 885513,
+    "timestamp": 1695749477,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691134811491738,
+    "after_root_ids": [
+      864691135953363235,
+      864691134886024954
+    ],
+    "before_root_ids": [
+      864691134811491738
+    ],
+    "interface_point": [
+      773243.125,
+      817704.25,
+      759618.25
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_152_neuron_864691135738047620/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_152_neuron_864691135738047620/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_152_neuron_864691135738047620/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_152_neuron_864691135738047620",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 153,
+    "neuron_id": 864691135738047620,
+    "operation_id": 885561,
+    "timestamp": 1695752340,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135279475873,
+    "after_root_ids": [
+      864691135503017309,
+      864691136389870608
+    ],
+    "before_root_ids": [
+      864691135279475873
+    ],
+    "interface_point": [
+      736942.5,
+      411642.0,
+      721602.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_153_neuron_864691135738047620/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_153_neuron_864691135738047620/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_153_neuron_864691135738047620/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_153_neuron_864691135738047620",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 154,
+    "neuron_id": 864691135738047620,
+    "operation_id": 885865,
+    "timestamp": 1695784545,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136101122421,
+    "after_root_ids": [
+      864691135618926735,
+      864691135374897993
+    ],
+    "before_root_ids": [
+      864691136101122421
+    ],
+    "interface_point": [
+      943456.5,
+      384279.0,
+      1091727.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_154_neuron_864691135738047620/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_154_neuron_864691135738047620/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_154_neuron_864691135738047620/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_154_neuron_864691135738047620",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 155,
+    "neuron_id": 864691136176327430,
+    "operation_id": 200798,
+    "timestamp": 1613750079,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135359032920,
+    "after_root_ids": [
+      864691135367187193,
+      864691136388443767
+    ],
+    "before_root_ids": [
+      864691135359032920
+    ],
+    "interface_point": [
+      1287337.0,
+      542419.5,
+      658861.25
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_155_neuron_864691136176327430/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_155_neuron_864691136176327430/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_155_neuron_864691136176327430/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_155_neuron_864691136176327430",
+    "has_nucleus": true
+  },
+  {
+    "entry_index": 156,
+    "neuron_id": 864691136176327430,
+    "operation_id": 203113,
+    "timestamp": 1614281368,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691136011097763,
+    "after_root_ids": [
+      864691135585301628,
+      864691136812093043
+    ],
+    "before_root_ids": [
+      864691136011097763
+    ],
+    "interface_point": [
+      459669.0,
+      715554.0,
+      1030554.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_156_neuron_864691136176327430/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_156_neuron_864691136176327430/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_156_neuron_864691136176327430/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_156_neuron_864691136176327430",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 157,
+    "neuron_id": 864691136176327430,
+    "operation_id": 206362,
+    "timestamp": 1614799757,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691135348486359,
+    "after_root_ids": [
+      864691135590134795,
+      864691135782618163
+    ],
+    "before_root_ids": [
+      864691135348486359
+    ],
+    "interface_point": [
+      459378.21875,
+      715512.0,
+      1030449.0
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_157_neuron_864691136176327430/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_157_neuron_864691136176327430/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_157_neuron_864691136176327430/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_157_neuron_864691136176327430",
+    "has_nucleus": false
+  },
+  {
+    "entry_index": 158,
+    "neuron_id": 864691136176327430,
+    "operation_id": 206479,
+    "timestamp": 1614813056,
+    "species": "mouse",
+    "is_merge": false,
+    "split_neuron_id": 864691134405775890,
+    "after_root_ids": [
+      864691135373597896,
+      864691135571022317
+    ],
+    "before_root_ids": [
+      864691134405775890
+    ],
+    "interface_point": [
+      601209.0,
+      841862.6875,
+      990028.1875
+    ],
+    "view_paths": {
+      "front": "./segment_visualizations/entry_158_neuron_864691136176327430/neuron_mesh_front.png",
+      "top": "./segment_visualizations/entry_158_neuron_864691136176327430/neuron_mesh_top.png",
+      "side": "./segment_visualizations/entry_158_neuron_864691136176327430/neuron_mesh_side.png"
+    },
+    "output_dir": "./segment_visualizations/entry_158_neuron_864691136176327430",
+    "has_nucleus": false
+  }
+]

@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "connectomebench"
 version = "0.1.0"
@@ -8,6 +12,7 @@ dependencies = [
     "anthropic>=0.51.0",
     "caveclient==7.5.1",
     "cloud-volume>=12.2.0",
+    "flask>=3.1.2",
     "google-genai>=1.16.1",
     "ipykernel>=6.29.5",
     "litellm>=1.67.5",
@@ -26,3 +31,7 @@ dependencies = [
     "torch>=2.7.0",
     "torchvision>=0.22.0",
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
