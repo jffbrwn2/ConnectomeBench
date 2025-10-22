@@ -30,13 +30,14 @@ ENV/
 .vscode/
 *.swp
 *.swo
+.claude/
 
 # Jupyter Notebook
 .ipynb_checkpoints
 
 # Project specific
-scripts/output/
-scripts/training_data/
+output/
+data/
 
 # OS specific
 .DS_Store

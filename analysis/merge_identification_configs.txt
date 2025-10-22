@@ -1,0 +1,16 @@
+# Merge Identification Experiments Config
+# Format: Label,Path
+# Lines starting with # are comments
+
+# Baseline models
+"Claude 4+Informative",/Users/jbrown/Documents/boyden_lab/ai-proofreading/connectomebench/output/mouse_merge_2048nm/claude-4-sonnet-20250514_merge_identification_informative_analysis_results_K10.csv
+"Claude 4+Heuristics",/Users/jbrown/Documents/boyden_lab/ai-proofreading/connectomebench/output/mouse_merge_2048nm/claude-4-sonnet-20250514_merge_identification_informative+heuristic1+heuristic2+heuristic3+heuristic4+heuristic5+heuristic6+heuristic7_analysis_results_K10.csv
+
+"GPT-4.1+Informative",/Users/jbrown/Documents/boyden_lab/ai-proofreading/connectomebench/output/mouse_merge_2048nm/gpt-4.1_merge_identification_informative_analysis_results_K10.csv
+"GPT-4.1+Heuristics",/Users/jbrown/Documents/boyden_lab/ai-proofreading/connectomebench/output/mouse_merge_2048nm/gpt-4.1_merge_identification_informative+heuristic1+heuristic2+heuristic3+heuristic4+heuristic5+heuristic6+heuristic7_analysis_results_K10.csv
+
+"GPT-4o+Informative",/Users/jbrown/Documents/boyden_lab/ai-proofreading/connectomebench/output/mouse_merge_2048nm/gpt-4o_merge_identification_informative_analysis_results_K10.csv
+"GPT-4o+Heuristics",/Users/jbrown/Documents/boyden_lab/ai-proofreading/connectomebench/output/mouse_merge_2048nm/gpt-4o_merge_identification_informative+heuristic1+heuristic2+heuristic3+heuristic4+heuristic5+heuristic6+heuristic7_analysis_results_K10.csv
+
+"o4-mini+Informative",/Users/jbrown/Documents/boyden_lab/ai-proofreading/connectomebench/output/mouse_merge_2048nm/o4-mini_merge_identification_informative_analysis_results_K10.csv
+"o4-mini+Heuristics",/Users/jbrown/Documents/boyden_lab/ai-proofreading/connectomebench/output/mouse_merge_2048nm/o4-mini_merge_identification_informative+heuristic1+heuristic2+heuristic3+heuristic4+heuristic5+heuristic6+heuristic7_analysis_results_K10.csv

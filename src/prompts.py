@@ -172,7 +172,7 @@ def create_split_identification_prompt(
 ) -> List[dict]:
     """
     Create a prompt for evaluating split errors using multiple views.
-    
+
     Args:
         option_image_data: List of dictionaries, each containing 'id' (str) and
                            'paths' (Dict[str, Dict[str, str]]) for an option's images
@@ -181,7 +181,7 @@ def create_split_identification_prompt(
         merge_coords: Coordinates [x, y, z] of the merge point.
         use_zoomed_images: If True, use zoomed images; otherwise, use default images.
         views: List of views (e.g., ['front', 'side']) to include in the prompt.
-       
+
     Returns:
         List of content blocks for the LLM prompt.
     """
@@ -196,7 +196,7 @@ def create_split_identification_prompt(
     # for i, option_data in enumerate(option_image_data, 1):
     option_id = option_data['id']
     image_paths = option_data['paths']
-    
+
     current_option_images = []
     valid_image_found = False
 
@@ -213,7 +213,7 @@ def create_split_identification_prompt(
                     "type": text_type,
                     "text": f"Views shown: {view}"
                 })
-    
+
                 if llm_processor.model not in openai_models:
                     content.append({
                         "type": image_type,
@@ -243,7 +243,7 @@ def create_split_identification_prompt(
     if valid_image_found:
         option_details.append({
             'id': option_id,
-            'views_added': ", ".join(current_option_images) 
+            'views_added': ", ".join(current_option_images)
         })
     else:
             print(f"Warning: No valid {image_set_key} images found for option {option_id}. Skipping option.")
@@ -251,20 +251,31 @@ def create_split_identification_prompt(
     if not option_details:
         print("Error: No valid option images could be loaded for the prompt.")
         return []
-        
+
     # --- 2. Add Text Description ---
     image_description = f"The {image_set_key} images" if len(option_details) > 1 else f"The {image_set_key} image"
     view_description = ", ".join(views) # Use the provided views list
     prompt = f"""You are an expert in analyzing neuronal morphology and split and merge errors in connectomics data.
 
 The previous images show a portion of 3D segmentation of neuronal data. While it's intended that the segment all correspond to processes (axon, dendrites) of a single neuron, it's possible that the algorithm may have introduced merge errors, inappropriately grouping processes from different neurons together.  """
-    if prompt_mode == 'informative':
+
+    # Parse prompt mode to extract base mode and heuristics
+    base_mode, heuristics = parse_prompt_mode(prompt_mode)
+
+    if base_mode == 'informative':
         prompt += f"""Merge errors are often characterized by aberrant axonal structure like the axon doubling back after branching off or an axon forming a ninety degree angle when joined with another."""
 
     prompt += f"""{image_description} show this segment from the {view_description} perspectives.
 The image is a cropped 3D volume ({2*zoom_margin} nm x {2*zoom_margin} nm x {2*zoom_margin} nm around the center of the volume), so you should pay attention to merges in the center of the image.
 Images are presented in groups of {len(views)} ({view_description}).""" # Update description dynamically
-    
+
+    # Add heuristics if specified (currently no split heuristics defined)
+    if heuristics:
+        prompt += "\n\nAdditional guidance:\n"
+        for heuristic in heuristics:
+            if heuristic in MERGE_HEURISTICS:
+                prompt += f"- {MERGE_HEURISTICS[heuristic]}\n"
+
     content.append({
         "type": text_type,
         "text": prompt
@@ -274,7 +285,7 @@ Images are presented in groups of {len(views)} ({view_description}).""" # Update
     content.append({
         "type": text_type,
         "text": """
-        
+
 If there is a merge error and the segment should be split apart, then return 1.
 If there is no merge error, then return -1.
 
@@ -282,7 +293,7 @@ Surround your analysis with <analysis> and </analysis> tags.
 Surround your final answer (the number or "-1") with <answer> and </answer> tags.
 """
     })
-    
+
     return content
 
 def create_split_comparison_prompt(
@@ -429,11 +440,24 @@ def create_split_comparison_prompt(
     prompt = f"""You are an expert in analyzing neuronal morphology and split and merge errors in connectomics data.
 
 The previous images show two examples of a portion of 3D segmentation of neuronal data. One or neither of the segmentations may have evident axonal merge errors --- inappropriately grouped processes from different neurons."""
-    if prompt_mode == "informative":
+
+    # Parse prompt mode to extract base mode and heuristics
+    base_mode, heuristics = parse_prompt_mode(prompt_mode)
+
+    if base_mode == "informative":
         prompt += f"""Merge errors are often characterized by aberrant axonal structure like the axon doubling back after branching off or an axon forming a ninety degree angle when joined with another."""
+
     prompt += f"""{image_description} show this segment from the {view_description} perspectives.
 The image is a cropped 3D volume ({2*zoom_margin} nm x {2*zoom_margin} nm x {2*zoom_margin} nm around the center of the volume), so you should pay attention to merges in the center of the image.
 Images are presented in groups of {len(views)} ({view_description})."""
+
+    # Add heuristics if specified (currently no split heuristics defined)
+    if heuristics:
+        prompt += "\n\nAdditional guidance:\n"
+        for heuristic in heuristics:
+            if heuristic in MERGE_HEURISTICS:
+                prompt += f"- {MERGE_HEURISTICS[heuristic]}\n"
+
     content.append({
         "type": text_type,
         "text": prompt # Update description dynamically
@@ -558,9 +582,19 @@ def create_merge_comparison_prompt(
 The previous images show a potential merge of a split error at the center of the 3D volume. Each option displays a pair of segments: the original segment (blue) and a potential merge candidate segment (orange). {image_description} below show this pair from the {view_description} perspectives for each option.
 The image is a cropped 3D volume ({2*zoom_margin} nm x {2*zoom_margin} nm x {2*zoom_margin} nm around the center of the volume), so you should pay attention to discontinuities in the center of the image.
 Images are presented in groups of {len(views)} ({view_description}) per option. The first group corresponds to Option 1, the second to Option 2, and so on."""
-    if prompt_mode == 'informative':
+    # Parse prompt mode to extract base mode and heuristics
+    base_mode, heuristics = parse_prompt_mode(prompt_mode)
+
+    if base_mode == 'informative':
         prompt += f"""The segments merged together should look like a continuous single axon.
 They should just join together at the center; they shouldn't be overlapping."""
+
+    # Add heuristics if specified
+    if heuristics:
+        prompt += "\n\nAdditional guidance:\n"
+        for heuristic in heuristics:
+            if heuristic in MERGE_HEURISTICS:
+                prompt += f"- {MERGE_HEURISTICS[heuristic]}\n"
 
     prompt += f"""Pick the number (e.g., "1", "2", etc.) of the single best option that represents the correct merge.
 If none of the options show segments that should be merged, respond with "-1".

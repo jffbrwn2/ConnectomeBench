@@ -572,8 +572,13 @@ def _process_llm_responses_for_splits(
     total_options_processed = 0
 
     if task == 'split_identification':
-        for event_result in processed_events:
-            for option_data in event_result['prompt_options']:
+        for i, event_result in enumerate(processed_events):
+            for j, option_data in enumerate(event_result['prompt_options']):
+                # Debug: Verify option_data has 'id' field
+                if i == 0 and j == 0:  # First option only
+                    print(f"DEBUG: First option_data keys: {list(option_data.keys())}")
+                    print(f"DEBUG: First option_data['id']: {option_data.get('id')}")
+
                 for k in range(K):
                     response = llm_analysis[total_options_processed * K + k]
                     answer_analysis = evaluate_response(response)
@@ -727,6 +732,16 @@ async def evaluate_split_events(
 
     # 6. Save results
     results_df = pd.DataFrame(final_results)
+
+    # Validation: Check critical columns are present for split_identification
+    if task == 'split_identification':
+        if 'id' not in results_df.columns:
+            print("WARNING: 'id' column missing from results!")
+        elif results_df['id'].isna().all():
+            print("WARNING: All 'id' values are None!")
+        else:
+            print(f"✓ 'id' column present with {results_df['id'].notna().sum()}/{len(results_df)} non-null values")
+
     output_filename = f"{output_dir}/{model}_{task}_{prompt_mode}_analysis_results"
     if K > 1:
         output_filename += f"_K{K}"

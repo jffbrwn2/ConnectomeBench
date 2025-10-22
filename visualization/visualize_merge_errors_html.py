@@ -70,8 +70,7 @@ def find_image_paths(operation_id: str, segment_id: str, coords: List, image_typ
             f"merge_{operation_id}_{coords_suffix}/option_{segment_id}_with_base_{image_type}_*.png",
             f"**/merge_{operation_id}_{coords_suffix}/option_{segment_id}_with_base_{image_type}_*.png"
         ]
-        breakpoint()
-        
+
         for pattern in base_patterns:
             matching_files = glob.glob(pattern, recursive=True)
             
