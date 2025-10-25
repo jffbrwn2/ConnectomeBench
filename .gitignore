@@ -38,6 +38,10 @@ ENV/
 # Project specific
 output/
 data/
+figures/
+reports/
+annotation/
+analysis/*.txt
 
 # OS specific
 .DS_Store
