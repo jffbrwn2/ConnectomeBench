@@ -208,6 +208,7 @@ def create_split_identification_prompt(
         img_path = image_paths.get(image_set_key, {}).get(view)
         if img_path and os.path.exists(img_path):
             try:
+
                 base64_data, media_type = llm_processor._encode_image_to_base64(img_path)
                 content.append({
                     "type": text_type,
