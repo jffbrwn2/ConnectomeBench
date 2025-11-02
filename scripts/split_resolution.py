@@ -386,9 +386,14 @@ def _process_single_split_event(item, output_dir, task, force_regenerate, use_zo
         return None
 
 
-def _load_and_filter_split_data(json_path: str, num_samples: Optional[int] = None) -> List[Dict]:
+def _load_and_filter_split_data(json_path: str, num_samples: Optional[int] = None, seed: Optional[int] = None) -> List[Dict]:
     """
     Load JSON data and filter for valid split operations.
+
+    Args:
+        json_path: Path to input JSON file
+        num_samples: Number of samples to randomly select (None = all)
+        seed: Random seed for reproducible sampling
 
     Returns:
         List of split event dictionaries
@@ -418,11 +423,15 @@ def _load_and_filter_split_data(json_path: str, num_samples: Optional[int] = Non
     total_events_found = len(split_data)
     print(f"Found {total_events_found} split events in the input file.")
 
-    # Limit samples if specified
+    # Randomly sample if specified
     if num_samples is not None and num_samples > 0:
         if num_samples < total_events_found:
-            print(f"Processing only the first {num_samples} split events.")
-            split_data = split_data[:num_samples]
+            if seed is not None:
+                random.seed(seed)
+                print(f"Randomly sampling {num_samples} split events with seed={seed}.")
+            else:
+                print(f"Randomly sampling {num_samples} split events (no seed set).")
+            split_data = random.sample(split_data, num_samples)
         else:
             print(f"Requested {num_samples} samples, but only {total_events_found} available. Processing all.")
     else:
@@ -656,7 +665,8 @@ def process_split_images(
     views=['front', 'side', 'top'],
     task='split_comparison',
     species: str = "fly",
-    zoom_margin: int = 5000
+    zoom_margin: int = 5000,
+    seed: Optional[int] = None
 ) -> List[Dict]:
     """
     Phase 1: Load split data and generate images for all split events.
@@ -665,11 +675,14 @@ def process_split_images(
     1. Loads and filters input data
     2. Runs parallel image generation for split events
 
+    Args:
+        seed: Random seed for reproducible sampling
+
     Returns:
         List of processed event dictionaries with image paths
     """
     # 1. Load and filter data
-    split_data = _load_and_filter_split_data(json_path, num_samples)
+    split_data = _load_and_filter_split_data(json_path, num_samples, seed)
     if not split_data:
         return []
 
@@ -809,7 +822,7 @@ async def process_existing_split_results(
 
     # Group results by operation_id to reconstruct prompt options
     results_by_operation = {}
-    for result in existing_results[:100]:
+    for result in existing_results:
         op_id = result.get('operation_id', 'unknown')
         if op_id not in results_by_operation:
             results_by_operation[op_id] = []
@@ -822,6 +835,7 @@ async def process_existing_split_results(
     # Reconstruct prompts based on task type
     if task == 'split_identification':
         for op_id, op_results in results_by_operation.items():
+
             # Group by individual options
             options_by_id = {}
             for result in op_results:
@@ -831,12 +845,7 @@ async def process_existing_split_results(
 
             for option_id, result in options_by_id.items():
                 # Reconstruct option data
-                option_data = {
-                    'id': option_id,
-                    'paths': result.get('image_paths', {}),
-                    'merge_coords': result.get('merge_coords', []),
-                    'zoom_margin': result.get('zoom_margin', 5000)
-                }
+                option_data = result.get('prompt_options', {})[0]
 
                 use_zoomed_images = result.get('use_zoomed_images', True)
                 views = result.get('views', ['front', 'side', 'top'])
@@ -900,6 +909,7 @@ async def process_existing_split_results(
         return pd.DataFrame()
 
     print(f"Re-evaluating {len(prompts)} prompts with model: {model}")
+    
 
     # Process with new LLM
     llm_analysis = await llm_processor.process_batch(prompts)
@@ -992,6 +1002,7 @@ def main():
     parser.add_argument("--prompt-modes", nargs='+', default=['informative'], help="Specify one or more prompt modes to use for evaluation.")
     parser.add_argument("--results-file", type=str, help="Path to existing results JSON file to re-evaluate with new LLM (skips image generation).")
     parser.add_argument("--K", type=int, default=10, help="Number of repeated evaluations per prompt (default: 10).")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducible sampling (default: 42).")
     args = parser.parse_args()
 
     json_path = args.input_json
@@ -1015,6 +1026,7 @@ def main():
     models = args.models
     prompt_modes = args.prompt_modes
     K = args.K
+    seed = args.seed
 
     # Check if we should use existing results file workflow
     if results_file:
@@ -1036,7 +1048,7 @@ def main():
             for prompt_mode in prompt_modes:
                 print(f"\nRe-evaluating with model: {model} and prompt mode: {prompt_mode}")
 
-                llm_processor = LLMProcessor(model=model, max_tokens=4096, max_concurrent=25)
+                llm_processor = LLMProcessor(model=model, max_tokens=4096, max_concurrent=32)
 
                 # Process existing results
                 results_df = asyncio.run(process_existing_split_results(
@@ -1071,6 +1083,7 @@ def main():
     print(f"Using zoomed images: {use_zoomed}")
     print(f"Selected views: {selected_views}")
     print(f"K (repetitions): {K}")
+    print(f"Random seed: {seed}")
     if num_samples is not None:
         print(f"Number of samples to process: {num_samples}")
     if max_workers is not None:
@@ -1096,7 +1109,8 @@ def main():
         views=selected_views,
         task=task,
         species=species,
-        zoom_margin=zoom_margin
+        zoom_margin=zoom_margin,
+        seed=seed
     )
 
     if not processed_events:
@@ -1114,7 +1128,7 @@ def main():
         for prompt_mode in prompt_modes:
             print(f"\nEvaluating with model: {model} and prompt mode: {prompt_mode}")
 
-            llm_processor = LLMProcessor(model=model, max_tokens=4096, max_concurrent=10)
+            llm_processor = LLMProcessor(model=model, max_tokens=4096, max_concurrent=32)
 
             results_df = asyncio.run(evaluate_split_events(
                 processed_events,

@@ -1113,9 +1113,7 @@ if __name__ == "__main__":
     # Set up your data paths
     DATA_DIR = "output/mouse_split"
     LABELS_FILE = "output/mouse_merge_2048nm/merge_identification_results_20250728_115852.json"
-    # LABELS_FILE = "output/mouse_merge_2048nm/merge_comparison_results_20250728_113748.json"
-    # LABELS_FILE = "output/mouse_split/split_identification_results_20250728_123430.json"
-    # LABELS_FILE = "output/mouse_split/split_comparison_results_20250728_121758.json"
+
     SPLIT_OR_MERGE_CORRECTION = "merge_identification"
     # Choose approach: concatenate images or stack as channels
     CONCATENATE_IMAGES = False  # Set to False to use 3-channel stacking approach
@@ -1148,24 +1146,3 @@ if __name__ == "__main__":
     print(f"Individual test accuracies: {[f'{acc:.2f}%' for acc in [result['test_accuracy'] for result in cv_results['test_results']]]}")
     print(f"Best test performance: Fold {cv_results['best_test_fold'] + 1} with {cv_results['best_test_accuracy']:.2f}%")
     
-    # Compare validation vs test performance
-    val_test_diff = cv_results['mean_accuracy'] - cv_results['mean_test_accuracy']
-    print(f"\nValidation vs Test Performance:")
-    print(f"Difference (val - test): {val_test_diff:.2f}%")
-    if abs(val_test_diff) < 3.0:
-        print("✓ Good generalization (difference < 3%)")
-    elif val_test_diff > 3.0:
-        print("⚠ Possible overfitting (validation >> test)")
-    else:
-        print("⚠ Unusual pattern (test >> validation)")
-    
-    # Example prediction
-    # data_dir = "scripts/output/mouse_segment_classification_full"
-    # proofread_root_id = "123456"  # Example proofread root id
-    # current_root_id = "789012"    # Example current root id
-    # predicted_class, confidence, all_probs = predict_mesh(
-    #     model, data_dir, proofread_root_id, current_root_id, label_to_idx, 
-    #     torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
-    #     concatenate_images=CONCATENATE_IMAGES
-    # )
-    # print(f"Predicted class: {predicted_class}, Confidence: {confidence:.4f}")

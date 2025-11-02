@@ -460,9 +460,14 @@ def _process_single_merge_event(item, output_dir, force_regenerate, use_zoomed_i
         return None
 
 
-def _load_and_filter_merge_data(json_path: str, num_samples: Optional[int] = None) -> List[Dict]:
+def _load_and_filter_merge_data(json_path: str, num_samples: Optional[int] = None, seed: Optional[int] = None) -> List[Dict]:
     """
     Load JSON data and filter for valid merge operations.
+
+    Args:
+        json_path: Path to input JSON file
+        num_samples: Number of samples to randomly select (None = all)
+        seed: Random seed for reproducible sampling
 
     Returns:
         List of merge event dictionaries
@@ -491,11 +496,15 @@ def _load_and_filter_merge_data(json_path: str, num_samples: Optional[int] = Non
     total_events_found = len(merge_data)
     print(f"Found {total_events_found} merge events in the input file.")
 
-    # Limit samples if specified
+    # Randomly sample if specified
     if num_samples is not None and num_samples > 0:
         if num_samples < total_events_found:
-            print(f"Processing only the first {num_samples} merge events.")
-            merge_data = merge_data[:num_samples]
+            if seed is not None:
+                random.seed(seed)
+                print(f"Randomly sampling {num_samples} merge events with seed={seed}.")
+            else:
+                print(f"Randomly sampling {num_samples} merge events (no seed set).")
+            merge_data = random.sample(merge_data, num_samples)
         else:
             print(f"Requested {num_samples} samples, but only {total_events_found} available. Processing all.")
     else:
@@ -687,7 +696,8 @@ def process_merge_images(
     use_zoomed_images=True,
     max_workers: Optional[int] = None,
     views=['front', 'side', 'top'],
-    zoom_margin: int = 5000
+    zoom_margin: int = 5000,
+    seed: Optional[int] = None
 ) -> List[Dict]:
     """
     Phase 1: Load merge data and generate images for all merge events.
@@ -696,11 +706,14 @@ def process_merge_images(
     1. Loads and filters input data
     2. Runs parallel image generation for merge events
 
+    Args:
+        seed: Random seed for reproducible sampling
+
     Returns:
         List of processed event dictionaries with image paths
     """
     # 1. Load and filter data
-    merge_data = _load_and_filter_merge_data(json_path, num_samples)
+    merge_data = _load_and_filter_merge_data(json_path, num_samples, seed)
     if not merge_data:
         return []
 
@@ -1045,6 +1058,7 @@ def main():
     parser.add_argument("--prompt-modes", nargs='+', default=['informative'], help="Specify one or more prompt modes to use for evaluation.")
     parser.add_argument("--results-file", type=str, help="Path to existing results JSON file to re-evaluate with new LLM (skips image generation).")
     parser.add_argument("--K", type=int, default=10, help="Number of repeated evaluations per prompt (default: 10).")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducible sampling (default: 42).")
     args = parser.parse_args()
 
     json_path = args.input_json
@@ -1068,6 +1082,7 @@ def main():
     models = args.models
     prompt_modes = args.prompt_modes
     K = args.K
+    seed = args.seed
 
     # Check if we should use existing results file workflow
     if results_file:
@@ -1089,7 +1104,7 @@ def main():
             for prompt_mode in prompt_modes:
                 print(f"\nRe-evaluating with model: {model} and prompt mode: {prompt_mode}")
 
-                llm_processor = LLMProcessor(model=model, max_tokens=4096, max_concurrent=25)
+                llm_processor = LLMProcessor(model=model, max_tokens=4096, max_concurrent=32)
 
                 # Process existing results
                 results_df = asyncio.run(process_existing_merge_results(
@@ -1124,6 +1139,7 @@ def main():
     print(f"Using zoomed images: {use_zoomed}")
     print(f"Selected views: {selected_views}")
     print(f"K (repetitions): {K}")
+    print(f"Random seed: {seed}")
     if num_samples is not None:
         print(f"Number of samples to process: {num_samples}")
     if max_workers is not None:
@@ -1147,7 +1163,8 @@ def main():
         use_zoomed_images=use_zoomed,
         max_workers=max_workers,
         views=selected_views,
-        zoom_margin=zoom_margin
+        zoom_margin=zoom_margin,
+        seed=seed
     )
 
     if not processed_events:
@@ -1165,7 +1182,7 @@ def main():
         for prompt_mode in prompt_modes:
             print(f"\nEvaluating with model: {model} and prompt mode: {prompt_mode}")
 
-            llm_processor = LLMProcessor(model=model, max_tokens=4096, max_concurrent=10)
+            llm_processor = LLMProcessor(model=model, max_tokens=4096, max_concurrent=32)
 
             results_df = asyncio.run(evaluate_merge_events(
                 processed_events,

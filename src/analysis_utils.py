@@ -17,7 +17,12 @@ from typing import Dict, List, Tuple, Any, Optional
 def load_results(file_path: str) -> pd.DataFrame:
     """Load results from CSV or JSON file."""
     if file_path.endswith('.csv'):
-        return pd.read_csv(file_path)
+        df = pd.read_csv(file_path)
+        # Replace NaN in prompt_mode column with "null" string
+        # This handles cases where "null" was written to CSV but read as NaN
+        if 'prompt_mode' in df.columns:
+            df['prompt_mode'] = df['prompt_mode'].fillna('null')
+        return df
     elif file_path.endswith('.json'):
         with open(file_path, 'r') as f:
             data = json.load(f)
@@ -234,6 +239,128 @@ def calculate_merge_identification_metrics(df: pd.DataFrame,
     return metrics
 
 
+def calculate_merge_comparison_metrics(df: pd.DataFrame,
+                                       include_ci: bool = True,
+                                       confidence_level: float = 0.95) -> Dict[str, Any]:
+    """
+    Calculate performance metrics for merge comparison task.
+
+    For merge comparison:
+    - Correct: model_chosen_id matches one of the IDs in correct_answer
+    - Incorrect: model_chosen_id does not match or is 'none'
+
+    Args:
+        df: DataFrame with results (must have 'correct_answer' and 'model_chosen_id' columns)
+        include_ci: Whether to include bootstrap confidence intervals
+        confidence_level: Confidence level for intervals (default 0.95)
+
+    Returns:
+        Dictionary with metrics and optional confidence intervals
+    """
+    import ast
+
+    metrics = {}
+
+    # Make a copy to avoid SettingWithCopyWarning
+    df = df.copy()
+
+    # Parse correct_answer if it's a string representation of a list
+    def parse_correct_answer(answer):
+        if pd.isna(answer):
+            return []
+        if isinstance(answer, str):
+            try:
+                # Handle string representation of list
+                parsed = ast.literal_eval(answer)
+                if isinstance(parsed, list):
+                    return [str(x) for x in parsed]
+                else:
+                    return [str(parsed)]
+            except (ValueError, SyntaxError):
+                # If parsing fails, treat as single value
+                return [str(answer)]
+        elif isinstance(answer, list):
+            return [str(x) for x in answer]
+        else:
+            return [str(answer)]
+
+    # Determine correctness
+    def is_correct(row):
+        correct_ids = parse_correct_answer(row['correct_answer'])
+        chosen_id = str(row['model_chosen_id']) if not pd.isna(row['model_chosen_id']) else 'none'
+
+        # Handle 'none' explicitly
+        if chosen_id == 'none' or chosen_id == 'nan':
+            return False
+
+        # Check if chosen ID is in correct answers
+        return chosen_id in correct_ids
+
+    df['is_correct'] = df.apply(is_correct, axis=1)
+
+    # Basic counts
+    total_samples = len(df)
+    correct_count = df['is_correct'].sum()
+    incorrect_count = total_samples - correct_count
+
+    # Calculate accuracy
+    accuracy = correct_count / total_samples if total_samples > 0 else 0
+
+    # For merge comparison, we treat it as a binary classification where:
+    # - True Positive: Model chose correct option (is_correct = True)
+    # - False Negative: Model chose wrong option or none (is_correct = False)
+    # We can also analyze by whether it's a split operation
+
+    metrics.update({
+        'total_samples': int(total_samples),
+        'correct': int(correct_count),
+        'incorrect': int(incorrect_count),
+        'accuracy': float(accuracy),
+    })
+
+    # Count 'none' responses (model couldn't decide)
+    none_count = (df['model_chosen_id'].astype(str).isin(['none', 'nan'])).sum()
+    metrics['none_responses'] = int(none_count)
+    metrics['none_rate'] = float(none_count / total_samples) if total_samples > 0 else 0
+
+    # If is_split column exists, analyze by split status
+    if 'is_split' in df.columns:
+        split_df = df[df['is_split'] == True]
+        non_split_df = df[df['is_split'] == False]
+
+        if len(split_df) > 0:
+            metrics['split_accuracy'] = float(split_df['is_correct'].mean())
+            metrics['split_samples'] = int(len(split_df))
+
+        if len(non_split_df) > 0:
+            metrics['non_split_accuracy'] = float(non_split_df['is_correct'].mean())
+            metrics['non_split_samples'] = int(len(non_split_df))
+
+    # Add bootstrap confidence intervals if requested
+    if include_ci and total_samples > 10:
+        try:
+            # Bootstrap confidence interval for accuracy
+            indices = np.arange(len(df))
+
+            def accuracy_func(boot_indices):
+                return df.iloc[boot_indices]['is_correct'].mean()
+
+            ci_lower, ci_upper = bootstrap_confidence_interval(
+                indices, accuracy_func, confidence_level=confidence_level
+            )
+
+            metrics['accuracy_ci_lower'] = float(ci_lower)
+            metrics['accuracy_ci_upper'] = float(ci_upper)
+            metrics['accuracy_ci_width'] = float(ci_upper - ci_lower)
+            metrics['confidence_level'] = confidence_level
+
+        except Exception as e:
+            # If bootstrap fails, continue without CI
+            print(f"Warning: Could not calculate confidence intervals: {e}")
+
+    return metrics
+
+
 def analyze_by_group(df: pd.DataFrame, group_column: str,
                     include_ci: bool = True,
                     confidence_level: float = 0.95) -> Dict[str, Dict[str, float]]:
@@ -394,6 +521,11 @@ def analyze_voting_patterns(df: pd.DataFrame) -> Dict[str, Any]:
 
 def extract_heuristics_from_prompt_mode(prompt_mode: str) -> List[str]:
     """Extract heuristics from prompt mode string."""
+
+    # Handle NaN or non-string values (e.g., from CSVs with missing prompt_mode)
+    if not isinstance(prompt_mode, str):
+        return []
+
     if '+' not in prompt_mode:
         return []
     parts = prompt_mode.split('+')
