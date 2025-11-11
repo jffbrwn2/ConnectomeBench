@@ -8,21 +8,68 @@ git clone https://github.com/jffbrwn2/connectomebench.git
 cd connectomebench
 ```
 
-2. Install dependencies:
+2. Install the package in editable mode (required to access the `src` module):
 ```bash
 # Using uv (recommended)
-uv sync
+uv pip install -e .
 
 # Or using pip
 pip install -e .
 ```
 
+The `-e` flag installs the package in editable mode, which makes the `src` directory available for import in your scripts (e.g., `from src.prompts import ...`). This is required for the example scripts to work.
 
-## Usage
+
+## Quick Start: Running the Benchmark
+
+The easiest way to get started is using our example scripts with the pre-built HuggingFace dataset. These scripts demonstrate how to evaluate LLMs on each task.
+
+### Prerequisites
+
+1. Set up your LLM API keys (e.g., OpenAI, Anthropic)
+2. Authenticate with HuggingFace:
+```bash
+huggingface-cli login
+```
+
+### Example Scripts
+
+#### 1. Segment Classification
+Classify neuron segments as correctly segmented, undersegmented, or oversegmented:
+
+```bash
+python examples/segment_classification.py --num-samples 10 --model gpt-4o
+```
+
+#### 2. Split Error Correction
+Identify which neuron segments contain split errors (incorrectly split segments):
+
+```bash
+python examples/split_error_correction.py --num-samples 10 --model gpt-4o --prompt-mode informative
+```
+
+#### 3. Merge Error Identification
+Identify which candidate neuron should be merged with a base neuron:
+
+```bash
+python examples/merge_error_identification.py --num-samples 10 --model gpt-4o --prompt-mode informative
+```
+
+### Common Parameters
+
+All example scripts support:
+- `--num-samples N`: Evaluate on N samples (default: all)
+- `--model MODEL`: LLM model to use (default: gpt-4o)
+- `--prompt-mode MODE`: Prompt style - 'informative' or 'minimal' (default: informative)
+- `--output-dir DIR`: Where to save results (default: output/tutorial_results)
+
+Results are saved as CSV files with accuracy metrics when ground truth is available.
+
+## Advanced Usage
 
 ### Data Processing
 
-The toolkit provides several scripts for processing connectome data:
+The toolkit provides several scripts for processing connectome data from scratch:
 
 - `scripts/get_data.py`: Gather training data from MICrONS or FlyWire edit histories
 - `scripts/split_resolution.py`: Process and evaluate split error resolution tasks
@@ -46,7 +93,7 @@ visualizer.save_3d_views(base_filename="3d_neuron_mesh")
 
 `ConnectomeVisualizer` is built largely on the data organized and provided through the [`CAVEClient`](https://github.com/CAVEconnectome/CAVEclient/) library. To get access to the data, please see the [CAVEClient README](https://github.com/CAVEconnectome/CAVEclient/). Specifically, you will need authentication tokens to access to the datasets (see the link [here](https://caveconnectome.github.io/CAVEclient/tutorials/authentication/)).
 
-### LLM for analysis
+### LLM Integration
 
 The toolkit integrates with multiple LLM providers for automated analysis:
 
@@ -60,7 +107,11 @@ processor = LLMProcessor(model="gpt-4o")
 results = await processor.process_batch(["Write prompt here"])
 ```
 
-## Segmentation Classification
+## Advanced Workflows
+
+The following sections describe how to generate data and run full benchmarks from scratch.
+
+### Segmentation Classification
 
 The `scripts/segmentation_classification.py` script provides a way to classify segmentations into different categories. To get the same results as the paper, run the following command:
 
@@ -117,7 +168,7 @@ python scripts/merge_resolution.py --input-json scripts/training_data/merge_erro
 Install test dependencies and run tests:
 ```bash
 # Using uv
-uv sync --extra test
+uv pip install -e ".[test]"
 
 # Or using pip
 pip install -e ".[test]"

@@ -1,4 +1,13 @@
 import modal
+from pathlib import Path
+
+# Paths for model and results storage
+MODEL_DIR = Path("/models")
+RESULTS_DIR = Path("/results")
+
+# Create volumes
+model_volume = modal.Volume.from_name("qwen-models-cache", create_if_missing=True)
+results_volume = modal.Volume.from_name("segment-results", create_if_missing=True)
 
 # Define the Modal image with all dependencies
 image = (
@@ -12,18 +21,20 @@ image = (
         "pandas",
         "Pillow",
         "accelerate",
+        "huggingface_hub[hf_transfer]",
     )
+    .env({"HF_HUB_ENABLE_HF_TRANSFER": "1"})  # Fast Rust-based downloads
 )
 
 app = modal.App("qwen-segment-classification", image=image)
 
-# Create a volume to store results
-volume = modal.Volume.from_name("segment-results", create_if_missing=True)
-
 @app.function(
     gpu="A100",  # Use A100 GPU for the model
     timeout=3600,  # 1 hour timeout
-    volumes={"/results": volume},
+    volumes={
+        MODEL_DIR: model_volume,
+        RESULTS_DIR: results_volume,
+    },
     secrets=[modal.Secret.from_name("huggingface-secret")],  # HF token for dataset access
 )
 def run_segment_classification(
@@ -50,13 +61,33 @@ def run_segment_classification(
 
     print(f"Loading model: {model_name}...")
 
-    # Load model using AutoModel (works for both Qwen2 and Qwen3)
+    # Set cache directory to use the volume
+    import os
+    cache_dir = MODEL_DIR / model_name.replace("/", "--")
+    os.environ["HF_HOME"] = str(MODEL_DIR)
+
+    # Check if model is already cached
+    if not cache_dir.exists():
+        print(f"Model not cached, downloading to {cache_dir}...")
+        from huggingface_hub import snapshot_download
+        snapshot_download(
+            repo_id=model_name,
+            local_dir=str(cache_dir),
+            ignore_patterns=["*.pt", "*.bin", "*.pth"],  # Skip safetensors duplicates
+        )
+        model_volume.commit()
+        print("Model downloaded and cached!")
+    else:
+        print(f"Using cached model from {cache_dir}")
+
+    # Load model from cache
     model = AutoModelForImageTextToText.from_pretrained(
-        model_name,
+        str(cache_dir),
         dtype=torch.bfloat16,
-        device_map="auto"
+        device_map="auto",
+        local_files_only=True,
     )
-    processor = AutoProcessor.from_pretrained(model_name)
+    processor = AutoProcessor.from_pretrained(str(cache_dir), local_files_only=True)
 
     # Determine if we need qwen_vl_utils (only for Qwen2)
     use_qwen2_processing = "Qwen2" in model_name or "qwen2" in model_name.lower()
@@ -228,9 +259,9 @@ Surround your final answer (the letter a, b, c, d, e, f, or g) with <answer> and
     model_suffix = model_name.split("/")[-1].lower().replace("-", "_")
     blank_suffix = "_blank" if use_blank_images else ""
     simple_suffix = "_simple" if use_simple_prompt else ""
-    output_path = f"/results/{model_suffix}_results_{num_samples}samples{blank_suffix}{simple_suffix}.csv"
-    df.to_csv(output_path, index=False)
-    volume.commit()
+    output_path = RESULTS_DIR / f"{model_suffix}_results_{num_samples}samples{blank_suffix}{simple_suffix}.csv"
+    df.to_csv(str(output_path), index=False)
+    results_volume.commit()
 
     print(f"\nResults saved to: {output_path}")
     print(f"Processed {len(results)} samples")
