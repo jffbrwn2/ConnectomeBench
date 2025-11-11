@@ -242,6 +242,7 @@ class LLMProcessor:
         Same logic: single-pass if model is parsable, else two-pass
         (first litellm, then openai parse).
         """
+        print("Sending request to model: ", self.model)
         async with self.semaphore:
             max_retries = 10
             attempt = 0

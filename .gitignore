@@ -54,3 +54,15 @@ scripts/merge_identification_errors.html
 scripts/analyze_merge_identification.py
 scripts/analyze_merge_performance.py
 scripts/compare_merge_results.py
+scripts/convert_image_columns.py
+scripts/create_unified_parquet.py
+scripts/csv_to_jsonl.py
+scripts/dataset_generation.txt
+scripts/merge_json_to_jsonl.py
+scripts/inspect_parquet.py
+scripts/split_json_to_jsonl.py
+scripts/test_parquet.py
+scripts/README_generated.md
+scripts/generate_readme_yaml.py
+
+debug/

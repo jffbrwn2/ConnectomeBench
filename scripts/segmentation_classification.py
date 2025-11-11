@@ -160,6 +160,7 @@ if __name__ == "__main__":
                         prompts = []
                         indices = []
                         for i, result in results.iterrows():
+                            print(f"Processing {i} of {len(results)}")
                             proofread_root_id = result['proofread root id']
                             current_root_id = result['current root id']
                             species = result['species']
