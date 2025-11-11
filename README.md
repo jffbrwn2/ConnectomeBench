@@ -8,13 +8,13 @@ git clone https://github.com/jffbrwn2/connectomebench.git
 cd connectomebench
 ```
 
-2. Install dependencies using `uv`:
+2. Install dependencies:
 ```bash
+# Using uv (recommended)
 uv sync
-```
-or using `pip`:
-```bash
-pip install -r requirements.txt
+
+# Or using pip
+pip install -e .
 ```
 
 
@@ -25,7 +25,8 @@ pip install -r requirements.txt
 The toolkit provides several scripts for processing connectome data:
 
 - `scripts/get_data.py`: Gather training data from MICrONS or FlyWire edit histories
-- `scripts/split_merge_resolution.py`: Process and evaluate split/merge events
+- `scripts/split_resolution.py`: Process and evaluate split error resolution tasks
+- `scripts/merge_resolution.py`: Process and evaluate merge error detection tasks
 - `scripts/segmentation_classification.py`: Classify segmentations
 
 ### Visualization
@@ -33,7 +34,7 @@ The toolkit provides several scripts for processing connectome data:
 The `ConnectomeVisualizer` class provides tools for visualizing neurons and EM data:
 
 ```python
-from scripts.connectome_visualizer import ConnectomeVisualizer
+from src.connectome_visualizer import ConnectomeVisualizer
 
 # Initialize visualizer
 visualizer = ConnectomeVisualizer(species="mouse")
@@ -50,13 +51,13 @@ visualizer.save_3d_views(base_filename="3d_neuron_mesh")
 The toolkit integrates with multiple LLM providers for automated analysis:
 
 ```python
-from scripts.util import LLMProcessor
+from src.util import LLMProcessor
 
 # Initialize LLM processor
 processor = LLMProcessor(model="gpt-4o")
 
 # Process data
-results = await processor.process_single("Write prompt here")
+results = await processor.process_batch(["Write prompt here"])
 ```
 
 ## Segmentation Classification
@@ -64,38 +65,76 @@ results = await processor.process_single("Write prompt here")
 The `scripts/segmentation_classification.py` script provides a way to classify segmentations into different categories. To get the same results as the paper, run the following command:
 
 ```bash
-python segmentation_classification.py  
+python scripts/segmentation_classification.py
 ```
 
-To run the script with different parameters, see the script for more details.
+To run with custom parameters (e.g., specific models, species, or number of neurons):
+
+```bash
+python scripts/segmentation_classification.py --models claude-3-7-sonnet-20250219 gpt-4o --species mouse fly --num-neurons 200 --k 5 --seed 42
+```
+
+See the script's help for all available options:
+
+```bash
+python scripts/segmentation_classification.py --help
+```
 
 ## Split error resolution & merge error detection
 
-The `scripts/split_merge_resolution.py` script provides to test the performance of LLMs at resolving split errors and detecting merge errors. As in the paper, evaluate single shot and pairwise performance. To get the same results as the paper for mouse split error correction (single shot) with Claude 3.7 Sonnet, run the following command:
+The toolkit provides separate scripts for testing LLM performance on split and merge error tasks:
+
+### Split Error Resolution
+
+Use `scripts/split_resolution.py` to evaluate split error correction. For mouse split error correction (identification) with Claude 3.7 Sonnet:
 
 ```bash
-python split_merge_resolution.py --input-json scripts/training_data/mouse_256nm.json --task merge_identification --species mouse --zoom-margin 2048 --models claude-3-7-sonnet-20250219 --prompt-modes informative
+python scripts/split_resolution.py --input-json scripts/training_data/mouse_256nm.json --task split_identification --species mouse --zoom-margin 2048 --models claude-3-7-sonnet-20250219 --prompt-modes informative
 ```
 
-To get the results for mouse split error correction (comparison) with Claude 3.7 Sonnet, run the following command: 
+For mouse split error correction (comparison) with Claude 3.7 Sonnet:
 
 ```bash
-python split_merge_resolution.py --input-json scripts/training_data/mouse_256nm.json --task merge_comparison --species mouse --zoom-margin 2048 --models claude-3-7-sonnet-20250219 --prompt-modes informative
+python scripts/split_resolution.py --input-json scripts/training_data/mouse_256nm.json --task split_comparison --species mouse --zoom-margin 2048 --models claude-3-7-sonnet-20250219 --prompt-modes informative
 ```
 
-To get the results for mouse merge error detection (single shot) with Claude 3.7 Sonnet, run the following command:  
+### Merge Error Detection
+
+Use `scripts/merge_resolution.py` to evaluate merge error detection. For mouse merge error detection (identification) with Claude 3.7 Sonnet:
+
 ```bash
-python split_merge_resolution.py --input-json scripts/training_data/merge_error_only_mouse.json --task split_identification --species mouse --models claude-3-7-sonnet-20250219 --prompt-modes informative
+python scripts/merge_resolution.py --input-json scripts/training_data/merge_error_only_mouse.json --task merge_identification --species mouse --models claude-3-7-sonnet-20250219 --prompt-modes informative
 ```
 
-To get the results for mouse merge error detection (comparison) with Claude 3.7 Sonnet, run the following command:  
+For mouse merge error detection (comparison) with Claude 3.7 Sonnet:
+
 ```bash
-python split_merge_resolution.py --input-json scripts/training_data/merge_error_only_mouse.json --task split_comparison --species mouse --models claude-3-7-sonnet-20250219 --prompt-modes informative
+python scripts/merge_resolution.py --input-json scripts/training_data/merge_error_only_mouse.json --task merge_comparison --species mouse --models claude-3-7-sonnet-20250219 --prompt-modes informative
+```
+
+## Testing
+
+Install test dependencies and run tests:
+```bash
+# Using uv
+uv sync --extra test
+
+# Or using pip
+pip install -e ".[test]"
+
+# Run tests
+pytest
 ```
 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+When contributing:
+1. Write tests for new features
+2. Ensure all tests pass: `pytest`
+3. Check code coverage: `pytest --cov=src`
+4. Follow existing code style and conventions
 
 ## License
 
@@ -107,7 +146,7 @@ If you use this toolkit in your research, please cite:
 
 ```
 @software{connectomebench2025,
-  author = {Jeff Brown},
+  author = {Jeff Brown, Andrew Kirjner, Tim Farkas},
   title = {ConnectomeBench: Can LLMs proofread the connectome?},
   year = {2025},
   publisher = {GitHub},

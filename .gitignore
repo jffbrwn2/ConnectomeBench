@@ -35,6 +35,14 @@ ENV/
 # Jupyter Notebook
 .ipynb_checkpoints
 
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+*.cover
+.hypothesis/
+
 # Project specific
 output/
 data/
