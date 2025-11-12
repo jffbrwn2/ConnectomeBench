@@ -74,3 +74,4 @@ scripts/README_generated.md
 scripts/generate_readme_yaml.py
 
 debug/
+*.parquet
