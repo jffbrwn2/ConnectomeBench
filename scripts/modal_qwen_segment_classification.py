@@ -28,6 +28,17 @@ image = (
 
 app = modal.App("qwen-segment-classification", image=image)
 
+# Mapping from LLM answer keys to full descriptions in the dataset
+CLASS_MAPPING = {
+    "a": "a single soma and process(es)",
+    "b": "multiple somas (and processes)",
+    "c": "Processes without a soma: These can be axons, dendrites, synapses",
+    "d": "Nucleus",
+    "e": "Non-neuronal types. These can be glial cells, blood vessels.",
+    "f": "None of the above.",
+    "g": "Unsure"
+}
+
 @app.function(
     gpu="A100",  # Use A100 GPU for the model
     timeout=3600,  # 1 hour timeout
@@ -84,9 +95,10 @@ def run_segment_classification(
     model = AutoModelForImageTextToText.from_pretrained(
         str(cache_dir),
         dtype=torch.bfloat16,
-        device_map="auto",
+        device_map=None,
         local_files_only=True,
     )
+    model.to("cuda")
     processor = AutoProcessor.from_pretrained(str(cache_dir), local_files_only=True)
 
     # Determine if we need qwen_vl_utils (only for Qwen2)
@@ -95,7 +107,7 @@ def run_segment_classification(
     print(f"Loading dataset...")
     ds = load_dataset(
         "jeffbbrown2/ConnectomeBench",
-        "MICrONS, Segment Classifications",
+        "MICrONS, Segment Classification",
         split="train"
     )
 
@@ -234,6 +246,12 @@ Surround your final answer (the letter a, b, c, d, e, f, or g) with <answer> and
             if answer_start != -1 and answer_end != -1:
                 llm_answer = output_text[answer_start + len("<answer>"):answer_end].strip()
 
+        # Evaluate correctness (like in examples/segment_classification.py)
+        predicted_description = CLASS_MAPPING.get(llm_answer, None)
+        correct = None
+        if predicted_description and ground_truth:
+            correct = (predicted_description == ground_truth)
+
         # Store result
         results.append({
             'species': species,
@@ -245,6 +263,8 @@ Surround your final answer (the letter a, b, c, d, e, f, or g) with <answer> and
             'unit': sample['unit'],
             'analysis': analysis,
             'llm_answer': llm_answer,
+            'predicted_description': predicted_description,
+            'correct': correct,
             'full_response': output_text,
             'model': model_name,
             'used_blank_images': use_blank_images,
@@ -255,6 +275,23 @@ Surround your final answer (the letter a, b, c, d, e, f, or g) with <answer> and
 
     # Save results
     df = pd.DataFrame(results)
+
+    # Calculate accuracy if ground truth available
+    if 'correct' in df.columns and df['correct'].notna().any():
+        accuracy = df['correct'].mean()
+        print(f"\n{'='*60}")
+        print(f"Accuracy: {accuracy:.2%}")
+        print(f"Correct: {df['correct'].sum()}/{len(df)}")
+        print(f"{'='*60}")
+
+        # Print breakdown by answer
+        print("\nPrediction breakdown:")
+        for answer_key in sorted(df['llm_answer'].unique()):
+            subset = df[df['llm_answer'] == answer_key]
+            correct_count = subset['correct'].sum() if 'correct' in subset.columns else 0
+            total_count = len(subset)
+            print(f"  {answer_key}: {correct_count}/{total_count} correct - {CLASS_MAPPING.get(answer_key, 'Unknown')}")
+
     # Create a clean filename from model name
     model_suffix = model_name.split("/")[-1].lower().replace("-", "_")
     blank_suffix = "_blank" if use_blank_images else ""
