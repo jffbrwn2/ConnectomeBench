@@ -52,7 +52,8 @@ def run_segment_classification(
     num_samples: int = 10,
     use_blank_images: bool = False,
     use_simple_prompt: bool = False,
-    model_name: str = "Qwen/Qwen2-VL-7B-Instruct"
+    model_name: str = "Qwen/Qwen2-VL-7B-Instruct",
+    batch_size: int = 4
 ):
     """
     Run Qwen-VL on segment classification task.
@@ -62,6 +63,7 @@ def run_segment_classification(
         use_blank_images: If True, use blank gray images instead of real ones (sanity check)
         use_simple_prompt: If True, use simple "what do you see" prompt (sanity check)
         model_name: HuggingFace model ID (e.g., "Qwen/Qwen2-VL-7B-Instruct" or "Qwen/Qwen3-VL-8B-Instruct")
+        batch_size: Number of samples to process in parallel (default: 4)
     """
     import torch
     from transformers import AutoProcessor, AutoModelForImageTextToText
@@ -115,43 +117,59 @@ def run_segment_classification(
     if num_samples < len(ds):
         ds = ds.select(range(num_samples))
 
-    print(f"Processing {len(ds)} samples...")
+    print(f"Processing {len(ds)} samples with batch_size={batch_size}...")
     if use_blank_images:
         print("⚠️  SANITY CHECK MODE: Using blank images instead of real ones")
     if use_simple_prompt:
         print("⚠️  SANITY CHECK MODE: Using simple 'what do you see' prompt")
 
+    # Set padding side for batch processing (critical for decoder-only models)
+    processor.tokenizer.padding_side = 'left'
+    if hasattr(processor, 'tokenizer'):
+        processor.tokenizer.pad_token = processor.tokenizer.eos_token
+        processor.tokenizer.pad_token_id = processor.tokenizer.eos_token_id
+
     results = []
-    for idx, sample in enumerate(ds):
-        print(f"Processing sample {idx + 1}/{len(ds)}...")
 
-        # Extract sample data
-        species = sample['species']
-        proofread_root_id = sample['proofread_root_id']
-        current_root_id = sample['current_root_id']
-        ground_truth = sample['ground_truth']
+    # Process in batches
+    for batch_start in range(0, len(ds), batch_size):
+        batch_end = min(batch_start + batch_size, len(ds))
+        batch = ds.select(range(batch_start, batch_end))
 
-        # Get bounding box dimensions
-        xmin, ymin, zmin = sample['xmin'], sample['ymin'], sample['zmin']
-        xmax, ymax, zmax = sample['xmax'], sample['ymax'], sample['zmax']
-        box_size = np.array([xmax - xmin, ymax - ymin, zmax - zmin])
+        print(f"Processing batch {batch_start//batch_size + 1}/{(len(ds) + batch_size - 1)//batch_size} (samples {batch_start + 1}-{batch_end})...")
 
-        # Get the three images (PIL Images from dataset)
-        if use_blank_images:
-            # Create blank gray images for sanity check
-            front_img = Image.new('RGB', (1024, 1024), color=(128, 128, 128))
-            side_img = Image.new('RGB', (1024, 1024), color=(128, 128, 128))
-            top_img = Image.new('RGB', (1024, 1024), color=(128, 128, 128))
-        else:
-            front_img = sample['option_1_front_path']
-            side_img = sample['option_1_side_path']
-            top_img = sample['option_1_top_path']
+        # Prepare batch data
+        batch_messages = []
+        batch_metadata = []
 
-        # Create the prompt
-        if use_simple_prompt:
-            prompt = "What do you see in these three images? Describe them in detail."
-        else:
-            prompt = f"""
+        for sample in batch:
+            # Extract sample data
+            species = sample['species']
+            proofread_root_id = sample['proofread_root_id']
+            current_root_id = sample['current_root_id']
+            ground_truth = sample['ground_truth']
+
+            # Get bounding box dimensions
+            xmin, ymin, zmin = sample['xmin'], sample['ymin'], sample['zmin']
+            xmax, ymax, zmax = sample['xmax'], sample['ymax'], sample['zmax']
+            box_size = np.array([xmax - xmin, ymax - ymin, zmax - zmin])
+
+            # Get the three images (PIL Images from dataset)
+            if use_blank_images:
+                # Create blank gray images for sanity check
+                front_img = Image.new('RGB', (1024, 1024), color=(128, 128, 128))
+                side_img = Image.new('RGB', (1024, 1024), color=(128, 128, 128))
+                top_img = Image.new('RGB', (1024, 1024), color=(128, 128, 128))
+            else:
+                front_img = sample['option_1_front_path']
+                side_img = sample['option_1_side_path']
+                top_img = sample['option_1_top_path']
+
+            # Create the prompt
+            if use_simple_prompt:
+                prompt = "What do you see in these three images? Describe them in detail."
+            else:
+                prompt = f"""
 You are an expert at analyzing neuronal morphology.
 
 We have the electron microscopy data from the {species} brain.
@@ -173,105 +191,168 @@ Surround your analysis with <analysis> and </analysis> tags.
 Surround your final answer (the letter a, b, c, d, e, f, or g) with <answer> and </answer> tags.
 """
 
-        # Prepare messages for Qwen2-VL
-        messages = [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "image", "image": front_img},
-                    {"type": "image", "image": side_img},
-                    {"type": "image", "image": top_img},
-                    {"type": "text", "text": prompt},
-                ],
-            }
-        ]
+            # Prepare messages for this sample
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "image", "image": front_img},
+                        {"type": "image", "image": side_img},
+                        {"type": "image", "image": top_img},
+                        {"type": "text", "text": prompt},
+                    ],
+                }
+            ]
+            batch_messages.append(messages)
 
-        # Apply chat template and process
+            # Store metadata for later
+            batch_metadata.append({
+                'species': species,
+                'proofread_root_id': proofread_root_id,
+                'current_root_id': current_root_id,
+                'ground_truth': ground_truth,
+                'xmin': xmin, 'ymin': ymin, 'zmin': zmin,
+                'xmax': xmax, 'ymax': ymax, 'zmax': zmax,
+                'unit': sample['unit'],
+            })
+
+        # Process batch through model
         if use_qwen2_processing:
             # Qwen2-VL uses separate processing with qwen_vl_utils
             from qwen_vl_utils import process_vision_info
-            text = processor.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True
-            )
-            image_inputs, video_inputs = process_vision_info(messages)
+
+            # Process each message in batch
+            texts = []
+            all_image_inputs = []
+            all_video_inputs = []
+
+            for messages in batch_messages:
+                text = processor.apply_chat_template(
+                    messages, tokenize=False, add_generation_prompt=True
+                )
+                texts.append(text)
+                image_inputs, video_inputs = process_vision_info(messages)
+                all_image_inputs.extend(image_inputs)
+                all_video_inputs.extend(video_inputs)
 
             inputs = processor(
-                text=[text],
-                images=image_inputs,
-                videos=video_inputs,
+                text=texts,
+                images=all_image_inputs if all_image_inputs else None,
+                videos=all_video_inputs if all_video_inputs else None,
                 padding=True,
                 return_tensors="pt",
             )
             inputs = inputs.to("cuda")
         else:
-            # Qwen3-VL and other models handle everything in apply_chat_template
-            inputs = processor.apply_chat_template(
-                messages,
-                tokenize=True,
-                add_generation_prompt=True,
-                return_dict=True,
-                return_tensors="pt"
-            )
-            inputs = inputs.to("cuda")
+            # Qwen3-VL batch processing
+            # Process each sample separately then batch
+            all_inputs = []
+            for messages in batch_messages:
+                sample_inputs = processor.apply_chat_template(
+                    messages,
+                    tokenize=True,
+                    add_generation_prompt=True,
+                    return_dict=True,
+                    return_tensors="pt"
+                )
+                all_inputs.append(sample_inputs)
 
-        # Generate response
+            # Combine inputs with padding
+            if len(all_inputs) > 1:
+                from torch.nn.utils.rnn import pad_sequence
+                input_ids = pad_sequence(
+                    [inp['input_ids'][0] for inp in all_inputs],
+                    batch_first=True,
+                    padding_value=processor.tokenizer.pad_token_id
+                )
+                attention_mask = pad_sequence(
+                    [inp['attention_mask'][0] for inp in all_inputs],
+                    batch_first=True,
+                    padding_value=0
+                )
+
+                inputs = {
+                    'input_ids': input_ids,
+                    'attention_mask': attention_mask
+                }
+
+                # Handle pixel_values if present
+                if 'pixel_values' in all_inputs[0]:
+                    pixel_values = torch.cat([inp['pixel_values'] for inp in all_inputs], dim=0)
+                    inputs['pixel_values'] = pixel_values
+
+                # Handle image_grid_thw if present (required for Qwen3-VL)
+                if 'image_grid_thw' in all_inputs[0]:
+                    image_grid_thw = torch.cat([inp['image_grid_thw'] for inp in all_inputs], dim=0)
+                    inputs['image_grid_thw'] = image_grid_thw
+
+                # Handle any other keys
+                for key in all_inputs[0].keys():
+                    if key not in inputs:
+                        # Try to concatenate other tensors
+                        try:
+                            inputs[key] = torch.cat([inp[key] for inp in all_inputs], dim=0)
+                        except:
+                            pass
+            else:
+                inputs = all_inputs[0]
+
+            inputs = {k: v.to("cuda") for k, v in inputs.items()}
+
+        # Generate responses for batch
         with torch.no_grad():
             generated_ids = model.generate(**inputs, max_new_tokens=1024)
             generated_ids_trimmed = [
                 out_ids[len(in_ids):]
-                for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
+                for in_ids, out_ids in zip(inputs['input_ids'], generated_ids)
             ]
-            output_text = processor.batch_decode(
+            output_texts = processor.batch_decode(
                 generated_ids_trimmed,
                 skip_special_tokens=True,
                 clean_up_tokenization_spaces=False
-            )[0]
+            )
 
-        # Extract analysis and answer
-        analysis = ""
-        llm_answer = ""
+        # Process each output in the batch
+        for output_text, metadata in zip(output_texts, batch_metadata):
+            # Extract analysis and answer
+            analysis = ""
+            llm_answer = ""
 
-        if use_simple_prompt:
-            # For simple prompt, just use the full response
-            analysis = output_text
-            llm_answer = output_text
-        else:
-            analysis_start = output_text.find("<analysis>")
-            analysis_end = output_text.find("</analysis>")
-            if analysis_start != -1 and analysis_end != -1:
-                analysis = output_text[analysis_start + len("<analysis>"):analysis_end].strip()
+            if use_simple_prompt:
+                # For simple prompt, just use the full response
+                analysis = output_text
+                llm_answer = output_text
+            else:
+                analysis_start = output_text.find("<analysis>")
+                analysis_end = output_text.find("</analysis>")
+                if analysis_start != -1 and analysis_end != -1:
+                    analysis = output_text[analysis_start + len("<analysis>"):analysis_end].strip()
 
-            answer_start = output_text.find("<answer>")
-            answer_end = output_text.find("</answer>")
-            if answer_start != -1 and answer_end != -1:
-                llm_answer = output_text[answer_start + len("<answer>"):answer_end].strip()
+                answer_start = output_text.find("<answer>")
+                answer_end = output_text.find("</answer>")
+                if answer_start != -1 and answer_end != -1:
+                    llm_answer = output_text[answer_start + len("<answer>"):answer_end].strip()
 
-        # Evaluate correctness (like in examples/segment_classification.py)
-        predicted_description = CLASS_MAPPING.get(llm_answer, None)
-        correct = None
-        if predicted_description and ground_truth:
-            correct = (predicted_description == ground_truth)
+            # Evaluate correctness
+            predicted_description = CLASS_MAPPING.get(llm_answer, None)
+            correct = None
+            if predicted_description and metadata['ground_truth']:
+                correct = (predicted_description == metadata['ground_truth'])
 
-        # Store result
-        results.append({
-            'species': species,
-            'proofread_root_id': proofread_root_id,
-            'current_root_id': current_root_id,
-            'ground_truth': ground_truth,
-            'xmin': xmin, 'ymin': ymin, 'zmin': zmin,
-            'xmax': xmax, 'ymax': ymax, 'zmax': zmax,
-            'unit': sample['unit'],
-            'analysis': analysis,
-            'llm_answer': llm_answer,
-            'predicted_description': predicted_description,
-            'correct': correct,
-            'full_response': output_text,
-            'model': model_name,
-            'used_blank_images': use_blank_images,
-            'used_simple_prompt': use_simple_prompt
-        })
+            # Store result
+            results.append({
+                **metadata,
+                'analysis': analysis,
+                'llm_answer': llm_answer,
+                'predicted_description': predicted_description,
+                'correct': correct,
+                'full_response': output_text,
+                'model': model_name,
+                'used_blank_images': use_blank_images,
+                'used_simple_prompt': use_simple_prompt
+            })
 
-        print(f"  Answer: {llm_answer}")
+            print(f"  Sample answer: {llm_answer}")
 
     # Save results
     df = pd.DataFrame(results)
@@ -311,28 +392,29 @@ def main(
     num_samples: int = 10,
     blank_images: bool = False,
     simple_prompt: bool = False,
-    model: str = "Qwen/Qwen2-VL-7B-Instruct"
+    model: str = "Qwen/Qwen2-VL-7B-Instruct",
+    batch_size: int = 4
 ):
     """
     Local entry point to run the segment classification.
 
     Usage:
-        # Qwen2-VL-7B (default)
-        modal run scripts/modal_qwen_segment_classification.py --num-samples 10
+        # Qwen2-VL-7B with batching (default)
+        modal run scripts/modal_qwen_segment_classification.py --num-samples 10 --batch-size 4
 
-        # Qwen3-VL-8B
-        modal run scripts/modal_qwen_segment_classification.py --num-samples 10 --model "Qwen/Qwen3-VL-235B-A22B-Thinking"
+        # Qwen3-VL-8B with larger batch
+        modal run scripts/modal_qwen_segment_classification.py --num-samples 100 --model "Qwen/Qwen3-VL-8B-Instruct" --batch-size 8
 
         # Sanity checks
         modal run scripts/modal_qwen_segment_classification.py --num-samples 10 --blank-images --simple-prompt
-        modal run scripts/modal_qwen_segment_classification.py --num-samples 5 --model "Qwen/Qwen3-VL-235B-A22B-Thinking" --simple-prompt
     """
-    print(f"Starting segment classification with {model} on {num_samples} samples...")
+    print(f"Starting segment classification with {model} on {num_samples} samples (batch_size={batch_size})...")
     result_df = run_segment_classification.remote(
         num_samples,
         use_blank_images=blank_images,
         use_simple_prompt=simple_prompt,
-        model_name=model
+        model_name=model,
+        batch_size=batch_size
     )
     print("\nCompleted!")
     print(result_df[['species', 'current_root_id', 'llm_answer', 'ground_truth']].head())
