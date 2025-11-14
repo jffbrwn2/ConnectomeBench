@@ -18,20 +18,25 @@ results_volume = modal.Volume.from_name("qwen-finetune-results", create_if_missi
 image = (
     modal.Image.debian_slim(python_version="3.11")
     .apt_install("git")
-    # Install unsloth for efficient training
+    # Install core dependencies for training
     .pip_install(
-        "unsloth",
-        "unsloth_zoo",
-    )
-    # Install TRL with GRPO support
-    .pip_install(
-        "trl>=0.12.0",  # GRPO support added in 0.12.0
+        "torch",  # PyTorch
+        "torchvision",  # Required for Qwen-VL video/image processor
+        "transformers",  # HuggingFace transformers
+        "peft",  # Parameter-Efficient Fine-Tuning (LoRA)
+        "bitsandbytes",  # 8-bit optimizers
+        "trl==0.25.1",  # Latest TRL with GRPO support
         "datasets",
         "pandas",
         "Pillow",
         "huggingface_hub[hf_transfer]",
         "wandb",
         "accelerate",
+    )
+    # Install vLLM separately with TRL-compatible version (Modal's mirror has old versions)
+    .pip_install(
+        "vllm==0.10.2",  # High-throughput inference engine (TRL-recommended version)
+        extra_index_url="https://pypi.org/simple",  # Use main PyPI for this version
     )
     .env({"HF_HUB_ENABLE_HF_TRANSFER": "1"})
 )
@@ -51,8 +56,7 @@ class GRPOTrainingConfig:
     lora_alpha: int = 16
     lora_dropout: float = 0.05
 
-    # Quantization
-    load_in_4bit: bool = True
+    # Note: 4-bit quantization not needed for 8B model on H100
 
     # GRPO-specific hyperparameters
     num_train_epochs: int = 3
@@ -62,7 +66,7 @@ class GRPOTrainingConfig:
 
     # GRPO generation settings
     num_generations: int = 4  # Generate multiple responses per prompt (batch_size must be multiple of this)
-    max_prompt_length: int = 512  # Max length for prompt
+    max_prompt_length: int = None  # None to avoid truncating image tokens!
     max_completion_length: int = 1024  # Max length for generated completion
     temperature: float = 0.7  # For exploration during training
 
@@ -96,6 +100,15 @@ class GRPOTrainingConfig:
     use_wandb: bool = False
     wandb_project: str = "qwen-segment-rl"
     wandb_run_name: str = None
+
+    # vLLM settings (for faster generation)
+    use_vllm: bool = False  # Enable vLLM for high-throughput generation
+    vllm_mode: str = "colocate"  # "colocate" or "server" - colocate shares GPU with training
+    vllm_gpu_memory_utilization: float = 0.3  # GPU memory reserved for vLLM (colocate mode)
+    vllm_tensor_parallel_size: int = 1  # Number of GPUs for tensor parallelism
+
+    # Debug settings
+    debug_simple_prompt: bool = False  # Use simple "What do you see?" prompt for debugging
 
 
 # Class mapping for segment classification
@@ -200,29 +213,27 @@ def create_reward_function():
     return reward_fn
 
 
-def prepare_dataset_for_grpo(dataset, tokenizer):
+def prepare_dataset_for_grpo(dataset, processor, debug_simple_prompt=False):
     """
     Prepare dataset for GRPO training with vision models.
 
-    CRITICAL: GRPO expects simple string content in messages, NOT pre-structured
-    with image dictionaries. The trainer's prepare_multimodal_messages() function
-    automatically converts string content and injects images from the "images" column.
+    GRPOTrainer expects:
+    - 'prompt': List of messages with role/content (content can be simple strings)
+    - 'images': List of PIL images (passed to prepare_multimodal_messages)
+    - Additional columns for reward function (e.g., 'ground_truth')
 
     Args:
         dataset: HuggingFace dataset
-        tokenizer: Model tokenizer
+        processor: Model processor (not used, kept for API compatibility)
+        debug_simple_prompt: If True, use simple "What do you see?" prompt for debugging
 
     Returns:
-        Dataset with:
-        - 'prompt': List of messages with simple string content
-        - 'images': List of PIL images
-        - 'ground_truth': Ground truth labels for reward function
+        Dataset with 'prompt', 'images', and 'ground_truth' columns
     """
     import numpy as np
 
     def format_sample(sample):
-        """Convert a single sample to GRPO format for vision models"""
-        # Get sample metadata
+        """Convert a single sample to GRPO format"""
         species = sample['species']
         ground_truth = sample['ground_truth']
 
@@ -231,13 +242,18 @@ def prepare_dataset_for_grpo(dataset, tokenizer):
         xmax, ymax, zmax = sample['xmax'], sample['ymax'], sample['zmax']
         box_size = np.array([xmax - xmin, ymax - ymin, zmax - zmin])
 
-        # Get the three images (PIL Images from dataset)
-        front_img = sample['option_1_front_path']
-        side_img = sample['option_1_side_path']
-        top_img = sample['option_1_top_path']
+        # Get the three images (PIL Images)
+        images = [
+            sample['option_1_front_path'],
+            sample['option_1_side_path'],
+            sample['option_1_top_path']
+        ]
 
-        # Create the instruction prompt (same as SFT)
-        prompt_text = f"""You are an expert at analyzing neuronal morphology.
+        # Create instruction prompt
+        if debug_simple_prompt:
+            prompt_text = "What do you see in the images?"
+        else:
+            prompt_text = f"""You are an expert at analyzing neuronal morphology.
 
 We have the electron microscopy data from the {species} brain.
 
@@ -257,29 +273,39 @@ g) Unsure
 Surround your analysis with <analysis> and </analysis> tags.
 Surround your final answer (the letter a, b, c, d, e, f, or g) with <answer> and </answer> tags."""
 
-        # Format as conversational messages with SIMPLE STRING CONTENT
-        # GRPO's prepare_multimodal_messages() will automatically:
-        # 1. Convert string to [{"type": "text", "text": ...}]
-        # 2. Add {"type": "image"} placeholders at the beginning
-        # 3. Inject actual PIL images from the "images" column
-        prompt_messages = [
-            {
-                "role": "user",
-                "content": prompt_text,  # Simple string, NOT pre-structured!
-            }
-        ]
+        # Simple message format - GRPOTrainer calls prepare_multimodal_messages internally
+        prompt_messages = [{"role": "user", "content": prompt_text}]
 
         return {
-            "prompt": prompt_messages,  # Simple string content
-            "images": [front_img, side_img, top_img],  # Separate PIL images list
-            "ground_truth": ground_truth,  # Will be passed to reward function
+            "prompt": prompt_messages,
+            "images": images,  # Use 'images' (plural) for multiple images
+            "ground_truth": ground_truth,
         }
 
-    # Map to add prompts and images
-    # PIL images in "images" column will be handled properly by GRPO
-    formatted = dataset.map(format_sample)
+    # Use set_transform to format on-the-fly (keeps PIL Images in memory)
+    def transform_fn(batch):
+        batch_size = len(batch[next(iter(batch.keys()))])
 
-    return formatted
+        prompts = []
+        images_list = []
+        ground_truths = []
+
+        for i in range(batch_size):
+            sample = {k: batch[k][i] for k in batch.keys()}
+            formatted = format_sample(sample)
+
+            prompts.append(formatted["prompt"])
+            images_list.append(formatted["images"])
+            ground_truths.append(formatted["ground_truth"])
+
+        return {
+            "prompt": prompts,
+            "images": images_list,
+            "ground_truth": ground_truths,
+        }
+
+    dataset.set_transform(transform_fn)
+    return dataset
 
 
 @app.function(
@@ -305,12 +331,15 @@ def finetune_qwen_grpo(config: GRPOTrainingConfig = GRPOTrainingConfig()):
     """
     import torch
     import os
-    from unsloth import FastVisionModel, is_bf16_supported
     from datasets import load_dataset
+
+    # Load model with transformers + PEFT for vision support
+    from transformers import AutoModelForImageTextToText, AutoProcessor
+    from peft import LoraConfig, get_peft_model, TaskType
     from trl import GRPOConfig, GRPOTrainer
 
-    print("="*60)
-    print("Starting Qwen-VL RL Fine-tuning with GRPO")
+    print("\n" + "="*60)
+    print("Qwen-VL GRPO Fine-tuning")
     print("="*60)
 
     # Set cache directories
@@ -326,33 +355,54 @@ def finetune_qwen_grpo(config: GRPOTrainingConfig = GRPOTrainingConfig()):
             config=config.__dict__
         )
 
-    # 1. Load model with Unsloth
-    print(f"\nLoading model: {config.model_name}")
-    model, tokenizer = FastVisionModel.from_pretrained(
-        model_name=config.model_name,
-        load_in_4bit=config.load_in_4bit,
-        max_seq_length=config.max_seq_length,
-    )
+    # 1. Load processor (tokenizer + image processor)
+    print(f"\nLoading processor...")
+    processor = AutoProcessor.from_pretrained(config.model_name)
 
-    # 2. Add LoRA adapters
-    print("\nAdding LoRA adapters...")
-    model = FastVisionModel.get_peft_model(
-        model,
-        finetune_vision_layers=True,
-        finetune_language_layers=True,
-        finetune_attention_modules=True,
-        finetune_mlp_modules=True,
+    # Configure image processor settings if specified
+    if hasattr(processor, 'image_processor'):
+        if config.max_pixels is not None:
+            processor.image_processor.max_pixels = config.max_pixels
+        if config.min_pixels is not None:
+            processor.image_processor.min_pixels = config.min_pixels
+
+    # Set padding side for decoder-only models
+    processor.tokenizer.padding_side = 'left'
+    if processor.tokenizer.pad_token is None:
+        processor.tokenizer.pad_token = processor.tokenizer.eos_token
+        processor.tokenizer.pad_token_id = processor.tokenizer.eos_token_id
+
+    # 2. Load model in bfloat16
+    print(f"\nLoading model...")
+    model = AutoModelForImageTextToText.from_pretrained(
+        config.model_name,
+        dtype=torch.bfloat16,
+    )
+    model = model.to("cuda")
+    model.gradient_checkpointing_enable()
+
+    # 3. Add LoRA adapters with PEFT
+
+    # Configure LoRA - inference_mode=False ensures adapters are trainable
+    lora_config = LoraConfig(
         r=config.lora_r,
         lora_alpha=config.lora_alpha,
         lora_dropout=config.lora_dropout,
         bias="none",
-        random_state=config.seed,
-        use_rslora=False,
-        loftq_config=None,
+        task_type=TaskType.CAUSAL_LM,
+        inference_mode=False,  # Explicitly set for training
+        # Target all attention and MLP modules for comprehensive fine-tuning
+        target_modules=[
+            "q_proj", "k_proj", "v_proj", "o_proj",  # Attention
+            "gate_proj", "up_proj", "down_proj",      # MLP
+        ],
     )
 
+    model = get_peft_model(model, lora_config)
+    model.print_trainable_parameters()
+
     # 3. Load dataset
-    print("\nLoading ConnectomeBench dataset...")
+    print("\nLoading dataset...")
     dataset = load_dataset(
         "jeffbbrown2/ConnectomeBench",
         "MICrONS, Segment Classification",
@@ -363,55 +413,19 @@ def finetune_qwen_grpo(config: GRPOTrainingConfig = GRPOTrainingConfig()):
     # Limit samples if specified
     if config.num_samples is not None and config.num_samples < len(dataset):
         dataset = dataset.select(range(config.num_samples))
-        print(f"Using {config.num_samples} samples for training")
+        print(f"Using {config.num_samples} samples")
     else:
-        print(f"Using all {len(dataset)} samples for training")
+        print(f"Using all {len(dataset)} samples")
 
-    # 4. Prepare dataset for GRPO (prompts only, no assistant responses)
-    print("\nPreparing dataset for GRPO...")
-    train_dataset = prepare_dataset_for_grpo(dataset, tokenizer)
-    print(f"Dataset ready with {len(train_dataset)} samples")
-
-    # Debug: Check what the first sample looks like
-    print("\nDEBUG: Inspecting first sample...")
-    first_sample = train_dataset[0]
-    print(f"Keys: {first_sample.keys()}")
-    print(f"Ground truth: {first_sample['ground_truth']}")
-
-    # Check prompt format
-    print(f"\nPrompt type: {type(first_sample['prompt'])}")
-    if isinstance(first_sample['prompt'], list) and len(first_sample['prompt']) > 0:
-        print(f"First message keys: {first_sample['prompt'][0].keys()}")
-        if 'content' in first_sample['prompt'][0]:
-            content = first_sample['prompt'][0]['content']
-            print(f"Content type: {type(content)}")
-            if isinstance(content, str):
-                print(f"Content length: {len(content)} chars")
-                print(f"Content preview (first 200 chars): {content[:200]}")
-            else:
-                print(f"WARNING: Content is not a string! Type: {type(content)}")
-
-    # Check images column
-    if 'images' in first_sample:
-        images = first_sample['images']
-        print(f"\nImages type: {type(images)}")
-        print(f"Number of images: {len(images) if images else 0}")
-        if images and len(images) > 0:
-            for idx, img in enumerate(images):
-                print(f"  Image[{idx}] type: {type(img)}")
-                if hasattr(img, 'size'):
-                    print(f"    PIL Image size: {img.size}")
-                elif isinstance(img, dict):
-                    print(f"    WARNING: Image is a dict (serialized)!")
-    else:
-        print("\nWARNING: No 'images' column found!")
+    # 4. Prepare dataset for GRPO
+    train_dataset = prepare_dataset_for_grpo(dataset, processor, config.debug_simple_prompt)
+    if config.debug_simple_prompt:
+        print("DEBUG MODE: Simple prompt enabled")
 
     # 5. Create reward function
-    print("\nSetting up reward function...")
     reward_fn = create_reward_function()
 
     # 6. Setup GRPO training arguments
-    print("\nSetting up GRPO training...")
     training_args = GRPOConfig(
         output_dir=str(CHECKPOINT_DIR / config.model_name.replace("/", "_")),
 
@@ -437,9 +451,9 @@ def finetune_qwen_grpo(config: GRPOTrainingConfig = GRPOTrainingConfig()):
         weight_decay=config.weight_decay,
         lr_scheduler_type=config.lr_scheduler_type,
 
-        # Precision
-        fp16=config.fp16 and not is_bf16_supported(),
-        bf16=config.bf16 and is_bf16_supported(),
+        # Precision - use bf16 if available (H100 supports it)
+        fp16=False,  # Don't use fp16 with bfloat16 hardware
+        bf16=True,   # H100 supports bfloat16
 
         # Logging and saving
         logging_steps=config.logging_steps,
@@ -447,41 +461,36 @@ def finetune_qwen_grpo(config: GRPOTrainingConfig = GRPOTrainingConfig()):
         save_total_limit=config.save_total_limit,
         log_completions=True,  # Log generated completions for debugging
 
+        # vLLM settings for faster generation
+        use_vllm=config.use_vllm,
+        vllm_mode=config.vllm_mode,
+        vllm_gpu_memory_utilization=config.vllm_gpu_memory_utilization,
+        vllm_tensor_parallel_size=config.vllm_tensor_parallel_size,
+
         # Other
         seed=config.seed,
         report_to="wandb" if config.use_wandb else "none",
     )
 
+    if config.use_vllm:
+        print(f"vLLM enabled ({config.vllm_mode}, {config.vllm_gpu_memory_utilization:.0%} GPU)")
+
     # 7. Create GRPO trainer
-    print("\nCreating GRPO trainer...")
-
-    # GRPO has built-in multimodal support
-    # For vision models, use processing_class (includes tokenizer + image processor)
-    trainer_kwargs = {
-        "model": model,
-        "processing_class": tokenizer,  # For vision models, this includes image processing
-        "args": training_args,
-        "train_dataset": train_dataset,
-        "reward_funcs": [reward_fn],  # Unsloth expects a list of reward functions
-    }
-
-    # Add vision-specific parameters if specified
-    if config.max_pixels is not None:
-        trainer_kwargs["max_pixels"] = config.max_pixels
-    if config.min_pixels is not None:
-        trainer_kwargs["min_pixels"] = config.min_pixels
-
-    trainer = GRPOTrainer(**trainer_kwargs)
+    trainer = GRPOTrainer(
+        model=model,
+        processing_class=processor,
+        args=training_args,
+        train_dataset=train_dataset,
+        reward_funcs=[reward_fn],
+    )
 
     # 8. Train!
-    print("\n" + "="*60)
-    print("Starting GRPO training...")
-    print("="*60)
+    print("\nStarting training...")
 
     trainer.train()
 
-    # 9. Save the LoRA adapters with unique identifier
-    print("\nSaving LoRA adapters...")
+    # 9. Save the LoRA adapters
+    print("\nSaving model...")
 
     from datetime import datetime
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -505,7 +514,7 @@ def finetune_qwen_grpo(config: GRPOTrainingConfig = GRPOTrainingConfig()):
     final_model_path = CHECKPOINT_DIR / run_folder_name
 
     model.save_pretrained(str(final_model_path))
-    tokenizer.save_pretrained(str(final_model_path))
+    processor.save_pretrained(str(final_model_path))
 
     # Save training config
     import json
@@ -531,14 +540,8 @@ def finetune_qwen_grpo(config: GRPOTrainingConfig = GRPOTrainingConfig()):
 
     checkpoint_volume.commit()
 
-    print("\n" + "="*60)
-    print("GRPO Training completed!")
-    print(f"LoRA adapters saved to: {final_model_path}")
-    print(f"\nTo evaluate this model, use the evaluation script:")
-    print(f"  modal run scripts/modal_qwen_evaluate_adapter.py \\")
-    print(f"    --adapter-path \"{run_folder_name}\" \\")
-    print(f"    --num-samples 100")
-    print("="*60)
+    print(f"\nTraining complete!")
+    print(f"Model saved: {run_folder_name}")
 
     if config.use_wandb:
         wandb.finish()
@@ -556,22 +559,34 @@ def main(
     learning_rate: float = 2e-4,
     lora_r: int = 16,
     num_generations: int = 4,
-    max_prompt_length: int = 512,
+    max_prompt_length: int = None,  # None to avoid truncating image tokens
     max_completion_length: int = 1024,
     temperature: float = 0.7,
     beta: float = 0.1,
     max_pixels: int = None,
     min_pixels: int = None,
-    use_4bit: bool = True,
     use_wandb: bool = False,
     run_name: str = None,
+    use_vllm: bool = False,
+    vllm_mode: str = "colocate",
+    vllm_gpu_memory: float = 0.3,
+    debug_simple_prompt: bool = False,
 ):
     """
     Local entry point to start GRPO fine-tuning.
 
     Usage:
+        # Debug mode with simple prompt (test if images are working)
+        modal run scripts/modal_qwen_finetune_rl.py --num-samples 10 --epochs 1 --debug-simple-prompt
+
         # Basic GRPO fine-tuning with Qwen3-VL-8B on small subset
         modal run scripts/modal_qwen_finetune_rl.py --num-samples 100 --epochs 3
+
+        # With vLLM for faster generation (recommended!)
+        modal run scripts/modal_qwen_finetune_rl.py \\
+            --num-samples 100 \\
+            --epochs 3 \\
+            --use-vllm
 
         # GRPO with more exploration (higher temperature and generations)
         modal run scripts/modal_qwen_finetune_rl.py \\
@@ -580,26 +595,23 @@ def main(
             --num-generations 8 \\
             --temperature 0.9 \\
             --beta 0.05 \\
+            --use-vllm \\
             --run-name "high_exploration"
 
         # Full GRPO training with W&B tracking
         modal run scripts/modal_qwen_finetune_rl.py \\
             --epochs 3 \\
+            --use-vllm \\
             --use-wandb \\
             --run-name "grpo_full_v1"
     """
-    print(f"Starting GRPO fine-tuning with {model}...")
-    print(f"Samples: {num_samples if num_samples else 'all'}")
-    print(f"Epochs: {epochs}")
-    print(f"Batch size: {batch_size} (effective: {batch_size * gradient_accumulation})")
-    print(f"Learning rate: {learning_rate}")
-    print(f"LoRA rank: {lora_r}")
-    print(f"Num generations per prompt: {num_generations}")
-    print(f"Max prompt length: {max_prompt_length}")
-    print(f"Max completion length: {max_completion_length}")
-    print(f"Temperature: {temperature}")
-    print(f"Beta (KL coefficient): {beta}")
-    print(f"4-bit quantization: {use_4bit}")
+    print(f"Starting GRPO training: {model}")
+    print(f"Samples: {num_samples or 'all'} | Epochs: {epochs} | Batch: {batch_size}x{gradient_accumulation}")
+    print(f"LR: {learning_rate} | LoRA-r: {lora_r} | Generations: {num_generations}")
+    if use_vllm:
+        print(f"vLLM: {vllm_mode} ({vllm_gpu_memory:.0%})")
+    if debug_simple_prompt:
+        print("DEBUG: Simple prompt mode")
 
     # Create config
     config = GRPOTrainingConfig(
@@ -617,19 +629,14 @@ def main(
         beta=beta,
         max_pixels=max_pixels,
         min_pixels=min_pixels,
-        load_in_4bit=use_4bit,
         use_wandb=use_wandb,
         wandb_run_name=run_name,
+        use_vllm=use_vllm,
+        vllm_mode=vllm_mode,
+        vllm_gpu_memory_utilization=vllm_gpu_memory,
+        debug_simple_prompt=debug_simple_prompt,
     )
 
     # Run GRPO fine-tuning
     final_path = finetune_qwen_grpo.remote(config)
-
-    print("\n" + "="*60)
-    print("GRPO fine-tuning job completed!")
-    print(f"Model saved at: {final_path}")
-    print("\nNext steps:")
-    print("1. Evaluate the model using modal_qwen_evaluate_adapter.py")
-    print("2. Compare performance with supervised fine-tuning")
-    print("3. Try different hyperparameters (num_generations, temperature, kl_coef)")
-    print("="*60)
+    print(f"\nJob complete: {final_path}")
