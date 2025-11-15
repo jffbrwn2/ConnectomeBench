@@ -91,6 +91,10 @@ class GRPOTrainingConfig:
 
     # Dataset settings
     num_samples: int = None
+    balanced_sampling: bool = False  # Use stratified sampling for balanced class distribution
+
+    # Checkpoint settings
+    resume_from_checkpoint: str = None  # Path to checkpoint to resume from (e.g., "checkpoint-100")
 
     # Vision-specific settings (for Qwen-VL)
     max_pixels: int = None  # Maximum image pixels (None = use model default)
@@ -123,6 +127,69 @@ CLASS_MAPPING = {
 }
 
 REVERSE_CLASS_MAPPING = {v: k for k, v in CLASS_MAPPING.items()}
+
+
+def stratified_sample(dataset, num_samples, label_column="ground_truth"):
+    """
+    Perform stratified sampling to get balanced class distribution.
+
+    Args:
+        dataset: HuggingFace dataset
+        num_samples: Total number of samples to select
+        label_column: Column name containing class labels
+
+    Returns:
+        Dataset with balanced sampling across classes
+    """
+    from collections import Counter
+    import numpy as np
+
+    # Get all labels
+    all_labels = dataset[label_column]
+    label_counts = Counter(all_labels)
+    unique_labels = list(label_counts.keys())
+
+    print(f"\nClass distribution (before sampling):")
+    for label, count in sorted(label_counts.items()):
+        label_key = REVERSE_CLASS_MAPPING.get(label, "?")
+        print(f"  {label_key}: {count} samples")
+
+    # Calculate samples per class
+    num_classes = len(unique_labels)
+    samples_per_class = num_samples // num_classes
+    remainder = num_samples % num_classes
+
+    # Group indices by label
+    label_to_indices = {label: [] for label in unique_labels}
+    for idx, label in enumerate(all_labels):
+        label_to_indices[label].append(idx)
+
+    # Sample from each class
+    selected_indices = []
+    for i, label in enumerate(unique_labels):
+        indices = label_to_indices[label]
+        # Add 1 extra sample to first 'remainder' classes to reach exact num_samples
+        n_to_sample = samples_per_class + (1 if i < remainder else 0)
+        n_to_sample = min(n_to_sample, len(indices))  # Don't sample more than available
+
+        sampled = np.random.choice(indices, size=n_to_sample, replace=False).tolist()
+        selected_indices.extend(sampled)
+
+    # Shuffle the combined indices
+    np.random.shuffle(selected_indices)
+
+    # Select the samples
+    sampled_dataset = dataset.select(selected_indices)
+
+    # Print new distribution
+    sampled_labels = sampled_dataset[label_column]
+    sampled_counts = Counter(sampled_labels)
+    print(f"\nClass distribution (after balanced sampling):")
+    for label, count in sorted(sampled_counts.items()):
+        label_key = REVERSE_CLASS_MAPPING.get(label, "?")
+        print(f"  {label_key}: {count} samples")
+
+    return sampled_dataset
 
 
 def create_reward_function():
@@ -346,14 +413,22 @@ def finetune_qwen_grpo(config: GRPOTrainingConfig = GRPOTrainingConfig()):
     os.environ["HF_HOME"] = str(MODEL_DIR)
     os.environ["TRANSFORMERS_CACHE"] = str(MODEL_DIR)
 
+    # Configure wandb environment
+    if config.use_wandb:
+        os.environ["WANDB_PROJECT"] = config.wandb_project
+        os.environ["WANDB_LOG_MODEL"] = "false"  # Don't auto-upload model checkpoints
+
     # Initialize W&B if requested
     if config.use_wandb:
         import wandb
         wandb.init(
             project=config.wandb_project,
             name=config.wandb_run_name or f"{config.model_name.split('/')[-1]}-grpo",
-            config=config.__dict__
+            config=config.__dict__,
+            resume="allow",  # Allow resuming runs
         )
+        print(f"Weights & Biases run: {wandb.run.name} (ID: {wandb.run.id})")
+        print(f"Dashboard: {wandb.run.url}")
 
     # 1. Load processor (tokenizer + image processor)
     print(f"\nLoading processor...")
@@ -410,10 +485,23 @@ def finetune_qwen_grpo(config: GRPOTrainingConfig = GRPOTrainingConfig()):
         cache_dir=str(DATASET_DIR)
     )
 
+    # Filter out unwanted classes (e: non-neuronal, f: none of the above)
+    print(f"Original dataset size: {len(dataset)}")
+    dataset = dataset.filter(lambda x: x['ground_truth'] not in [
+        CLASS_MAPPING['e'],  # Non-neuronal types
+        CLASS_MAPPING['f'],   # None of the above
+        CLASS_MAPPING['g'],   # Unsure
+    ])
+    print(f"Filtered dataset size: {len(dataset)} (excluded classes e, f)")
+
     # Limit samples if specified
     if config.num_samples is not None and config.num_samples < len(dataset):
-        dataset = dataset.select(range(config.num_samples))
-        print(f"Using {config.num_samples} samples")
+        if config.balanced_sampling:
+            print(f"Using stratified sampling for {config.num_samples} balanced samples")
+            dataset = stratified_sample(dataset, config.num_samples)
+        else:
+            dataset = dataset.select(range(config.num_samples))
+            print(f"Using {config.num_samples} samples (first N)")
     else:
         print(f"Using all {len(dataset)} samples")
 
@@ -457,9 +545,11 @@ def finetune_qwen_grpo(config: GRPOTrainingConfig = GRPOTrainingConfig()):
 
         # Logging and saving
         logging_steps=config.logging_steps,
+        logging_first_step=True,  # Log metrics on first step
         save_steps=config.save_steps,
         save_total_limit=config.save_total_limit,
         log_completions=True,  # Log generated completions for debugging
+        log_level="info",  # Enable info-level logging
 
         # vLLM settings for faster generation
         use_vllm=config.use_vllm,
@@ -475,19 +565,32 @@ def finetune_qwen_grpo(config: GRPOTrainingConfig = GRPOTrainingConfig()):
     if config.use_vllm:
         print(f"vLLM enabled ({config.vllm_mode}, {config.vllm_gpu_memory_utilization:.0%} GPU)")
 
-    # 7. Create GRPO trainer
+    # 7. Create GRPO trainer with checkpoint callback
+    from transformers import TrainerCallback
+
+    class VolumeCommitCallback(TrainerCallback):
+        """Commit volume after each checkpoint save"""
+        def on_save(self, args, state, control, **kwargs):
+            print("Committing checkpoint to volume...")
+            checkpoint_volume.commit()
+
     trainer = GRPOTrainer(
         model=model,
         processing_class=processor,
         args=training_args,
         train_dataset=train_dataset,
         reward_funcs=[reward_fn],
+        callbacks=[VolumeCommitCallback()],
     )
 
     # 8. Train!
-    print("\nStarting training...")
-
-    trainer.train()
+    if config.resume_from_checkpoint:
+        checkpoint_path = CHECKPOINT_DIR / config.model_name.replace("/", "_") / config.resume_from_checkpoint
+        print(f"\nResuming training from checkpoint: {checkpoint_path}")
+        trainer.train(resume_from_checkpoint=str(checkpoint_path))
+    else:
+        print("\nStarting training...")
+        trainer.train()
 
     # 9. Save the LoRA adapters
     print("\nSaving model...")
@@ -570,6 +673,8 @@ def main(
     use_vllm: bool = False,
     vllm_mode: str = "colocate",
     vllm_gpu_memory: float = 0.3,
+    balanced_sampling: bool = False,
+    resume_from_checkpoint: str = None,
     debug_simple_prompt: bool = False,
 ):
     """
@@ -579,13 +684,14 @@ def main(
         # Debug mode with simple prompt (test if images are working)
         modal run scripts/modal_qwen_finetune_rl.py --num-samples 10 --epochs 1 --debug-simple-prompt
 
-        # Basic GRPO fine-tuning with Qwen3-VL-8B on small subset
-        modal run scripts/modal_qwen_finetune_rl.py --num-samples 100 --epochs 3
+        # Basic GRPO fine-tuning with balanced class sampling
+        modal run scripts/modal_qwen_finetune_rl.py --num-samples 100 --epochs 3 --balanced-sampling
 
         # With vLLM for faster generation (recommended!)
         modal run scripts/modal_qwen_finetune_rl.py \\
             --num-samples 100 \\
             --epochs 3 \\
+            --balanced-sampling \\
             --use-vllm
 
         # GRPO with more exploration (higher temperature and generations)
@@ -595,6 +701,7 @@ def main(
             --num-generations 8 \\
             --temperature 0.9 \\
             --beta 0.05 \\
+            --balanced-sampling \\
             --use-vllm \\
             --run-name "high_exploration"
 
@@ -604,9 +711,13 @@ def main(
             --use-vllm \\
             --use-wandb \\
             --run-name "grpo_full_v1"
+
+        # Resume from checkpoint
+        modal run scripts/modal_qwen_finetune_rl.py \\
+            --resume-from-checkpoint "checkpoint-500"
     """
     print(f"Starting GRPO training: {model}")
-    print(f"Samples: {num_samples or 'all'} | Epochs: {epochs} | Batch: {batch_size}x{gradient_accumulation}")
+    print(f"Samples: {num_samples or 'all'}{' (balanced)' if balanced_sampling else ''} | Epochs: {epochs} | Batch: {batch_size}x{gradient_accumulation}")
     print(f"LR: {learning_rate} | LoRA-r: {lora_r} | Generations: {num_generations}")
     if use_vllm:
         print(f"vLLM: {vllm_mode} ({vllm_gpu_memory:.0%})")
@@ -634,6 +745,8 @@ def main(
         use_vllm=use_vllm,
         vllm_mode=vllm_mode,
         vllm_gpu_memory_utilization=vllm_gpu_memory,
+        balanced_sampling=balanced_sampling,
+        resume_from_checkpoint=resume_from_checkpoint,
         debug_simple_prompt=debug_simple_prompt,
     )
 
