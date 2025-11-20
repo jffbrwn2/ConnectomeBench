@@ -328,6 +328,8 @@ In the images, we have a selected 3D segmentation that is supposed to correspond
 
 The 3D snapshots are three different views of the same segment. The dimensions of the segment's bounding box are {box_size[0]} x {box_size[1]} x {box_size[2]} nm. Describe in detail what you see using the information in the 3D snapshots. Is the segment a neuron (soma and processes)? Multiple neurons merged together (multiple somas)? Processes like axon and dendrites without a cell body? Non-neuronal structures like glia, astrocytes, or blood vessels? Inspect very closely to avoid making errors, using the 3D views and size of the bounding box in your reasoning.
 
+For {species} neurons, the somas tend to be round and generally {'a single process extends' if species == 'fly' else 'multiple processes extend'} from them {'before it branches into many processes' if species == 'fly' else 'outwards'}. Processes can be axons or dendrites, long and often branching. Synapses can also be considered as a part of processes, and these are often small segments (often smaller than a cubic micron). The nucleuses are round and do not have any processes extending from them. Blood vessels are tubular and obviously do not have any processes extending from them. Glial cells lack the branching processes of neurons, and instead appear like jagged masses.
+
 Choose the best answer:
 a) A single soma and process(es).
 b) Multiple somas (and processes)
@@ -377,7 +379,7 @@ Surround your final answer (the letter a, b, c, d, e, f, or g) with <answer> and
 
 @app.function(
     gpu="H100",  # H100 recommended for GRPO due to memory requirements
-    timeout=7200,  # 2 hours
+    timeout=3600 * 5,  # 5 hours
     volumes={
         MODEL_DIR: model_volume,
         DATASET_DIR: dataset_volume,
