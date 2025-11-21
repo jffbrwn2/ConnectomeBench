@@ -30,6 +30,7 @@ image = (
         "Pillow",
         "huggingface_hub[hf_transfer]",
         "wandb",
+        "scikit-learn",  # For stratified train/val/test splitting
     )
     .env({"HF_HUB_ENABLE_HF_TRANSFER": "1"})
 )
@@ -80,11 +81,15 @@ class TrainingConfig:
 
     # Dataset settings
     num_samples: int = None  # None = use all data
-    test_split_ratio: float = 0.2  # Fraction of data to hold out for evaluation
+    train_split_ratio: float = 0.8  # Fraction for training
+    val_split_ratio: float = 0.1   # Fraction for validation
+    test_split_ratio: float = 0.1  # Fraction for test
 
     # Evaluation settings
     eval_strategy: str = "steps"  # "steps", "epoch", or "no"
     eval_steps: int = 50  # How often to run evaluation (if strategy is "steps")
+    load_best_model_at_end: bool = True  # Load best checkpoint at end
+    metric_for_best_model: str = "eval_loss"  # Metric to use for best model selection
 
     # W&B settings
     use_wandb: bool = False
@@ -203,158 +208,8 @@ Looking at the morphology across all three views, this segment appears to be: {g
     return {"messages": messages}
 
 
-class AccuracyCallback:
-    """Custom callback to compute classification accuracy during training evaluation."""
-
-    def __init__(self, eval_dataset, model, tokenizer, class_mapping, max_eval_samples=50):
-        self.eval_dataset = eval_dataset
-        self.model = model
-        self.tokenizer = tokenizer
-        self.class_mapping = class_mapping
-        self.max_eval_samples = max_eval_samples
-
-    # Implement all 15 TrainerCallback methods
-    def on_init_end(self, args, state, control, **kwargs):
-        return control
-    def on_train_begin(self, args, state, control, **kwargs):
-        return control
-    def on_train_end(self, args, state, control, **kwargs):
-        return control
-    def on_epoch_begin(self, args, state, control, **kwargs):
-        return control
-    def on_epoch_end(self, args, state, control, **kwargs):
-        return control
-    def on_step_begin(self, args, state, control, **kwargs):
-        return control
-    def on_pre_optimizer_step(self, args, state, control, **kwargs):
-        return control
-    def on_optimizer_step(self, args, state, control, **kwargs):
-        return control
-    def on_substep_end(self, args, state, control, **kwargs):
-        return control
-    def on_step_end(self, args, state, control, **kwargs):
-        return control
-    def on_predict(self, args, state, control, **kwargs):
-        return control
-    def on_save(self, args, state, control, **kwargs):
-        return control
-    def on_log(self, args, state, control, **kwargs):
-        return control
-    def on_prediction_step(self, args, state, control, **kwargs):
-        return control
-
-    def on_evaluate(self, args, state, control, metrics=None, **kwargs):
-        """Compute classification accuracy on eval set."""
-        import torch
-        import numpy as np
-
-        print(f"\n{'='*60}")
-        print("Computing classification accuracy...")
-
-        num_samples = min(len(self.eval_dataset), self.max_eval_samples)
-        eval_subset = self.eval_dataset.select(range(num_samples))
-        correct = 0
-        total = 0
-        self.model.eval()
-
-        # Process in batches (copied from evaluate_adapter logic)
-        for batch_start in range(0, num_samples, 2):
-            batch_end = min(batch_start + 2, num_samples)
-            batch = eval_subset.select(range(batch_start, batch_end))
-
-            batch_texts = []
-            batch_images = []
-            ground_truths = []
-
-            try:
-                # Iterate directly over batch samples
-                for sample in batch:
-                    # Get images (they're PIL Image objects in the dataset)
-                    front_img = sample['option_1_front_path']
-                    side_img = sample['option_1_side_path']
-                    top_img = sample['option_1_top_path']
-                    ground_truth = sample['ground_truth']
-                    ground_truths.append(ground_truth)
-
-                    species = sample['species']
-                    xmin, ymin, zmin = sample['xmin'], sample['ymin'], sample['zmin']
-                    xmax, ymax, zmax = sample['xmax'], sample['ymax'], sample['zmax']
-                    box_size = np.array([xmax - xmin, ymax - ymin, zmax - zmin])
-
-                    prompt = f"""You are an expert at analyzing neuronal morphology.
-
-We have the electron microscopy data from the {species} brain.
-
-In the images, we have a selected 3D segmentation that is supposed to correspond to a complete neuronal structure. However, it could have split/merge errors as the segmentation algorithm makes mistakes.
-
-The 3D snapshots are three different views of the same segment. The dimensions of the segment's bounding box are {box_size[0]} x {box_size[1]} x {box_size[2]} nm. Describe in detail what you see using the information in the 3D snapshots. Is the segment a neuron (soma and processes)? Multiple neurons merged together (multiple somas)? Processes like axon and dendrites without a cell body? Non-neuronal structures like glia, astrocytes, or blood vessels? Inspect very closely to avoid making errors, using the 3D views and size of the bounding box in your reasoning.
-
-For {species} neurons, the somas tend to be round and generally {'a single process extends' if species == 'fly' else 'multiple processes extend'} from them {'before it branches into many processes' if species == 'fly' else 'outwards'}. Processes can be axons or dendrites, long and often branching. Synapses can also be considered as a part of processes, and these are often small segments (often smaller than a cubic micron). The nucleuses are round and do not have any processes extending from them. Blood vessels are tubular and obviously do not have any processes extending from them. Glial cells lack the branching processes of neurons, and instead appear like jagged masses.
-
-Choose the best answer:
-a) A single soma and process(es).
-b) Multiple somas (and processes)
-c) Processes without a soma. These can be axons, dendrites, synapses.
-d) Nucleus.
-e) Non-neuronal types. These can be glial cells, blood vessels.
-f) None of the above.
-g) Unsure
-
-Surround your analysis with <analysis> and </analysis> tags.
-Surround your final answer (the letter a, b, c, d, e, f, or g) with <answer> and </answer> tags."""
-
-                    messages = [{
-                        "role": "user",
-                        "content": [
-                            {"type": "image", "image": front_img},
-                            {"type": "image", "image": side_img},
-                            {"type": "image", "image": top_img},
-                            {"type": "text", "text": prompt},
-                        ],
-                    }]
-
-                    text = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-                    batch_texts.append(text)
-                    batch_images.extend([front_img, side_img, top_img])
-
-                # Generate prediction
-                inputs = self.tokenizer(text=batch_texts, images=batch_images, return_tensors="pt", padding=True)
-                inputs = {k: v.to("cuda") for k, v in inputs.items()}
-
-                with torch.no_grad():
-                    generated_ids = self.model.generate(**inputs, max_new_tokens=512, do_sample=False)
-                    generated_ids_trimmed = [out_ids[len(in_ids):] for in_ids, out_ids in zip(inputs['input_ids'], generated_ids)]
-                    output_texts = self.tokenizer.batch_decode(generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False)
-
-                # Extract answer
-                for output_text, ground_truth in zip(output_texts, ground_truths):
-                    answer_start = output_text.find("<answer>")
-                    answer_end = output_text.find("</answer>")
-                    if answer_start != -1 and answer_end != -1:
-                        llm_answer = output_text[answer_start + len("<answer>"):answer_end].strip()
-                        predicted_description = self.class_mapping.get(llm_answer, None)
-                        if predicted_description == ground_truth:
-                            correct += 1
-                    total += 1
-            except Exception as e:
-                # Print error details instead of silently skipping
-                print(f"Error processing batch: {e}")
-                import traceback
-                traceback.print_exc()
-                continue
-
-        accuracy = correct / total if total > 0 else 0
-        if metrics is not None:
-            metrics['eval_classification_accuracy'] = accuracy
-
-        print(f"Classification Accuracy: {accuracy:.4f} ({correct}/{total})")
-        print(f"{'='*60}\n")
-        self.model.train()
-        return control
-
-
 @app.function(
-    gpu="A100-40GB",  # ⚠️ MUST match config.gpu_count parameter
+    gpu="A100-40GB:4",  # ⚠️ MUST match config.gpu_count parameter
     timeout=7200,  # 2 hours
     volumes={
         MODEL_DIR: model_volume,
@@ -493,22 +348,104 @@ def finetune_qwen(
     else:
         print(f"Using all {len(dataset)} samples")
 
-    # Split into train and test sets
-    if config.test_split_ratio > 0:
-        print(f"\nSplitting dataset with test_split_ratio={config.test_split_ratio}...")
-        split_dataset = dataset.train_test_split(
+    # Analyze class distribution for stratified splitting
+    print("\nAnalyzing class distribution...")
+    ground_truth_labels = [sample['ground_truth'] for sample in dataset]
+    from collections import Counter
+    class_counts = Counter(ground_truth_labels)
+    print(f"  Classes found: {len(class_counts)}")
+    for label, count in sorted(class_counts.items()):
+        print(f"    {label}: {count} samples")
+
+    # Perform stratified 80-10-10 train-val-test split
+    if config.test_split_ratio > 0 and config.val_split_ratio > 0:
+        print(f"\nPerforming stratified 80-10-10 split...")
+        print(f"  Train: {config.train_split_ratio*100:.0f}%")
+        print(f"  Val: {config.val_split_ratio*100:.0f}%")
+        print(f"  Test: {config.test_split_ratio*100:.0f}%")
+
+        # Manual stratified split using sklearn
+        from sklearn.model_selection import train_test_split
+        import numpy as np
+
+        # Get all indices and labels
+        all_indices = list(range(len(dataset)))
+        all_labels = ground_truth_labels  # Already extracted above
+
+        # First split: separate test set from train+val
+        train_val_indices, test_indices = train_test_split(
+            all_indices,
             test_size=config.test_split_ratio,
-            seed=config.seed,
+            random_state=config.seed,
+            stratify=all_labels,
             shuffle=True
         )
-        train_dataset = split_dataset['train']
-        eval_dataset = split_dataset['test']
+
+        # Get labels for train+val split
+        train_val_labels = [all_labels[i] for i in train_val_indices]
+
+        # Second split: separate validation from training
+        # val_size should be val/(train+val) = 0.1/(0.8+0.1) = 1/9 ≈ 0.111
+        val_ratio_of_train_val = config.val_split_ratio / (config.train_split_ratio + config.val_split_ratio)
+        train_indices, val_indices = train_test_split(
+            train_val_indices,
+            test_size=val_ratio_of_train_val,
+            random_state=config.seed,
+            stratify=train_val_labels,
+            shuffle=True
+        )
+
+        # Create the split datasets
+        train_dataset = dataset.select(train_indices)
+        eval_dataset = dataset.select(val_indices)  # This is the validation set
+        test_dataset = dataset.select(test_indices)
+
         print(f"  Train samples: {len(train_dataset)}")
-        print(f"  Eval samples: {len(eval_dataset)}")
+        print(f"  Val samples: {len(eval_dataset)}")
+        print(f"  Test samples: {len(test_dataset)}")
+
+        # Verify class balance in test set
+        test_labels = [sample['ground_truth'] for sample in test_dataset]
+        test_class_counts = Counter(test_labels)
+        print(f"\n  Test set class distribution:")
+        for label, count in sorted(test_class_counts.items()):
+            print(f"    {label}: {count} samples")
+
+        # Save test dataset indices for later evaluation
+        # We need to map back to original dataset indices
+        # The test dataset has an internal index, but we need the original indices
+        import json
+        test_indices_path = CHECKPOINT_DIR / "test_indices.json"
+
+        # Create mapping of test samples to original indices
+        # We'll use a unique identifier from the dataset (proofread_root_id + current_root_id)
+        test_identifiers = [
+            {
+                'proofread_root_id': sample['proofread_root_id'],
+                'current_root_id': sample['current_root_id'],
+                'ground_truth': sample['ground_truth']
+            }
+            for sample in test_dataset
+        ]
+
+        test_metadata = {
+            'num_test_samples': len(test_dataset),
+            'test_split_ratio': config.test_split_ratio,
+            'seed': config.seed,
+            'test_identifiers': test_identifiers
+        }
+
+        with open(str(test_indices_path), 'w') as f:
+            json.dump(test_metadata, f, indent=2)
+
+        checkpoint_volume.commit()
+        print(f"\n  Test indices saved to: {test_indices_path}")
+
     else:
-        print("\nNo train/test split (test_split_ratio=0)")
+        print("\nNo train/val/test split")
         train_dataset = dataset
         eval_dataset = None
+        test_dataset = None
         print(f"  Train samples: {len(train_dataset)}")
 
     # 4. Define formatting function that converts raw dataset samples to chat format
@@ -585,23 +522,18 @@ def finetune_qwen(
         eval_steps=config.eval_steps if config.eval_strategy == "steps" else None,
         per_device_eval_batch_size=config.per_device_train_batch_size,
 
+        # Best model checkpointing (only if we have validation set)
+        load_best_model_at_end=config.load_best_model_at_end if eval_dataset is not None else False,
+        metric_for_best_model=config.metric_for_best_model if eval_dataset is not None else None,
+        greater_is_better=False if config.metric_for_best_model == "eval_loss" else True,  # Lower is better for loss
+        save_strategy=config.eval_strategy if eval_dataset is not None else "steps",  # Save when we evaluate
+
         # Other
         seed=config.seed,
         report_to="wandb" if config.use_wandb else "none",
     )
 
-    # 6. Create trainer with accuracy callback
-    callbacks = []
-    if eval_dataset is not None:
-        accuracy_callback = AccuracyCallback(
-            eval_dataset=eval_dataset,
-            model=model,
-            tokenizer=tokenizer,
-            class_mapping=CLASS_MAPPING,
-            max_eval_samples=50
-        )
-        callbacks.append(accuracy_callback)
-
+    # 6. Create trainer
     trainer = SFTTrainer(
         model=model,
         tokenizer=tokenizer,
@@ -610,7 +542,6 @@ def finetune_qwen(
         eval_dataset=eval_dataset,  # Will be None if test_split_ratio=0
         formatting_func=formatting_func,  # Required by Unsloth
         max_seq_length=config.max_seq_length,
-        callbacks=callbacks,
     )
 
     # 7. Train!
@@ -701,21 +632,25 @@ def finetune_qwen(
     ],
 )
 def evaluate_adapter(
-    adapter_path: str,
+    adapter_path: str = None,
+    base_model: str = "Qwen/Qwen3-VL-8B-Instruct",
     num_samples: int = None,
     batch_size: int = 4,
     use_blank_images: bool = False,
     use_simple_prompt: bool = False,
+    use_test_set_only: bool = False,
 ):
     """
-    Evaluate a fine-tuned LoRA adapter on segment classification task.
+    Evaluate a fine-tuned LoRA adapter or base model on segment classification task.
 
     Args:
-        adapter_path: Path to the LoRA adapter folder
+        adapter_path: Path to the LoRA adapter folder (None = evaluate base model only)
+        base_model: Base model name (used when adapter_path is None)
         num_samples: Number of samples to evaluate (None = all)
         batch_size: Batch size for inference
         use_blank_images: Use blank images for sanity check
         use_simple_prompt: Use simple prompt for sanity check
+        use_test_set_only: If True, only evaluate on the held-out test set from training
     """
     import torch
     import pandas as pd
@@ -727,7 +662,10 @@ def evaluate_adapter(
     from peft import PeftModel
 
     print("="*60)
-    print("Evaluating Fine-tuned LoRA Adapter")
+    if adapter_path:
+        print("Evaluating Fine-tuned LoRA Adapter")
+    else:
+        print("Evaluating Base Model (No Fine-tuning)")
     print("="*60)
 
     # Set cache directories
@@ -735,23 +673,29 @@ def evaluate_adapter(
     os.environ["HF_HOME"] = str(MODEL_DIR)
     os.environ["TRANSFORMERS_CACHE"] = str(MODEL_DIR)
 
-    # Load training config to get base model name
-    full_adapter_path = CHECKPOINT_DIR / adapter_path
-    config_path = full_adapter_path / "training_config.json"
+    # Determine which base model to use
+    if adapter_path:
+        # Load training config to get base model name
+        full_adapter_path = CHECKPOINT_DIR / adapter_path
+        config_path = full_adapter_path / "training_config.json"
 
-    if config_path.exists():
-        with open(str(config_path), "r") as f:
-            training_config = json.load(f)
-        base_model_name = training_config["model_name"]
-        print(f"\nTraining config found:")
-        print(f"  Base model: {base_model_name}")
-        print(f"  Trained on: {training_config.get('num_samples', 'all')} samples")
-        print(f"  Epochs: {training_config.get('num_train_epochs')}")
+        if config_path.exists():
+            with open(str(config_path), "r") as f:
+                training_config = json.load(f)
+            base_model_name = training_config["model_name"]
+            print(f"\nTraining config found:")
+            print(f"  Base model: {base_model_name}")
+            print(f"  Trained on: {training_config.get('num_samples', 'all')} samples")
+            print(f"  Epochs: {training_config.get('num_train_epochs')}")
+        else:
+            print(f"\nWarning: No training_config.json found")
+            base_model_name = "Qwen/Qwen3-VL-8B-Instruct"
     else:
-        print(f"\nWarning: No training_config.json found")
-        base_model_name = "Qwen/Qwen3-VL-8B-Instruct"
+        # Use provided base model
+        base_model_name = base_model
+        print(f"\nEvaluating base model: {base_model_name}")
 
-    # Load base model + adapters
+    # Load base model
     print(f"\nLoading base model: {base_model_name}...")
     from transformers import AutoProcessor
 
@@ -764,8 +708,11 @@ def evaluate_adapter(
     # Also load the processor for proper image handling
     processor = AutoProcessor.from_pretrained(base_model_name)
 
-    print(f"Loading LoRA adapters from: {full_adapter_path}...")
-    model = PeftModel.from_pretrained(model, str(full_adapter_path))
+    # Load adapters if provided
+    if adapter_path:
+        print(f"Loading LoRA adapters from: {full_adapter_path}...")
+        model = PeftModel.from_pretrained(model, str(full_adapter_path))
+
     FastVisionModel.for_inference(model)
 
     # Load dataset
@@ -775,6 +722,33 @@ def evaluate_adapter(
         "MICrONS, Segment Classification",
         split="train"
     )
+
+    # If use_test_set_only, filter to only test set samples
+    if use_test_set_only:
+        test_indices_path = CHECKPOINT_DIR / "test_indices.json"
+        if test_indices_path.exists():
+            print(f"\nLoading test set indices from: {test_indices_path}")
+            with open(str(test_indices_path), 'r') as f:
+                test_metadata = json.load(f)
+
+            test_identifiers = test_metadata['test_identifiers']
+            print(f"  Test set has {len(test_identifiers)} samples")
+
+            # Create a set of (proofread_root_id, current_root_id) tuples for fast lookup
+            test_id_set = {
+                (item['proofread_root_id'], item['current_root_id'])
+                for item in test_identifiers
+            }
+
+            # Filter dataset to only test samples
+            def is_test_sample(sample):
+                return (sample['proofread_root_id'], sample['current_root_id']) in test_id_set
+
+            ds = ds.filter(is_test_sample)
+            print(f"  Filtered to {len(ds)} test samples")
+        else:
+            print(f"\nWarning: test_indices.json not found at {test_indices_path}")
+            print("  Proceeding with full dataset instead")
 
     if num_samples is not None and num_samples < len(ds):
         ds = ds.select(range(num_samples))
@@ -938,7 +912,10 @@ Surround your final answer (the letter a, b, c, d, e, f, or g) with <answer> and
             print(f"  {answer_key}: {correct_count}/{total_count} correct - {description}")
 
     # Save to file
-    adapter_name = adapter_path.replace("/", "_")
+    if adapter_path:
+        adapter_name = adapter_path.replace("/", "_")
+    else:
+        adapter_name = base_model_name.replace("/", "_") + "_base"
     num_samples_str = f"{num_samples}samples" if num_samples else "all_samples"
     output_path = RESULTS_DIR / f"{adapter_name}_eval_{num_samples_str}.csv"
     df.to_csv(str(output_path), index=False)
@@ -957,7 +934,7 @@ def main(
     gradient_accumulation: int = 4,
     learning_rate: float = 2e-4,
     lora_r: int = 16,
-    gpu_count: int = 1,  # Number of GPUs to use
+    gpu_count: int = 4,  # Number of GPUs to use
     use_4bit: bool = True,
     use_wandb: bool = False,
     run_name: str = None,
@@ -965,7 +942,9 @@ def main(
     use_teacher: bool = False,  # Whether to use teacher model responses
     teacher_column: str = 'teacher_analysis',  # Column name (default works with merge script output)
     teacher_name: str = None,  # Optional: Teacher model name for W&B tracking
-    test_split: float = 0.2,  # Fraction of data to hold out for evaluation
+    train_split: float = 0.8,  # Fraction of data for training (default: 80%)
+    val_split: float = 0.1,   # Fraction of data for validation (default: 10%)
+    test_split: float = 0.1,  # Fraction of data for test (default: 10%)
     eval_steps: int = 50,  # How often to evaluate (if eval_strategy="steps")
     eval_strategy: str = "steps",  # "steps", "epoch", or "no"
 ):
@@ -1009,8 +988,10 @@ def main(
             --num-samples 100 \\
             --epochs 3
 
-        # Train with custom train/test split and evaluation
+        # Train with custom 70-15-15 split and evaluation
         modal run scripts/modal_qwen_finetune.py \\
+            --train-split 0.7 \\
+            --val-split 0.15 \\
             --test-split 0.15 \\
             --eval-steps 25 \\
             --eval-strategy "steps" \\
@@ -1018,7 +999,9 @@ def main(
 
         # Train without evaluation (use full dataset)
         modal run scripts/modal_qwen_finetune.py \\
-            --test-split 0 \\
+            --train-split 1.0 \\
+            --val-split 0.0 \\
+            --test-split 0.0 \\
             --epochs 3
 
         # Use different number of GPUs (update decorator first: gpu=modal.gpu.A100(count=4))
@@ -1043,11 +1026,13 @@ def main(
     print(f"Learning rate: {learning_rate}")
     print(f"LoRA rank: {lora_r}")
     print(f"4-bit quantization: {use_4bit}")
-    print(f"Train/test split: {test_split*100:.0f}% test set" if test_split > 0 else "No train/test split")
     if test_split > 0:
+        print(f"Data split: {train_split*100:.0f}% train / {val_split*100:.0f}% val / {test_split*100:.0f}% test")
         print(f"Eval strategy: {eval_strategy}")
         if eval_strategy == "steps":
             print(f"Eval frequency: every {eval_steps} steps")
+    else:
+        print("No train/val/test split - using all data for training")
 
     # Create config
     config = TrainingConfig(
@@ -1062,6 +1047,8 @@ def main(
         load_in_4bit=use_4bit,
         use_wandb=use_wandb,
         wandb_run_name=run_name,
+        train_split_ratio=train_split,
+        val_split_ratio=val_split,
         test_split_ratio=test_split,
         eval_strategy=eval_strategy,
         eval_steps=eval_steps,
@@ -1141,31 +1128,55 @@ def upload_teacher_data(
 
 @app.local_entrypoint()
 def evaluate(
-    adapter_path: str,
+    adapter_path: str = None,
+    base_model: str = "Qwen/Qwen3-VL-8B-Instruct",
     num_samples: int = None,
     batch_size: int = 4,
     blank_images: bool = False,
     simple_prompt: bool = False,
+    test_set_only: bool = False,
 ):
     """
-    Evaluate a fine-tuned LoRA adapter.
+    Evaluate a fine-tuned LoRA adapter or base model.
 
     Usage:
+        # Evaluate fine-tuned adapter on full dataset
         modal run scripts/modal_qwen_finetune.py::evaluate \\
             --adapter-path "Qwen3-VL-8B-Instruct_20251112_191538_samplesall_epochs1_lr0.0002_r16" \\
             --num-samples 100 \\
             --batch-size 4
+
+        # Evaluate fine-tuned adapter only on held-out test set
+        modal run scripts/modal_qwen_finetune.py::evaluate \\
+            --adapter-path "Qwen3-VL-8B-Instruct_20251112_191538_samplesall_epochs1_lr0.0002_r16" \\
+            --test-set-only
+
+        # Evaluate base model (no fine-tuning) for baseline
+        modal run scripts/modal_qwen_finetune.py::evaluate \\
+            --num-samples 100
+
+        # Evaluate different base model
+        modal run scripts/modal_qwen_finetune.py::evaluate \\
+            --base-model "Qwen/Qwen2-VL-7B-Instruct" \\
+            --num-samples 100
     """
-    print(f"Evaluating adapter: {adapter_path}")
+    if adapter_path:
+        print(f"Evaluating adapter: {adapter_path}")
+    else:
+        print(f"Evaluating base model: {base_model}")
     print(f"Samples: {num_samples if num_samples else 'all'}")
     print(f"Batch size: {batch_size}")
+    if test_set_only:
+        print(f"Mode: Test set only (held-out from training)")
 
     result_df = evaluate_adapter.remote(
         adapter_path=adapter_path,
+        base_model=base_model,
         num_samples=num_samples,
         batch_size=batch_size,
         use_blank_images=blank_images,
         use_simple_prompt=simple_prompt,
+        use_test_set_only=test_set_only,
     )
 
     print("\nCompleted!")
