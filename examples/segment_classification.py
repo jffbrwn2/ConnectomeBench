@@ -94,9 +94,9 @@ async def run_segment_classification(
         side_path = os.path.join(sample_temp_dir, "side.png")
         top_path = os.path.join(sample_temp_dir, "top.png")
 
-        sample['option_1_front_path'].save(front_path)
-        sample['option_1_side_path'].save(side_path)
-        sample['option_1_top_path'].save(top_path)
+        sample['option_1_front_image'].save(front_path)
+        sample['option_1_side_image'].save(side_path)
+        sample['option_1_top_image'].save(top_path)
 
         segment_images_paths = [front_path, side_path, top_path]
         temp_image_paths.append(segment_images_paths)
