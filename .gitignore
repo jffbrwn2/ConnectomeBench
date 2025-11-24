@@ -75,3 +75,6 @@ scripts/generate_readme_yaml.py
 
 debug/
 *.parquet
+
+scripts/model-post-training/
+scripts/deprecated/
