@@ -16,12 +16,14 @@ from PIL import Image
 
 class ConnectomeVisualizer:
     """
-    A class for visualizing MICrONS and FlyWire neurons and EM data.
+    A class for visualizing MICrONS, FlyWire, zebrafish, and human (H01) neurons and EM data.
     """
     
     # Default paths for data sources
     MICRONS_EM_PATH = "precomputed://https://bossdb-open-data.s3.amazonaws.com/iarpa_microns/minnie/minnie65/em"
     FLYWIRE_EM_PATH = "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14"
+    ZEBRAFISH_EM_PATH = "precomputed://gs://neuroglancer/zfish_v1/image"
+    H01_EM_PATH = "precomputed://gs://h01-release/data/em"  # May need verification
 
     # Default colors for neurons
     NEURON_COLORS = [
@@ -43,6 +45,8 @@ class ConnectomeVisualizer:
 
     FLYWIRE_SEG_PATH =  "graphene://https://prod.flywire-daf.com/segmentation/1.0/flywire_public" 
     MICRONS_SEG_PATH = "graphene://https://minnie.microns-daf.com/segmentation/table/minnie65_public"
+    ZEBRAFISH_SEG_PATH = "precomputed://gs://neuroglancer/zfish_v1/consensus-20190415"
+    H01_SEG_PATH = "precomputed://gs://h01-release/data/segmentation"  # May need verification
 
     data_parameters = {
         "mouse": {
@@ -58,6 +62,20 @@ class ConnectomeVisualizer:
             "datastack_name": "flywire_fafb_public",
             "em_mip": 2,
             "seg_mip": 0
+        },
+        "zebrafish": {
+            "em_path": ZEBRAFISH_EM_PATH,
+            "seg_path": ZEBRAFISH_SEG_PATH,
+            "datastack_name": None,  # Zebrafish doesn't use CAVEclient
+            "em_mip": 0,  # Default MIP level, may need adjustment
+            "seg_mip": 0  # Default MIP level, may need adjustment
+        },
+        "human": {
+            "em_path": H01_EM_PATH,
+            "seg_path": H01_SEG_PATH,
+            "datastack_name": None,  # H01 doesn't use CAVEclient
+            "em_mip": 0,  # Default MIP level, may need adjustment
+            "seg_mip": 0  # Default MIP level, may need adjustment
         }
     }
     def __init__(self,
@@ -106,7 +124,11 @@ class ConnectomeVisualizer:
         self.em_mip = self.data_parameters[species]["em_mip"]
         self.seg_mip = self.data_parameters[species]["seg_mip"]
         self.datastack_name = self.data_parameters[species]["datastack_name"]
-        self.client = CAVEclient(self.datastack_name)
+        # Initialize CAVEclient only if datastack_name is provided
+        if self.datastack_name:
+            self.client = CAVEclient(self.datastack_name)
+        else:
+            self.client = None
         
         # Initialize coordinates
         self.x = None
@@ -228,6 +250,8 @@ class ConnectomeVisualizer:
         """
         Load neuron skeletons for the specified neuron IDs.
         """
+        if self.client is None:
+            raise ValueError("CAVEclient is not available for this species. Skeleton data requires CAVEclient.")
         return self.client.skeleton.get_skeleton(neuron_ids)
         
     def reset_colors(self):
@@ -572,6 +596,9 @@ class ConnectomeVisualizer:
             locs = np.column_stack((X.flatten(), Y.flatten(), Z.flatten()))
             
 
+            if self.client is None:
+                raise ValueError("CAVEclient is not available for this species. API-based segmentation processing requires CAVEclient.")
+            
             if self.timestamp is None:
                 if self.verbose:
                     print("No timestamp provided, using latest timestamp")
@@ -690,6 +717,11 @@ class ConnectomeVisualizer:
             print(f"Found {len(border_pixels)} border pixels for neuron {neuron_id}.")
             print(f"Adjacent root IDs: {list(adjacent_supervoxels)}")
 
+        if self.client is None:
+            if self.verbose:
+                print("CAVEclient is not available for this species. Returning supervoxel IDs without root ID conversion.")
+            return border_pixels, list(adjacent_supervoxels), list(adjacent_supervoxels)
+        
         root_ids = self.client.chunkedgraph.get_roots(list(adjacent_supervoxels))
         return border_pixels, list(adjacent_supervoxels), list(root_ids)
 
@@ -1494,7 +1526,8 @@ Args:
         Args:
             neuron_id (str): The ID of the neuron to get the edit history for
         """
-
+        if self.client is None:
+            raise ValueError("CAVEclient is not available for this species. Edit history requires CAVEclient.")
         return self.client.chunkedgraph.get_tabular_change_log(neuron_id, filtered=True)
 
     def clear_neurons(self):

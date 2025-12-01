@@ -513,8 +513,8 @@ class TrainingDataGatherer:
 # Example usage
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Gather training data from connectome edit histories")
-    parser.add_argument("--species", type=str, required=True, choices=["fly", "mouse"],
-                        help="Species to process (human and fish are not supported)")
+    parser.add_argument("--species", type=str, required=True, choices=["fly", "mouse", "zebrafish", "human"],
+                        help="Species to process")
     parser.add_argument("--num-neurons", type=int, default=200,
                         help="Number of neurons to process (default: 200)")
     parser.add_argument("--output-dir", type=str, default="./data",
@@ -540,9 +540,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # Validate species
-    if args.species in ["human", "fish"]:
-        raise ValueError(f"Species '{args.species}' is not supported. Only 'fly' and 'mouse' are supported.")
+    # Validate species - Note: zebrafish and human may have limited support for some features
+    if args.species in ["zebrafish", "human"]:
+        print(f"Warning: Species '{args.species}' has limited support. Some features may not be available (e.g., CAVEclient-based queries).")
 
     if args.split_only and args.merge_only:
         raise ValueError("Cannot specify both --split-only and --merge-only")
@@ -557,6 +557,10 @@ if __name__ == "__main__":
             neuron_ids = list(client.materialize.query_table('proofreading_status_and_strategy')['valid_id'])
             random.seed(args.random_seed)
             neuron_ids = random.sample(neuron_ids, args.num_neurons)
+        elif args.species in ["zebrafish", "human"]:
+            raise ValueError(f"Species '{args.species}' is not supported for this script. "
+                           f"This script requires CAVEclient access to query edit histories, which is not available for {args.species}. "
+                           f"Use ConnectomeVisualizer directly for visualization tasks.")
 
         print(f"Processing {len(neuron_ids)} {args.species} neurons...")
         print(f"Settings: K={args.K}, split_only={args.split_only}, merge_only={args.merge_only}")
