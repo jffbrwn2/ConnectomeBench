@@ -93,6 +93,15 @@ visualizer.save_3d_views(base_filename="3d_neuron_mesh")
 
 `ConnectomeVisualizer` is built largely on the data organized and provided through the [`CAVEClient`](https://github.com/CAVEconnectome/CAVEclient/) library. To get access to the data, please see the [CAVEClient README](https://github.com/CAVEconnectome/CAVEclient/). Specifically, you will need authentication tokens to access to the datasets (see the link [here](https://caveconnectome.github.io/CAVEclient/tutorials/authentication/)).
 
+### Dataset Access and Authentication
+
+The toolkit supports multiple connectomics datasets, each with different access requirements:
+
+- **Mouse (MICrONS)** and **Fly (FlyWire)**: Generally auto-authorized with CAVEclient setup
+- **Human (H01)**: Requires explicit authentication. Visit the [H01 Proofreading Page](https://h01-release.storage.googleapis.com/proofreading.html) and follow the authentication steps. The H01 proofreading page also provides detailed documentation on the proofreading methodology (handling merge and split errors) that this benchmark is based on.
+
+Once authenticated, all CAVEclient features (skeletons, edit history, API-based segmentation processing) are available for these datasets.
+
 ### LLM Integration
 
 The toolkit integrates with multiple LLM providers for automated analysis:
