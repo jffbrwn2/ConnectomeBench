@@ -22,13 +22,12 @@ class ConnectomeVisualizer:
     - mouse (MICrONS dataset)
     - fly (FlyWire dataset)
     - human (H01 dataset) - Requires authentication (see README)
-    - zebrafish (Fish1 - 2024 Release) - Requires setup (see README)
     
     All species have full CAVEclient support once authenticated. The CAVEclient automatically
     retrieves the correct EM and segmentation paths via its InfoService API. Hardcoded paths
     are used as fallbacks if InfoService is unavailable.
     
-    See README for authentication instructions for human and zebrafish datasets.
+    See README for authentication instructions for human dataset.
     """
     
     # Default paths for data sources
@@ -37,9 +36,6 @@ class ConnectomeVisualizer:
     # H01 (Human Cortex) - Requires authentication via https://h01-release.storage.googleapis.com/proofreading.html
     H01_EM_PATH = "precomputed://gs://h01-release/data/20210601/4nm_raw"
     H01_SEG_PATH = "precomputed://gs://h01-release/data/20210601/c3"  # C3 is latest, C2 also available
-    # Zebrafish (Fish1 - 2024 Release) - Requires setup from https://fish1-release.storage.googleapis.com/tutorials.html
-    ZEBRAFISH_EM_PATH = "precomputed://gs://fish1-public/clahe_231218"
-    ZEBRAFISH_SEG_PATH = "precomputed://gs://fish1-public/20240402/segmentation"
 
     # Default colors for neurons
     NEURON_COLORS = [
@@ -57,7 +53,7 @@ class ConnectomeVisualizer:
         "#1E90FF",  # Dodger blue
     ]
 
-    datastacks = ['minnie65_public', 'flywire_fafb_public', 'h01_c3_flat', 'fish1_public']
+    datastacks = ['minnie65_public', 'flywire_fafb_public', 'h01_c3_flat']
 
     FLYWIRE_SEG_PATH =  "graphene://https://prod.flywire-daf.com/segmentation/1.0/flywire_public" 
     MICRONS_SEG_PATH = "graphene://https://minnie.microns-daf.com/segmentation/table/minnie65_public"
@@ -82,13 +78,6 @@ class ConnectomeVisualizer:
             "seg_path": H01_SEG_PATH,
             "datastack_name": "h01_c3_flat",  # Requires authentication - see README
             "em_mip": 2,  # Adjusted for H01 scale
-            "seg_mip": 0
-        },
-        "zebrafish": {
-            "em_path": ZEBRAFISH_EM_PATH,
-            "seg_path": ZEBRAFISH_SEG_PATH,  # Will be updated from CAVEclient if available
-            "datastack_name": "fish1_public",  # Requires setup - see README
-            "em_mip": 2,  # Adjusted for Fish1 scale
             "seg_mip": 0
         }
     }
@@ -140,8 +129,7 @@ class ConnectomeVisualizer:
         self.datastack_name = self.data_parameters[species]["datastack_name"]
         
         # Initialize CAVEclient if datastack is available
-        # Note: Human (H01) and zebrafish (Fish1) require authentication/setup before use
-        # See README for authentication instructions
+        # Note: Human (H01) requires authentication before use - see README
         if self.datastack_name is not None:
             try:
                 # H01 uses a different server address
@@ -182,12 +170,9 @@ class ConnectomeVisualizer:
             except Exception as e:
                 if self.verbose:
                     print(f"Warning: Could not initialize CAVEclient for {species} (datastack: {self.datastack_name}): {e}")
-                    if species in ["human", "zebrafish"]:
-                        print(f"  Note: {species} requires authentication. See README for setup instructions:")
-                        if species == "human":
-                            print(f"    https://h01-release.storage.googleapis.com/proofreading.html")
-                        elif species == "zebrafish":
-                            print(f"    https://fish1-release.storage.googleapis.com/tutorials.html")
+                    if species == "human":
+                        print(f"  Note: Human (H01) requires authentication. See README:")
+                        print(f"    https://h01-release.storage.googleapis.com/proofreading.html")
                 self.client = None
         else:
             self.client = None
@@ -236,15 +221,8 @@ class ConnectomeVisualizer:
             self.cv_em = cloudvolume.CloudVolume(self.em_path, use_https=True, mip=self.em_mip, timestamp=self.timestamp)
             self.em_resolution = self.cv_em.resolution
             
-            # Connect to segmentation data if available
-            if self.seg_path is not None:
-                self.cv_seg = cloudvolume.CloudVolume(self.seg_path, use_https=True, fill_missing=True, mip=self.seg_mip, timestamp=self.timestamp)
-                self.seg_resolution = self.cv_seg.resolution
-            else:
-                self.cv_seg = None
-                self.seg_resolution = None
-                if self.verbose:
-                    print(f"Warning: Segmentation path not configured for {self.species}")
+            self.cv_seg = cloudvolume.CloudVolume(self.seg_path, use_https=True, fill_missing=True, mip=self.seg_mip, timestamp=self.timestamp)
+            self.seg_resolution = self.cv_seg.resolution
             
             if self.verbose:
                 print("Successfully connected to data sources.")
@@ -254,11 +232,6 @@ class ConnectomeVisualizer:
 
     async def _fetch_neuron_mesh(self, neuron_id: int, timeout: Optional[float] = None) -> Tuple[int, Optional[Any]]:
         """Helper function to fetch a single neuron mesh asynchronously."""
-        
-        if self.cv_seg is None:
-            if self.verbose:
-                print(f"Cannot fetch mesh for neuron {neuron_id}: segmentation data is not available for {self.species}")
-            return neuron_id, None
         
         # Create a future to manage the execution
         loop = asyncio.get_event_loop()
@@ -299,10 +272,6 @@ class ConnectomeVisualizer:
         Args:
             neuron_ids: List of neuron IDs to load
         """
-        if self.cv_seg is None:
-            raise ValueError(f"Cannot load neuron meshes for {self.species}: segmentation data is not available. "
-                           f"This species does not have segmentation data accessible via CloudVolume.")
-        
         self.neurons = []
         self.neuron_ids = neuron_ids
         self.neuron_color_map = {}
@@ -334,8 +303,6 @@ class ConnectomeVisualizer:
             auth_msg = ""
             if self.species == "human":
                 auth_msg = " Please authenticate via https://h01-release.storage.googleapis.com/proofreading.html"
-            elif self.species == "zebrafish":
-                auth_msg = " Please run setup from https://fish1-release.storage.googleapis.com/tutorials.html"
             raise ValueError(f"Skeleton retrieval requires CAVEclient, which is not initialized for {self.species}.{auth_msg}")
         return self.client.skeleton.get_skeleton(neuron_ids)
         
@@ -659,8 +626,6 @@ class ConnectomeVisualizer:
             auth_msg = ""
             if self.species == "human":
                 auth_msg = " Please authenticate via https://h01-release.storage.googleapis.com/proofreading.html"
-            elif self.species == "zebrafish":
-                auth_msg = " Please run setup from https://fish1-release.storage.googleapis.com/tutorials.html"
             raise ValueError(f"API-based segmentation processing requires CAVEclient, which is not initialized for {self.species}.{auth_msg}")
         
         # if not self.neuron_ids:
@@ -1138,10 +1103,6 @@ Args:
                 print("All specified neurons are already loaded.")
             return []
         
-        if self.cv_seg is None:
-            raise ValueError(f"Cannot load neuron meshes for {self.species}: segmentation data is not available. "
-                           f"This species does not have segmentation data accessible via CloudVolume.")
-        
         new_neurons = []
         
         # Load new neurons
@@ -1601,11 +1562,6 @@ Args:
         Returns:
             The number of vertices, or None if the neuron cannot be loaded.
         """
-        if self.cv_seg is None:
-            if self.verbose:
-                print(f"Cannot get vertex count for neuron {neuron_id}: segmentation data is not available for {self.species}")
-            return None
-        
         try:
             neuron = self.cv_seg.mesh.get(neuron_id)[neuron_id]
             if neuron and hasattr(neuron, 'vertices') and neuron.vertices is not None:
@@ -1630,8 +1586,6 @@ Args:
             auth_msg = ""
             if self.species == "human":
                 auth_msg = " Please authenticate via https://h01-release.storage.googleapis.com/proofreading.html"
-            elif self.species == "zebrafish":
-                auth_msg = " Please run setup from https://fish1-release.storage.googleapis.com/tutorials.html"
             raise ValueError(f"Edit history retrieval requires CAVEclient, which is not initialized for {self.species}.{auth_msg}")
         
         return self.client.chunkedgraph.get_tabular_change_log(neuron_id, filtered=True)

@@ -99,7 +99,6 @@ The toolkit supports multiple connectomics datasets, each with different access 
 
 - **Mouse (MICrONS)** and **Fly (FlyWire)**: Generally auto-authorized with CAVEclient setup
 - **Human (H01)**: Requires explicit authentication. Visit the [H01 Proofreading Page](https://h01-release.storage.googleapis.com/proofreading.html) and follow the authentication steps. The H01 proofreading page also provides detailed documentation on the proofreading methodology (handling merge and split errors) that this benchmark is based on.
-- **Zebrafish (Fish1 - 2024 Release)**: Requires setup. Visit the [Fish1 Tutorials Page](https://fish1-release.storage.googleapis.com/tutorials.html) and run the `Setup_CAVE.ipynb` notebook to register your token.
 
 Once authenticated, all CAVEclient features (skeletons, edit history, API-based segmentation processing) are available for these datasets.
 

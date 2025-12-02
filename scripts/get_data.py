@@ -513,8 +513,8 @@ class TrainingDataGatherer:
 # Example usage
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Gather training data from connectome edit histories")
-    parser.add_argument("--species", type=str, required=True, choices=["fly", "mouse"],
-                        help="Species to process (human and fish are not supported)")
+    parser.add_argument("--species", type=str, required=True, choices=["fly", "mouse", "human"],
+                        help="Species to process")
     parser.add_argument("--num-neurons", type=int, default=200,
                         help="Number of neurons to process (default: 200)")
     parser.add_argument("--output-dir", type=str, default="./data",
@@ -545,9 +545,6 @@ if __name__ == "__main__":
 
     try:
         # Get neuron IDs based on species
-        # Note: This script requires CAVEclient to query proofreading tables for neuron IDs
-        # Human and zebrafish datasets do not have CAVEclient support, so this script
-        # cannot automatically retrieve neuron IDs for these species.
         if args.species == "fly":
             client = caveclient.CAVEclient("flywire_fafb_public")
             neuron_ids = list(client.materialize.query_table('proofread_neurons')['pt_root_id'])[:args.num_neurons]
@@ -557,43 +554,19 @@ if __name__ == "__main__":
             random.seed(args.random_seed)
             neuron_ids = random.sample(neuron_ids, args.num_neurons)
         elif args.species == "human":
-            try:
-                # H01 uses a different server address
-                server_address = "https://global.brain-wire-test.org/"
-                client = caveclient.CAVEclient("h01_c3_flat", server_address=server_address)
-                # Note: H01 may have different table names - adjust as needed
-                # For now, raise an informative error until we know the correct table names
-                raise ValueError(
-                    f"Species 'human' (H01) CAVEclient initialized successfully, but proofreading table names "
-                    f"for H01 are not yet configured in this script. Please check H01 documentation for "
-                    f"available materialized tables."
-                )
-            except ValueError as ve:
-                # Re-raise ValueError (our informative message)
-                raise ve
-            except Exception as e:
-                raise ValueError(
-                    f"Species 'human' (H01) requires authentication. "
-                    f"Please visit https://h01-release.storage.googleapis.com/proofreading.html "
-                    f"to authenticate your token. Error: {e}"
-                )
+            # H01 uses a different server address
+            server_address = "https://global.brain-wire-test.org/"
+            client = caveclient.CAVEclient("h01_c3_flat", server_address=server_address)
+            neuron_ids = list(client.materialize.query_table('proofreading_status_test')['valid_id'])
+            random.seed(args.random_seed)
+            neuron_ids = random.sample(neuron_ids, args.num_neurons)
         elif args.species == "zebrafish":
-            try:
-                client = caveclient.CAVEclient("fish1_public")
-                # Note: Fish1 may have different table names - adjust as needed
-                raise ValueError(
-                    f"Species 'zebrafish' (Fish1) requires setup before use. "
-                    f"Please visit https://fish1-release.storage.googleapis.com/tutorials.html "
-                    f"and run the Setup_CAVE.ipynb notebook to register your token."
-                )
-            except Exception as e:
-                raise ValueError(
-                    f"Species 'zebrafish' (Fish1) requires setup. "
-                    f"Please visit https://fish1-release.storage.googleapis.com/tutorials.html "
-                    f"and run the Setup_CAVE.ipynb notebook. Error: {e}"
-                )
+            raise ValueError(
+                f"Species 'zebrafish' (Fish1) is not yet supported. "
+                f"CAVEclient setup required. See https://fish1-release.storage.googleapis.com/tutorials.html"
+            )
         else:
-            raise ValueError(f"Unknown species: {args.species}. Supported species: fly, mouse")
+            raise ValueError(f"Unknown species: {args.species}. Supported species: fly, mouse, human")
 
         print(f"Processing {len(neuron_ids)} {args.species} neurons...")
         print(f"Settings: K={args.K}, split_only={args.split_only}, merge_only={args.merge_only}")
