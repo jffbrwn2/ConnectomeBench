@@ -1,0 +1,61 @@
+{
+  "species": "mouse",
+  "timestamp": "2026-01-25T01:44:38.386217",
+  "sample_size": 100,
+  "full_dataset_size": 2314,
+  "summary_statistics": {
+    "dataset_info": {
+      "total_neurons": 100,
+      "neurons_with_edits": 100,
+      "neurons_without_edits": 0
+    },
+    "edit_totals": {
+      "total_edits": 42175,
+      "total_merges": 19865,
+      "total_splits": 22310,
+      "merge_percentage": 47.10136336692353,
+      "split_percentage": 52.89863663307647
+    },
+    "per_neuron_stats": {
+      "mean_edits": 421.75,
+      "median_edits": 354.0,
+      "std_edits": 266.04903379610005,
+      "min_edits": 13,
+      "max_edits": 1228
+    },
+    "distribution": {
+      "percentiles": {
+        "p25": 225.75,
+        "p50": 354.0,
+        "p75": 547.75,
+        "p90": 849.2,
+        "p95": 964.0,
+        "p99": 1202.2600000000002
+      },
+      "heavy_tail": {
+        "threshold": 964.0,
+        "neuron_count": 4,
+        "percentage": 4.0,
+        "edit_contribution": 10.631890930646119
+      }
+    }
+  },
+  "extrapolated_to_full_dataset": {
+    "sample_size": 100,
+    "full_dataset_size": 2314,
+    "scaling_factor": 23.14,
+    "estimated_totals": {
+      "total_edits": 975929,
+      "merge_edits": 459676,
+      "split_edits": 516253
+    },
+    "per_neuron_estimates": {
+      "mean_edits": 421.75,
+      "median_edits": 354.0,
+      "std_edits": 266.04903379610005,
+      "min_edits": 13,
+      "max_edits": 1228
+    },
+    "note": "Per-neuron statistics assumed to be representative across full dataset"
+  }
+}

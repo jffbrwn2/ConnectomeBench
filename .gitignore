@@ -51,7 +51,7 @@ output/
 data/
 test_data*/
 figures/
-reports/
+# reports/
 annotation/
 analysis/*.txt
 
@@ -59,6 +59,7 @@ analysis/*.txt
 .DS_Store
 Thumbs.db
 
+# JB scripts
 scripts/split_merge_resolution.ipynb
 scripts/visualize_merge_errors_html.py
 scripts/visualize_merge_errors.py
@@ -79,11 +80,13 @@ scripts/generate_readme_yaml.py
 scripts/model-post-training/
 scripts/deprecated/
 
+# QS debugging
 debug/
 *.parquet
-jeff_quilee_1on1.mp4
+*.mp4
 cave-scripts-master/
-
+*docx
+*.pdf
 # Claude AI
 .claude*
 .swarm/*

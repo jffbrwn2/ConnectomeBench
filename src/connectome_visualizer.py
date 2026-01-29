@@ -59,13 +59,21 @@ class ConnectomeVisualizer:
     """
     
     # Default paths for data sources
+    # Mouse (MICrONS) - Public access, no authentication required
     MICRONS_EM_PATH = "precomputed://https://bossdb-open-data.s3.amazonaws.com/iarpa_microns/minnie/minnie65/em"
+    MICRONS_SEG_PATH = "graphene://https://minnie.microns-daf.com/segmentation/table/minnie65_public"
+
+    # FlyWire (Drosophila) - Public access, no authentication required
     FLYWIRE_EM_PATH = "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14"
     FLYWIRE_SEG_PATH =  "graphene://https://prod.flywire-daf.com/segmentation/1.0/flywire_public" 
-    MICRONS_SEG_PATH = "graphene://https://minnie.microns-daf.com/segmentation/table/minnie65_public"
+    
     # H01 (Human Cortex) - Requires authentication via https://h01-release.storage.googleapis.com/proofreading.html
     H01_EM_PATH = "precomputed://gs://h01-release/data/20210601/4nm_raw"
     H01_SEG_PATH = "graphene://https://local.brain-wire-test.org/segmentation/table/h01_full0_v2"
+    # # TODO: These might be the 104 proofread neurons for H01 (https://h01-release.storage.googleapis.com/data.html)
+    # H01_EM_PATH = "precomputed://gs://h01-release/data/20210601/proofread_104"
+    # H01_SEG_PATH = "graphene://https://local.brain-wire-test.org/segmentation/table/h01_full0_v2"
+
     # Fish1 (Zebrafish) - Requires authentication via https://fish1-release.storage.googleapis.com/tutorials.html
     FISH1_EM_PATH = "precomputed://gs://fish1-public/clahe_231218"
     FISH1_SEG_PATH = "graphene://https://pcgv3local.brain-wire-test.org/segmentation/table/fish1_v250915"
@@ -199,14 +207,17 @@ class ConnectomeVisualizer:
             try:
                 client_em_path = self.client.info.image_source()
                 client_seg_path = self.client.info.segmentation_source()
-                if self.verbose:
-                    print(f"Retrieved paths from CAVEclient InfoService:")
-                    print(f"  EM: {client_em_path}")
-                    print(f"  Segmentation: {client_seg_path}")
+                
                 if client_em_path.startswith("precomputed://") or client_em_path.startswith("graphene://"):
                     self.em_path = client_em_path
                 if client_seg_path.startswith("precomputed://") or client_seg_path.startswith("graphene://"):
                     self.seg_path = client_seg_path
+
+                if self.verbose:
+                    print(f"Retrieved paths from CAVEclient InfoService vs Hardcoded paths:")
+                    print(f"  EM\n\tretrieved: {client_em_path}\n\thardcoded: {self.em_path}")
+                    print(f"  Segmentation\n\tretrieved: {client_seg_path}\n\thardcoded: {self.seg_path}")
+
             except Exception as path_error:
                 if self.verbose:
                     print(f"Note: Could not retrieve paths from CAVEclient InfoService, using hardcoded paths: {path_error}")

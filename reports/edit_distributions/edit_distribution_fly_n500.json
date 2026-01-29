@@ -1,0 +1,61 @@
+{
+  "species": "fly",
+  "timestamp": "2026-01-25T01:55:25.841359",
+  "sample_size": 500,
+  "full_dataset_size": 139255,
+  "summary_statistics": {
+    "dataset_info": {
+      "total_neurons": 500,
+      "neurons_with_edits": 484,
+      "neurons_without_edits": 16
+    },
+    "edit_totals": {
+      "total_edits": 9512,
+      "total_merges": 7028,
+      "total_splits": 2484,
+      "merge_percentage": 73.88561816652648,
+      "split_percentage": 26.114381833473505
+    },
+    "per_neuron_stats": {
+      "mean_edits": 19.024,
+      "median_edits": 8.0,
+      "std_edits": 36.96224884499533,
+      "min_edits": 0,
+      "max_edits": 388
+    },
+    "distribution": {
+      "percentiles": {
+        "p25": 4.0,
+        "p50": 8.0,
+        "p75": 20.0,
+        "p90": 44.10000000000002,
+        "p95": 61.049999999999955,
+        "p99": 198.1199999999999
+      },
+      "heavy_tail": {
+        "threshold": 61.049999999999955,
+        "neuron_count": 25,
+        "percentage": 5.0,
+        "edit_contribution": 36.375105130361646
+      }
+    }
+  },
+  "extrapolated_to_full_dataset": {
+    "sample_size": 500,
+    "full_dataset_size": 139255,
+    "scaling_factor": 278.51,
+    "estimated_totals": {
+      "total_edits": 2649187,
+      "merge_edits": 1957368,
+      "split_edits": 691818
+    },
+    "per_neuron_estimates": {
+      "mean_edits": 19.024,
+      "median_edits": 8.0,
+      "std_edits": 36.96224884499533,
+      "min_edits": 0,
+      "max_edits": 388
+    },
+    "note": "Per-neuron statistics assumed to be representative across full dataset"
+  }
+}

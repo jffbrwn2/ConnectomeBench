@@ -340,9 +340,6 @@ class TrainingDataGatherer:
         edits = [self.process_neuron_edit(neuron_id, row, split_only=split_only, merge_only=merge_only, edit_history=edit_history) for i, (_, row) in enumerate(edit_history_sampled.iterrows()) ]
         results = await asyncio.gather(*edits)
         edits = [result for result in results if result is not None]
-
-
-
         
         return edits
     
@@ -565,11 +562,13 @@ if __name__ == "__main__":
     try:
         # Get neuron IDs based on species
         if args.species == "fly":
-            client = caveclient.CAVEclient("flywire_fafb_public")
+            server_address = "https://global.daf-apis.com"
+            client = caveclient.CAVEclient("flywire_fafb_public", server_address=server_address)
             neuron_ids = list(client.materialize.query_table('proofread_neurons')['pt_root_id'])[:args.num_neurons]
         elif args.species == "mouse":
-            client = caveclient.CAVEclient("minnie65_public")
-            neuron_ids = list(client.materialize.query_table('proofreading_status_and_strategy')['valid_id'])
+            server_address = "https://global.daf-apis.com"
+            client = caveclient.CAVEclient("minnie65_public", server_address=server_address)
+            neuron_ids = list(client.materialize.query_table('proofreading_status_and_strategy')['pt_root_id'])
             random.seed(args.random_seed)
             neuron_ids = random.sample(neuron_ids, args.num_neurons)
         elif args.species == "human":
